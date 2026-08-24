@@ -10,6 +10,8 @@ struct BrowserView: View {
     @State private var isVideoInformationPresented = false
     @State private var showsLoadingIndicator = false
     @State private var historyRootID: WebPage.BackForwardList.Item.ID?
+    @State private var navigationTask: Task<Void, Never>?
+    @State private var handledNavigationRequestID: UUID?
 
     init(model: AppModel) {
         self.model = model
@@ -49,9 +51,11 @@ struct BrowserView: View {
             guard let url = model.navigationRequest?.url else { return }
             router.openDestination(url)
         }
-        .task(id: router.request?.id) {
-            guard let request = router.request else { return }
-            await perform(request)
+        .onChange(of: router.request?.id, initial: true) {
+            startQueuedNavigation()
+        }
+        .onDisappear {
+            navigationTask?.cancel()
         }
         .task(id: pageInteractionID) {
             await setPageInteractionBlocked(
@@ -99,6 +103,18 @@ struct BrowserView: View {
 }
 
 private extension BrowserView {
+    func startQueuedNavigation() {
+        guard let request = router.request,
+              request.id != handledNavigationRequestID
+        else { return }
+        handledNavigationRequestID = request.id
+
+        navigationTask?.cancel()
+        navigationTask = Task {
+            await perform(request)
+        }
+    }
+
     @ToolbarContentBuilder
     var browserToolbar: some ToolbarContent {
         if !model.isCommandPalettePresented {
@@ -360,20 +376,14 @@ private extension BrowserView {
                 historyRootID = nil
             }
 
-            defer {
-                router.loadDidEnd(request.id)
-                if establishesHistoryRoot {
-                    router.destinationDidEnd(request.id)
-                }
+            let committed = await load(urlRequest)
+            router.loadDidEnd(request.id)
+
+            if establishesHistoryRoot {
+                router.destinationDidEnd(request.id)
             }
 
-            if await load(
-                urlRequest,
-                navigationRequestID: request.id,
-                destinationRequestID: establishesHistoryRoot
-                    ? request.id
-                    : nil
-            ), establishesHistoryRoot {
+            if committed, establishesHistoryRoot {
                 await Task.yield()
                 establishHistoryRoot()
             }
@@ -386,25 +396,18 @@ private extension BrowserView {
         }
     }
 
-    private func load(
-        _ request: URLRequest,
-        navigationRequestID: BrowserNavigationRouter.Request.ID,
-        destinationRequestID: BrowserNavigationRouter.Request.ID?
-    ) async -> Bool {
+    private func load(_ request: URLRequest) async -> Bool {
+        var committed = false
+
         do {
             for try await event in page.load(request) {
                 try Task.checkCancellation()
                 if event == .committed {
                     BrowserNavigationLog.logger.notice("Navigation committed")
-                    router.loadDidEnd(navigationRequestID)
-                    if let destinationRequestID {
-                        router.destinationDidCommit(destinationRequestID)
-                        await Task.yield()
-                        establishHistoryRoot()
-                    }
+                    committed = true
                 }
             }
-            return true
+            return committed
         } catch where isCancelledNavigation(error) {
             BrowserNavigationLog.logger.debug("Navigation cancelled")
             return false
