@@ -37,7 +37,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          XCODE_PATH="/Applications/Xcode_26.2.app"
+          XCODE_PATH="/Applications/Xcode_26.6.app"
           test -d "$XCODE_PATH"
           sudo xcode-select --switch "$XCODE_PATH/Contents/Developer"
           xcodebuild -version
