@@ -1,5 +1,5 @@
 --min-version 0.62.1
---swift-version 6.2.3
+--swift-version 6.3.3
 --language-mode 5
 
 --exclude .build,DerivedData
