@@ -376,20 +376,14 @@ private extension BrowserView {
                 historyRootID = nil
             }
 
-            defer {
-                router.loadDidEnd(request.id)
-                if establishesHistoryRoot {
-                    router.destinationDidEnd(request.id)
-                }
+            let committed = await load(urlRequest)
+            router.loadDidEnd(request.id)
+
+            if establishesHistoryRoot {
+                router.destinationDidEnd(request.id)
             }
 
-            if await load(
-                urlRequest,
-                navigationRequestID: request.id,
-                destinationRequestID: establishesHistoryRoot
-                    ? request.id
-                    : nil
-            ), establishesHistoryRoot {
+            if committed, establishesHistoryRoot {
                 await Task.yield()
                 establishHistoryRoot()
             }
@@ -402,25 +396,18 @@ private extension BrowserView {
         }
     }
 
-    private func load(
-        _ request: URLRequest,
-        navigationRequestID: BrowserNavigationRouter.Request.ID,
-        destinationRequestID: BrowserNavigationRouter.Request.ID?
-    ) async -> Bool {
+    private func load(_ request: URLRequest) async -> Bool {
+        var committed = false
+
         do {
             for try await event in page.load(request) {
                 try Task.checkCancellation()
                 if event == .committed {
                     BrowserNavigationLog.logger.notice("Navigation committed")
-                    router.loadDidEnd(navigationRequestID)
-                    if let destinationRequestID {
-                        router.destinationDidCommit(destinationRequestID)
-                        await Task.yield()
-                        establishHistoryRoot()
-                    }
+                    committed = true
                 }
             }
-            return true
+            return committed
         } catch where isCancelledNavigation(error) {
             BrowserNavigationLog.logger.debug("Navigation cancelled")
             return false
