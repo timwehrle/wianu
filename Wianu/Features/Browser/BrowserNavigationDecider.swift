@@ -110,7 +110,7 @@ final class BrowserNavigationRouter {
 
     func loadDidEnd(_ requestID: Request.ID) {
         guard activeLoadRequestID == requestID else { return }
-        BrowserNavigationLog.logger.notice("Programmatic load ended")
+        BrowserNavigationLog.logger.notice("Programmatic load policy phase ended")
         activeLoadRequestID = nil
     }
 
@@ -118,9 +118,13 @@ final class BrowserNavigationRouter {
         activeLoadRequestID != nil
     }
 
-    func destinationDidEnd(_ requestID: Request.ID) {
+    func destinationDidCommit(_ requestID: Request.ID) {
         guard protectedDestinationRequestID == requestID else { return }
         protectedDestinationRequestID = nil
+    }
+
+    func destinationDidEnd(_ requestID: Request.ID) {
+        destinationDidCommit(requestID)
     }
 }
 

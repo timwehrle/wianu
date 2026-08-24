@@ -77,10 +77,6 @@
 		D145FFF8301BB60300983295 /* .swiftformat */ = {isa = PBXFileReference; lastKnownFileType = text; path = .swiftformat; sourceTree = "<group>"; };
 		D1A100023060000000000002 /* AnalyticsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsClient.swift; sourceTree = "<group>"; };
 		D1A100043060000000000004 /* AnalyticsClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsClientTests.swift; sourceTree = "<group>"; };
-		D1A8A0F73038D09F000DA0D3 /* pull-request.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = "pull-request.yml"; sourceTree = "<group>"; };
-		D1A8A0F83038D0AA000DA0D3 /* CODE_OF_CONDUCT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CODE_OF_CONDUCT.md; sourceTree = "<group>"; };
-		D1A8A0F93038D0AA000DA0D3 /* CONTRIBUTING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CONTRIBUTING.md; sourceTree = "<group>"; };
-		D1A8A0FA3038D0AA000DA0D3 /* SECURITY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = SECURITY.md; sourceTree = "<group>"; };
 		D1B9723F3015325D00B64B10 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		D1B972413015341900B64B10 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		D1B972423015341900B64B10 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -151,7 +147,6 @@
 			isa = PBXGroup;
 			children = (
 				D11E823F301798520092ECC8 /* release.yml */,
-				D1A8A0F73038D09F000DA0D3 /* pull-request.yml */,
 			);
 			path = workflows;
 			sourceTree = "<group>";
@@ -159,9 +154,6 @@
 		D11E8241301798520092ECC8 /* .github */ = {
 			isa = PBXGroup;
 			children = (
-				D1A8A0F83038D0AA000DA0D3 /* CODE_OF_CONDUCT.md */,
-				D1A8A0F93038D0AA000DA0D3 /* CONTRIBUTING.md */,
-				D1A8A0FA3038D0AA000DA0D3 /* SECURITY.md */,
 				D11E8240301798520092ECC8 /* workflows */,
 			);
 			path = .github;
@@ -428,7 +420,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2620;
-				LastUpgradeCheck = 2660;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					D14338A23013E5B800BA847C = {
 						CreatedOnToolsVersion = 26.2;
