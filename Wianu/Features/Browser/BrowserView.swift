@@ -10,6 +10,8 @@ struct BrowserView: View {
     @State private var isVideoInformationPresented = false
     @State private var showsLoadingIndicator = false
     @State private var historyRootID: WebPage.BackForwardList.Item.ID?
+    @State private var navigationTask: Task<Void, Never>?
+    @State private var handledNavigationRequestID: UUID?
 
     init(model: AppModel) {
         self.model = model
@@ -49,9 +51,11 @@ struct BrowserView: View {
             guard let url = model.navigationRequest?.url else { return }
             router.openDestination(url)
         }
-        .task(id: router.request?.id) {
-            guard let request = router.request else { return }
-            await perform(request)
+        .onChange(of: router.request?.id, initial: true) {
+            startQueuedNavigation()
+        }
+        .onDisappear {
+            navigationTask?.cancel()
         }
         .task(id: pageInteractionID) {
             await setPageInteractionBlocked(
@@ -99,6 +103,18 @@ struct BrowserView: View {
 }
 
 private extension BrowserView {
+    func startQueuedNavigation() {
+        guard let request = router.request,
+              request.id != handledNavigationRequestID
+        else { return }
+        handledNavigationRequestID = request.id
+
+        navigationTask?.cancel()
+        navigationTask = Task {
+            await perform(request)
+        }
+    }
+
     @ToolbarContentBuilder
     var browserToolbar: some ToolbarContent {
         if !model.isCommandPalettePresented {
