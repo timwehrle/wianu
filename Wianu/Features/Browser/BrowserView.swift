@@ -76,8 +76,11 @@ private extension BrowserView {
         }
     }
 
-    var pageInteractionID: String {
-        "\(model.isCommandPalettePresented):\(session.page.url?.absoluteString ?? "")"
+    var pageInteractionID: PageInteractionID {
+        PageInteractionID(
+            isBlocked: model.isCommandPalettePresented,
+            url: session.page.url
+        )
     }
 
     var blockedNavigationBinding: Binding<Bool> {
@@ -101,4 +104,9 @@ private extension BrowserView {
         guard !Task.isCancelled, session.page.isLoading else { return }
         showsLoadingIndicator = true
     }
+}
+
+private struct PageInteractionID: Hashable {
+    let isBlocked: Bool
+    let url: URL?
 }
