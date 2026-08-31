@@ -15,6 +15,7 @@ struct BrowserTitleView: View {
 
             Text("·")
                 .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
 
             Text(url?.host() ?? "Unknown origin")
                 .foregroundStyle(.secondary)
@@ -28,5 +29,14 @@ struct BrowserTitleView: View {
         )
         .help(url?.absoluteString ?? title)
         .padding(.horizontal, 16)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel)
+    }
+}
+
+private extension BrowserTitleView {
+    var accessibilityLabel: String {
+        guard let host = url?.host() else { return title }
+        return "\(title), \(host)"
     }
 }
