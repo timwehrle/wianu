@@ -66,8 +66,8 @@ final class BrowserSession {
         router.openHistoryItem(forwardItem)
     }
 
-    func reloadOrStop(showsLoadingIndicator: Bool) {
-        if showsLoadingIndicator {
+    func reloadOrStop() {
+        if page.isLoading {
             page.stopLoading()
         } else {
             router.reload()
