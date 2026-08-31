@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PageTitleToolbarView: View {
+struct BrowserTitleView: View {
     let title: String
     let url: URL?
     @Environment(\.controlActiveState) private var controlActiveState
