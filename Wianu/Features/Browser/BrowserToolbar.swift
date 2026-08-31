@@ -8,7 +8,7 @@ struct BrowserToolbar: ToolbarContent {
 
     var body: some ToolbarContent {
         navigationItems
-        pageTitleItem
+        browserTitleItem
         watchlistItem
         continueWatchingItem
         commandPaletteItem
@@ -33,9 +33,7 @@ private extension BrowserToolbar {
             .keyboardShortcut("]", modifiers: .command)
 
             Button {
-                session.reloadOrStop(
-                    showsLoadingIndicator: showsLoadingIndicator
-                )
+                session.reloadOrStop()
             } label: {
                 Image(systemName: reloadSystemImage)
             }
@@ -52,7 +50,7 @@ private extension BrowserToolbar {
         }
     }
 
-    var pageTitleItem: some ToolbarContent {
+    var browserTitleItem: some ToolbarContent {
         ToolbarItem(placement: .principal) {
             if model.destinationURL != nil {
                 BrowserTitleView(
@@ -120,10 +118,7 @@ private extension BrowserToolbar {
     }
 
     var displayedTitle: String {
-        let title = session.page.title.trimmingCharacters(
-            in: .whitespacesAndNewlines
-        )
-        return title.isEmpty ? fallbackTitle : title
+        pageTitle ?? fallbackTitle
     }
 
     var fallbackTitle: String {
@@ -133,10 +128,11 @@ private extension BrowserToolbar {
     }
 
     var canSaveCurrentPage: Bool {
-        session.page.url != nil
-            && !session.page.title.trimmingCharacters(
-                in: .whitespacesAndNewlines
-            ).isEmpty
+        session.page.url != nil && pageTitle != nil
+    }
+
+    var pageTitle: String? {
+        BrowserPageMetadata.normalizedTitle(session.page.title)
     }
 
     var currentPageIsSaved: Bool {
@@ -154,17 +150,7 @@ private extension BrowserToolbar {
             return siteURL
         }
 
-        guard let currentURL = session.page.url,
-              var components = URLComponents(
-                  url: currentURL,
-                  resolvingAgainstBaseURL: false
-              )
-        else { return nil }
-
-        components.path = "/"
-        components.query = nil
-        components.fragment = nil
-        return components.url
+        return BrowserPageMetadata.homeURL(for: session.page.url)
     }
 
     func goHome() {
@@ -173,12 +159,33 @@ private extension BrowserToolbar {
     }
 
     func toggleContinueWatching() {
-        guard let url = session.page.url else { return }
-        model.toggleContinueWatching(title: session.page.title, url: url)
+        guard let url = session.page.url, let pageTitle else { return }
+        model.toggleContinueWatching(title: pageTitle, url: url)
     }
 
     func toggleWatchlist() {
-        guard let url = session.page.url else { return }
-        model.toggleWatchlist(title: session.page.title, url: url)
+        guard let url = session.page.url, let pageTitle else { return }
+        model.toggleWatchlist(title: pageTitle, url: url)
+    }
+}
+
+enum BrowserPageMetadata {
+    static func normalizedTitle(_ title: String) -> String? {
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        return title.isEmpty ? nil : title
+    }
+
+    static func homeURL(for url: URL?) -> URL? {
+        guard let url,
+              var components = URLComponents(
+                  url: url,
+                  resolvingAgainstBaseURL: false
+              )
+        else { return nil }
+
+        components.path = "/"
+        components.query = nil
+        components.fragment = nil
+        return components.url
     }
 }
