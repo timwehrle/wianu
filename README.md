@@ -112,6 +112,10 @@ Wianu. Please share them using the
 Swift Package Manager resolves the project's dependencies, including Sparkle
 for application updates.
 
+For command-line development, run `make help` to see the available tasks.
+Common commands include `make build`, `make test`, `make format`, `make lint`,
+and `make check`. SwiftFormat and SwiftLint can be installed with Homebrew.
+
 ## Data
 
 Saved sites, Continue Watching entries, and watchlist items are stored locally
