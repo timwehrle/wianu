@@ -54,6 +54,7 @@
 		D1F000053040000000000005 /* VideoDiagnosticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1F000063040000000000006 /* VideoDiagnosticsTests.swift */; };
 		D1F100013070000000000001 /* BrowserSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1F100033070000000000003 /* BrowserSession.swift */; };
 		D1F100023070000000000002 /* BrowserToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1F100043070000000000004 /* BrowserToolbar.swift */; };
+		D1F100053070000000000005 /* BrowserPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1F100063070000000000006 /* BrowserPresentationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -127,6 +128,7 @@
 		D1F000063040000000000006 /* VideoDiagnosticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDiagnosticsTests.swift; sourceTree = "<group>"; };
 		D1F100033070000000000003 /* BrowserSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserSession.swift; sourceTree = "<group>"; };
 		D1F100043070000000000004 /* BrowserToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserToolbar.swift; sourceTree = "<group>"; };
+		D1F100063070000000000006 /* BrowserPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserPresentationTests.swift; sourceTree = "<group>"; };
 		D1FE0019301638DA00DA12EE /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		D1FE001B30163BD700DA12EE /* WianuIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WianuIcon.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -360,6 +362,7 @@
 			isa = PBXGroup;
 			children = (
 				D1A100043060000000000004 /* AnalyticsClientTests.swift */,
+				D1F100063070000000000006 /* BrowserPresentationTests.swift */,
 				D1F000063040000000000006 /* VideoDiagnosticsTests.swift */,
 				D1E300033030000000000003 /* CommandCatalogTests.swift */,
 				D1C1000C302000000000010C /* BrowserNavigationRouterTests.swift */,
@@ -535,6 +538,7 @@
 				D1F000053040000000000005 /* VideoDiagnosticsTests.swift in Sources */,
 				D1E300013030000000000001 /* CommandCatalogTests.swift in Sources */,
 				D1C1000D302000000000010D /* BrowserNavigationRouterTests.swift in Sources */,
+				D1F100053070000000000005 /* BrowserPresentationTests.swift in Sources */,
 				D1C100013020000000000101 /* TMDBClientTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
