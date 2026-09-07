@@ -2,17 +2,52 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct SidebarView: View {
+    private enum PendingDeletion {
+        case site(SavedSite)
+        case continueWatching(ContinueWatchingItem)
+        case watchlistItem(WatchlistItem)
+
+        var title: String {
+            switch self {
+            case .site:
+                "Delete Site?"
+            case .continueWatching:
+                "Remove from Continue Watching?"
+            case .watchlistItem:
+                "Remove from Watchlist?"
+            }
+        }
+
+        var actionTitle: String {
+            switch self {
+            case .site:
+                "Delete"
+            case .continueWatching, .watchlistItem:
+                "Remove"
+            }
+        }
+
+        var message: String {
+            switch self {
+            case .site:
+                "This removes the site and its Continue Watching entries from Wianu."
+            case let .continueWatching(item):
+                "“\(item.title)” will be removed."
+            case let .watchlistItem(item):
+                "“\(item.title)” will be removed."
+            }
+        }
+    }
+
     @Bindable var model: AppModel
     @Binding var showingAddSite: Bool
 
     @State private var editingSite: SavedSite?
     @State private var renamingItem: ContinueWatchingItem?
-    @State private var deletingSite: SavedSite?
-    @State private var deletingItem: ContinueWatchingItem?
+    @State private var pendingDeletion: PendingDeletion?
     @State private var showingWatchlistImporter = false
     @State private var showingAddWatchlistItem = false
     @State private var editingWatchlistItem: WatchlistItem?
-    @State private var deletingWatchlistItem: WatchlistItem?
     @State private var importMessage: String?
     @State private var sitesExpanded = true
     @State private var continueWatchingExpanded = true
@@ -64,38 +99,20 @@ struct SidebarView: View {
             onCompletion: importWatchlist
         )
         .alert(
-            "Delete Site?",
-            isPresented: presenting($deletingSite),
-            presenting: deletingSite
-        ) { site in
-            Button("Delete", role: .destructive) {
-                model.deleteSite(site)
-                deletingSite = nil
+            pendingDeletion?.title ?? "",
+            isPresented: isPresenting($pendingDeletion),
+            presenting: pendingDeletion
+        ) { deletion in
+            Button(deletion.actionTitle, role: .destructive) {
+                delete(deletion)
             }
-            Button("Cancel", role: .cancel) {
-                deletingSite = nil
-            }
-        } message: { _ in
-            Text("This removes the site and its Continue Watching entries from Wianu.")
-        }
-        .alert(
-            "Remove from Continue Watching?",
-            isPresented: presenting($deletingItem),
-            presenting: deletingItem
-        ) { item in
-            Button("Remove", role: .destructive) {
-                model.removeContinueWatchingItem(item)
-                deletingItem = nil
-            }
-            Button("Cancel", role: .cancel) {
-                deletingItem = nil
-            }
-        } message: { item in
-            Text("“\(item.title)” will be removed.")
+            Button("Cancel", role: .cancel) {}
+        } message: { deletion in
+            Text(deletion.message)
         }
         .alert(
             "Letterboxd Import",
-            isPresented: presenting($importMessage),
+            isPresented: isPresenting($importMessage),
             presenting: importMessage
         ) { _ in
             Button("OK") {
@@ -103,21 +120,6 @@ struct SidebarView: View {
             }
         } message: { message in
             Text(message)
-        }
-        .alert(
-            "Remove from Watchlist?",
-            isPresented: presenting($deletingWatchlistItem),
-            presenting: deletingWatchlistItem
-        ) { item in
-            Button("Remove", role: .destructive) {
-                model.removeWatchlistItem(item)
-                deletingWatchlistItem = nil
-            }
-            Button("Cancel", role: .cancel) {
-                deletingWatchlistItem = nil
-            }
-        } message: { item in
-            Text("“\(item.title)” will be removed.")
         }
     }
 
@@ -139,7 +141,7 @@ struct SidebarView: View {
                         Button("Edit") { editingSite = site }
                         Divider()
                         Button("Delete", role: .destructive) {
-                            deletingSite = site
+                            pendingDeletion = .site(site)
                         }
                     }
             }
@@ -167,7 +169,7 @@ struct SidebarView: View {
                             Button("Rename") { renamingItem = item }
                             Divider()
                             Button("Remove", role: .destructive) {
-                                deletingItem = item
+                                pendingDeletion = .continueWatching(item)
                             }
                         }
                 }
@@ -213,7 +215,7 @@ struct SidebarView: View {
             Divider()
         }
         Button("Remove", role: .destructive) {
-            deletingWatchlistItem = item
+            pendingDeletion = .watchlistItem(item)
         }
     }
 
@@ -283,7 +285,18 @@ struct SidebarView: View {
         }
     }
 
-    private func presenting(_ item: Binding<(some Any)?>) -> Binding<Bool> {
+    private func delete(_ deletion: PendingDeletion) {
+        switch deletion {
+        case let .site(site):
+            model.deleteSite(site)
+        case let .continueWatching(item):
+            model.removeContinueWatchingItem(item)
+        case let .watchlistItem(item):
+            model.removeWatchlistItem(item)
+        }
+    }
+
+    private func isPresenting(_ item: Binding<(some Any)?>) -> Binding<Bool> {
         Binding(
             get: { item.wrappedValue != nil },
             set: { isPresented in
