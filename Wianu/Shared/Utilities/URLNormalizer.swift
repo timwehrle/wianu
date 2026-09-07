@@ -1,6 +1,6 @@
 import Foundation
 
-enum URLNormalizer {
+nonisolated enum URLNormalizer {
     private static let removableQueryNames: Set<String> = [
         "utm_source",
         "utm_medium",

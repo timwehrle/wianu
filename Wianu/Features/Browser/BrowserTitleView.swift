@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PageTitleToolbarView: View {
+struct BrowserTitleView: View {
     let title: String
     let url: URL?
     @Environment(\.controlActiveState) private var controlActiveState
@@ -15,6 +15,7 @@ struct PageTitleToolbarView: View {
 
             Text("·")
                 .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
 
             Text(url?.host() ?? "Unknown origin")
                 .foregroundStyle(.secondary)
@@ -28,5 +29,14 @@ struct PageTitleToolbarView: View {
         )
         .help(url?.absoluteString ?? title)
         .padding(.horizontal, 16)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel)
+    }
+}
+
+private extension BrowserTitleView {
+    var accessibilityLabel: String {
+        guard let host = url?.host() else { return title }
+        return "\(title), \(host)"
     }
 }
