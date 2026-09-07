@@ -35,20 +35,18 @@ final class WatchlistStore {
         item(matching: url) != nil
     }
 
-    func replace(with newItems: [WatchlistItem]) {
-        let existingPairs: [(String, UUID)] = items.compactMap { item in
-            guard item.source == .letterboxd, let url = item.url else {
-                return nil
-            }
-            return (urlKey(url), item.id)
+    func replaceImportedItems(with newItems: [WatchlistItem]) {
+        let existingIDs = items.reduce(into: [String: WatchlistItem.ID]()) {
+            ids, item in
+            guard item.source == .letterboxd, let url = item.url else { return }
+            ids[URLNormalizer.comparisonKey(for: url)] = item.id
         }
-        let existingIDs: [String: UUID] = Dictionary(
-            uniqueKeysWithValues: existingPairs
-        )
 
         let importedItems = newItems.enumerated().map { index, item in
             WatchlistItem(
-                id: item.url.flatMap { existingIDs[urlKey($0)] } ?? item.id,
+                id: item.url.flatMap {
+                    existingIDs[URLNormalizer.comparisonKey(for: $0)]
+                } ?? item.id,
                 title: item.title,
                 year: item.year,
                 url: item.url,
@@ -61,7 +59,7 @@ final class WatchlistStore {
             .filter { $0.source == .custom }
             .enumerated()
             .map { offset, item in
-                copy(item, sourceOrder: importedItems.count + offset)
+                item.withSourceOrder(importedItems.count + offset)
             }
 
         items = importedItems + customItems
@@ -91,23 +89,14 @@ final class WatchlistStore {
         guard let index = items.firstIndex(where: { $0.id == id }) else {
             return
         }
-        let item = items[index]
-        items[index] = WatchlistItem(
-            id: item.id,
-            title: title,
-            year: year,
-            url: url,
-            addedAt: item.addedAt,
-            sourceOrder: item.sourceOrder,
-            source: item.source
-        )
+        items[index] = items[index].updating(title: title, year: year, url: url)
         persist()
     }
 
     func remove(id: WatchlistItem.ID) {
         items.removeAll { $0.id == id }
         items = items.enumerated().map {
-            copy($0.element, sourceOrder: $0.offset)
+            $0.element.withSourceOrder($0.offset)
         }
         persist()
     }
@@ -130,24 +119,5 @@ final class WatchlistStore {
         } catch {
             persistenceError = error.localizedDescription
         }
-    }
-
-    private func urlKey(_ url: URL) -> String {
-        url.absoluteString.lowercased()
-    }
-
-    private func copy(
-        _ item: WatchlistItem,
-        sourceOrder: Int
-    ) -> WatchlistItem {
-        WatchlistItem(
-            id: item.id,
-            title: item.title,
-            year: item.year,
-            url: item.url,
-            addedAt: item.addedAt,
-            sourceOrder: sourceOrder,
-            source: item.source
-        )
     }
 }

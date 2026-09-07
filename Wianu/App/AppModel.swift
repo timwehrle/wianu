@@ -211,7 +211,7 @@ extension AppModel {
                 nil
             }
 
-        watchlistStore.replace(with: items)
+        watchlistStore.replaceImportedItems(with: items)
 
         if let selectedItemID,
            watchlistStore.item(id: selectedItemID) == nil

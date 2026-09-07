@@ -32,6 +32,30 @@ nonisolated struct WatchlistItem: Identifiable, Codable, Hashable, Sendable {
         self.source = source
     }
 
+    func updating(title: String, year: Int?, url: URL?) -> Self {
+        Self(
+            id: id,
+            title: title,
+            year: year,
+            url: url,
+            addedAt: addedAt,
+            sourceOrder: sourceOrder,
+            source: source
+        )
+    }
+
+    func withSourceOrder(_ sourceOrder: Int) -> Self {
+        Self(
+            id: id,
+            title: title,
+            year: year,
+            url: url,
+            addedAt: addedAt,
+            sourceOrder: sourceOrder,
+            source: source
+        )
+    }
+
     init(
         id: UUID = UUID(),
         title: String,

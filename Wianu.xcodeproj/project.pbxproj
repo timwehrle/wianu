@@ -25,6 +25,7 @@
 		D1B972753015341900B64B10 /* PageTitleCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972613015341900B64B10 /* PageTitleCleaner.swift */; };
 		D1B972763015341900B64B10 /* URLNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972623015341900B64B10 /* URLNormalizer.swift */; };
 		D1B972773015341900B64B10 /* WatchlistRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972513015341900B64B10 /* WatchlistRow.swift */; };
+		D1B972863015341900B64B10 /* WatchlistItemEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972873015341900B64B10 /* WatchlistItemEditorView.swift */; };
 		D1B972783015341900B64B10 /* SiteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B9725B3015341900B64B10 /* SiteStore.swift */; };
 		D1B972793015341900B64B10 /* RenameContinueWatchingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B9724D3015341900B64B10 /* RenameContinueWatchingView.swift */; };
 		D1B9727A3015341900B64B10 /* LetterboxdWatchlistImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B9724F3015341900B64B10 /* LetterboxdWatchlistImporter.swift */; };
@@ -100,6 +101,7 @@
 		D1B972503015341900B64B10 /* WatchlistItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistItem.swift; sourceTree = "<group>"; };
 		D1B972513015341900B64B10 /* WatchlistRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistRow.swift; sourceTree = "<group>"; };
 		D1B972523015341900B64B10 /* WatchlistStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistStore.swift; sourceTree = "<group>"; };
+		D1B972873015341900B64B10 /* WatchlistItemEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistItemEditorView.swift; sourceTree = "<group>"; };
 		D1B972543015341900B64B10 /* SidebarSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarSelection.swift; sourceTree = "<group>"; };
 		D1B972553015341900B64B10 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		D1B972573015341900B64B10 /* SavedSite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSite.swift; sourceTree = "<group>"; };
@@ -257,6 +259,7 @@
 			children = (
 				D1B9724F3015341900B64B10 /* LetterboxdWatchlistImporter.swift */,
 				D1B972503015341900B64B10 /* WatchlistItem.swift */,
+				D1B972873015341900B64B10 /* WatchlistItemEditorView.swift */,
 				D1B972513015341900B64B10 /* WatchlistRow.swift */,
 				D1B972523015341900B64B10 /* WatchlistStore.swift */,
 			);
@@ -502,6 +505,7 @@
 				D1B972753015341900B64B10 /* PageTitleCleaner.swift in Sources */,
 				D1B972763015341900B64B10 /* URLNormalizer.swift in Sources */,
 				D1B972773015341900B64B10 /* WatchlistRow.swift in Sources */,
+				D1B972863015341900B64B10 /* WatchlistItemEditorView.swift in Sources */,
 				D13E65ED3018F6B400E58017 /* UpdateService.swift in Sources */,
 				D1B972783015341900B64B10 /* SiteStore.swift in Sources */,
 				D1B972793015341900B64B10 /* RenameContinueWatchingView.swift in Sources */,

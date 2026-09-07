@@ -150,7 +150,7 @@ nonisolated enum LetterboxdWatchlistImporter {
                 addedAt: addedAt,
                 sourceOrder: sourceOrder
             ),
-            comparisonKey: normalizedURLKey(secureURL)
+            comparisonKey: URLNormalizer.comparisonKey(for: secureURL)
         )
     }
 
@@ -252,26 +252,6 @@ nonisolated enum LetterboxdWatchlistImporter {
         components.user = nil
         components.password = nil
         return components.url
-    }
-
-    private static func normalizedURLKey(_ url: URL) -> String {
-        guard var components = URLComponents(
-            url: url,
-            resolvingAgainstBaseURL: false
-        ) else {
-            return url.absoluteString
-        }
-
-        let scheme = components.scheme?.lowercased()
-        let host = components.host?.lowercased()
-        components.scheme = scheme
-        components.host = host
-
-        if components.path.count > 1, components.path.hasSuffix("/") {
-            components.path.removeLast()
-        }
-
-        return components.string ?? url.absoluteString
     }
 
     private static func parseDate(_ value: String) -> Date? {
