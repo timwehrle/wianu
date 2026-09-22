@@ -2,6 +2,8 @@ name: Pull Request Checks
 
 on:
   pull_request:
+    paths-ignore:
+      - "Website/**"
 
 permissions:
   contents: read
