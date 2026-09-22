@@ -1,0 +1,91 @@
+@layer reset {
+	*,
+	*::before,
+	*::after {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+
+	html {
+		color-scheme: light dark;
+		-webkit-font-smoothing: antialiased;
+		-webkit-text-size-adjust: none;
+		text-size-adjust: none;
+		hanging-punctuation: first allow-end last;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	button,
+	input,
+	label {
+		line-height: 1.1;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4 {
+		text-wrap: balance;
+	}
+
+	p {
+		text-wrap: pretty;
+	}
+
+	a:not([class]) {
+		text-decoration-skip-ink: auto;
+		color: currentColor;
+	}
+
+	ul[role='list'],
+	ol[role='list'] {
+		list-style: none;
+	}
+
+	img,
+	picture {
+		max-width: 100%;
+		display: block;
+	}
+
+	input,
+	button,
+	textarea,
+	select {
+		font-family: inherit;
+		font-size: inherit;
+	}
+
+	textarea:not([rows]) {
+		min-height: 10em;
+	}
+
+	:target {
+		scroll-margin-block: 5ex;
+	}
+}
+
+body {
+	min-height: 100vh;
+	line-height: 1.5;
+	font-size: 1rem;
+	font-family: var(--font-sans);
+	background-color: #222;
+}
+
+@font-face {
+	font-display: swap;
+	font-family: 'Instrument Serif';
+	font-style: normal;
+	font-weight: 400;
+	src: url('/fonts/instrument-serif-v5-latin-regular.woff2') format('woff2');
+}
+
+:root {
+	--font-serif: 'Instrument Serif';
+	--font-sans: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+}

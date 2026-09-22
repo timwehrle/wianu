@@ -1,5 +1,10 @@
 <script lang="ts">
+	import '../styles/index.css';
+	import SiteLayout from '$lib/components/site-layout.svelte';
+
 	let { children } = $props();
 </script>
 
-{@render children()}
+<SiteLayout>
+	{@render children()}
+</SiteLayout>
