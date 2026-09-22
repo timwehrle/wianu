@@ -16,8 +16,10 @@ export function errorResponse(error: unknown): Response {
 		error instanceof ApiError
 			? error
 			: new ApiError(500, 'internal_error', 'An unexpected server error occurred.');
+
 	const headers = new Headers({ 'cache-control': 'no-store' });
 	if (apiError.retryAfter !== undefined) headers.set('retry-after', String(apiError.retryAfter));
+
 	return json(
 		{ error: { code: apiError.code, message: apiError.message } },
 		{ status: apiError.status, headers }
