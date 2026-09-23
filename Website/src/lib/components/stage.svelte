@@ -16,7 +16,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-		padding: 1.5rem 1rem;
+		padding: 7rem 1rem 1.5rem;
 	}
 
 	.stage-title {
