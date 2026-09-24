@@ -74,7 +74,8 @@ body {
 	line-height: 1.5;
 	font-size: 1rem;
 	font-family: var(--font-sans);
-	background-color: #222;
+	background-color: #fff;
+	color: #1d1d1f;
 }
 
 @font-face {
