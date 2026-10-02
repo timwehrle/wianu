@@ -14,7 +14,9 @@
 	}
 
 	function closeMenu() {
-		if (isOpen) toggleMenu();
+		if (isOpen) {
+			toggleMenu();
+		}
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
@@ -35,7 +37,10 @@
 	}
 </script>
 
-<svelte:window onkeydown={handleKeydown} onpointerdown={handlePointerdown} />
+<svelte:window
+	onkeydown={handleKeydown}
+	onpointerdown={handlePointerdown}
+/>
 
 {#if isOpen}
 	<div
@@ -47,22 +52,31 @@
 
 <header>
 	<div class="nav-shell">
-		<div class="nav-container">
-			<h1 class="nav-logo"><a href={resolve('/')} onclick={closeMenu}>Wianu</a></h1>
-			<div class="nav-actions">
-				<a class="nav-link" href={resolve('/weekly')} onclick={closeMenu}>Weekly</a>
-				<button
-					bind:this={menuTrigger}
-					class="nav-trigger"
-					type="button"
-					aria-label={isOpen ? 'Close menu' : 'Open menu'}
-					aria-expanded={isOpen}
-					aria-controls="site-menu"
-					onclick={toggleMenu}
+		<div class="nav-bar">
+			<div class="nav-main">
+				<h1 class="nav-logo">
+					<a
+						href={resolve('/')}
+						onclick={closeMenu}>Wianu</a
+					>
+				</h1>
+				<a
+					class="nav-weekly-link"
+					href={resolve('/weekly')}
+					onclick={closeMenu}>Weekly</a
 				>
-					<span>{isOpen ? 'Close' : 'Menu'}</span>
-				</button>
 			</div>
+			<button
+				bind:this={menuTrigger}
+				class="nav-menu-toggle"
+				type="button"
+				aria-label={isOpen ? 'Close menu' : 'Open menu'}
+				aria-expanded={isOpen}
+				aria-controls="site-menu"
+				onclick={toggleMenu}
+			>
+				<span>{isOpen ? 'Close' : 'Menu'}</span>
+			</button>
 		</div>
 		{#if isOpen}
 			<nav
@@ -74,23 +88,39 @@
 			>
 				<ul class="nav-menu-list">
 					<li>
-						<a class="nav-menu-link" href="#" onclick={closeMenu}>
+						<a
+							class="nav-menu-link"
+							href="#"
+							onclick={closeMenu}
+						>
 							<span class="nav-menu-copy">
 								<span class="nav-menu-title">The App</span>
-								<span class="nav-menu-description">Meet your streaming home</span>
+								<span class="nav-menu-description"
+									>Meet your streaming home</span
+								>
 							</span>
-							<span class="nav-menu-arrow" aria-hidden="true">
+							<span
+								class="nav-menu-arrow"
+								aria-hidden="true"
+							>
 								<ArrowRightIcon strokeWidth={1} />
 							</span>
 						</a>
 					</li>
 					<li>
-						<a class="nav-menu-link" href="#" onclick={closeMenu}>
+						<a
+							class="nav-menu-link"
+							href="#"
+							onclick={closeMenu}
+						>
 							<span class="nav-menu-copy">
 								<span class="nav-menu-title">About</span>
 								<span class="nav-menu-description">The idea behind Wianu</span>
 							</span>
-							<span class="nav-menu-arrow" aria-hidden="true">
+							<span
+								class="nav-menu-arrow"
+								aria-hidden="true"
+							>
 								<ArrowRightIcon />
 							</span>
 							<enhanced:img
@@ -111,8 +141,14 @@
 								<span class="nav-menu-description">For macOS 26 or later</span>
 								<span class="nav-menu-title">Download Wianu</span>
 							</span>
-							<span class="nav-menu-arrow" aria-hidden="true">
-								<ArrowDownIcon strokeWidth={1} aria-hidden="true" />
+							<span
+								class="nav-menu-arrow"
+								aria-hidden="true"
+							>
+								<ArrowDownIcon
+									strokeWidth={1}
+									aria-hidden="true"
+								/>
 							</span>
 						</a>
 					</li>
@@ -138,23 +174,26 @@
 	}
 
 	.nav-shell {
-		margin: 0.75rem;
-		color: #1d1d1f;
+		margin: 1rem;
+		color: var(--foreground);
 	}
 
-	.nav-container {
+	.nav-bar {
+		display: flex;
+		gap: 1px;
+	}
+
+	.nav-main {
 		padding: 0.75rem;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		background-color: #f5f5f7;
+		flex: 1;
+		min-width: 0;
+		background: rgb(248 248 248 / 80%);
+		backdrop-filter: blur(20px) saturate(180%);
+		-webkit-backdrop-filter: blur(20px) saturate(180%);
 		border-radius: 3px;
-	}
-
-	.nav-actions {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
 	}
 
 	.nav-menu {
@@ -178,14 +217,14 @@
 		overflow: hidden;
 		text-decoration: none;
 		color: inherit;
-		background-color: #f5f5f7;
+		background-color: var(--surface);
 		border-radius: 3px;
 		padding-block: 1.25rem;
 		padding-inline: 1rem;
 	}
 
 	.nav-menu-download-item {
-		background-color: #f5f5f7;
+		background-color: var(--surface);
 		border-radius: 3px;
 	}
 
@@ -200,7 +239,7 @@
 		width: 100%;
 
 		.nav-menu-description {
-			margin-block: 0 0.35rem;
+			margin-block: 0 0.25rem;
 		}
 	}
 
@@ -215,18 +254,17 @@
 		font-family: var(--font-serif);
 		font-size: clamp(2rem, 4vw, 3rem);
 		line-height: 1;
-		transition: color 180ms ease;
 	}
 
 	.nav-menu-description {
-		margin-top: 0.35rem;
+		margin-top: 0.25rem;
 		font-size: 0.8rem;
 	}
 
 	.nav-menu-img {
 		position: absolute;
 		inset: 0 0 0 auto;
-		width: 42%;
+		width: 40%;
 		height: 100%;
 		object-fit: cover;
 		clip-path: polygon(38% 0, 100% 0, 100% 100%, 0 100%);
@@ -248,20 +286,36 @@
 		}
 	}
 
-	.nav-link {
+	.nav-weekly-link {
 		text-decoration: none;
 		color: inherit;
 	}
 
-	.nav-trigger {
-		padding: 0.5rem;
+	.nav-menu-toggle {
+		padding: 0.75rem;
 		color: inherit;
-		background-color: transparent;
+		background: rgb(248 248 248 / 80%);
+		backdrop-filter: blur(20px) saturate(180%);
+		-webkit-backdrop-filter: blur(20px) saturate(180%);
 		font-weight: 600;
 		border: 0;
+		border-radius: 3px;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		cursor: pointer;
+	}
+
+	.nav-shell:has(.nav-menu) {
+		color: #1d1d1f;
+
+		.nav-main,
+		.nav-menu-toggle,
+		.nav-menu-link,
+		.nav-menu-download-item {
+			background: #fff;
+			backdrop-filter: none;
+			-webkit-backdrop-filter: none;
+		}
 	}
 </style>

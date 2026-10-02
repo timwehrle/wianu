@@ -1,6 +1,10 @@
 type LogLevel = 'info' | 'warn' | 'error';
 
-export function log(level: LogLevel, event: string, fields: Record<string, unknown> = {}): void {
+export function log(
+	level: LogLevel,
+	event: string,
+	fields: Record<string, unknown> = {}
+): void {
 	const entry = JSON.stringify({
 		timestamp: new Date().toISOString(),
 		level,
@@ -8,7 +12,11 @@ export function log(level: LogLevel, event: string, fields: Record<string, unkno
 		...fields
 	});
 
-	if (level === 'error') console.error(entry);
-	else if (level === 'warn') console.warn(entry);
-	else console.info(entry);
+	if (level === 'error') {
+		console.error(entry);
+	} else if (level === 'warn') {
+		console.warn(entry);
+	} else {
+		console.info(entry);
+	}
 }

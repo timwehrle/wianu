@@ -32,6 +32,8 @@ export default defineConfig(
 		}
 	},
 	{
-		rules: {}
+		rules: {
+			curly: ['error', 'all']
+		}
 	}
 );

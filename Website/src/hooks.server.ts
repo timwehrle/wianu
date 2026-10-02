@@ -13,14 +13,25 @@ export const handle: Handle = async ({ event, resolve }) => {
 		try {
 			client = event.getClientAddress();
 		} catch {
-			log('error', 'client_address_unavailable', { request_id: event.locals.requestId });
+			log('error', 'client_address_unavailable', {
+				request_id: event.locals.requestId
+			});
 			response = errorResponse(
-				new ApiError(500, 'internal_error', 'An unexpected server error occurred.')
+				new ApiError(
+					500,
+					'internal_error',
+					'An unexpected server error occurred.'
+				)
 			);
 		}
 		if (client && !allowRequest(client)) {
 			response = errorResponse(
-				new ApiError(429, 'rate_limited', 'Too many requests. Please try again later.', 1)
+				new ApiError(
+					429,
+					'rate_limited',
+					'Too many requests. Please try again later.',
+					1
+				)
 			);
 		}
 	}

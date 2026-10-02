@@ -8,9 +8,15 @@ export const GET: RequestHandler = ({ locals, url }) =>
 		const query = validate.query(url.searchParams.get('query'));
 		const page = validate.page(url.searchParams.get('page'));
 		const language = validate.language(url.searchParams.get('language'));
-		const parameters = new URLSearchParams({ query, page: String(page), include_adult: 'false' });
+		const parameters = new URLSearchParams({
+			query,
+			page: String(page),
+			include_adult: 'false'
+		});
 
-		if (language) parameters.set('language', language);
+		if (language) {
+			parameters.set('language', language);
+		}
 
 		return jsonResponse(
 			await tmdbGet(

@@ -8,7 +8,9 @@ export const GET: RequestHandler = ({ locals, params, url }) =>
 		const mediaType = validate.mediaType(params.mediaType);
 		const language = validate.language(url.searchParams.get('language'));
 		const parameters = new URLSearchParams();
-		if (language) parameters.set('language', language);
+		if (language) {
+			parameters.set('language', language);
+		}
 		return jsonResponse(
 			await tmdbGet(
 				`/watch/providers/${mediaType}`,

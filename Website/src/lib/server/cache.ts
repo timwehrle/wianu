@@ -26,16 +26,22 @@ export class TtlCache<T> {
 			this.entries.set(key, existing);
 			return { value: existing.value, status: 'hit' };
 		}
-		if (existing) this.entries.delete(key);
+		if (existing) {
+			this.entries.delete(key);
+		}
 
 		const inFlight = this.pending.get(key);
-		if (inFlight) return { value: await inFlight, status: 'coalesced' };
+		if (inFlight) {
+			return { value: await inFlight, status: 'coalesced' };
+		}
 
 		const request = create().then((value) => {
 			this.entries.set(key, { value, expiresAt: Date.now() + ttlMilliseconds });
 			while (this.entries.size > this.maximumEntries) {
 				const oldest = this.entries.keys().next().value as string | undefined;
-				if (oldest === undefined) break;
+				if (oldest === undefined) {
+					break;
+				}
 				this.entries.delete(oldest);
 			}
 			return value;

@@ -32,10 +32,6 @@
 		text-wrap: balance;
 	}
 
-	p {
-		text-wrap: pretty;
-	}
-
 	a:not([class]) {
 		text-decoration-skip-ink: auto;
 		color: currentColor;
@@ -63,10 +59,6 @@
 	textarea:not([rows]) {
 		min-height: 10em;
 	}
-
-	:target {
-		scroll-margin-block: 5ex;
-	}
 }
 
 body {
@@ -74,8 +66,8 @@ body {
 	line-height: 1.5;
 	font-size: 1rem;
 	font-family: var(--font-sans);
-	background-color: #fff;
-	color: #1d1d1f;
+	background-color: var(--background);
+	color: var(--foreground);
 }
 
 @font-face {
@@ -86,7 +78,36 @@ body {
 	src: url('/fonts/instrument-serif-v5-latin-regular.woff2') format('woff2');
 }
 
+@font-face {
+	font-display: swap;
+	font-family: 'Instrument Serif';
+	font-style: italic;
+	font-weight: 400;
+	src: url('/fonts/instrument-serif-v5-latin-italic.woff2') format('woff2');
+}
+
 :root {
 	--font-serif: 'Instrument Serif';
-	--font-sans: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+	--font-sans:
+		-apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+	--background: oklch(1 0 0);
+	--foreground: #1d1d1f;
+	--surface: #f5f5f7;
+	--surface-foreground: #1d1d1f;
+	--surface-foreground-muted: #6d6d6d;
+	--surface-border: #d5d5d8;
+	--muted: oklch(0.97 0 0);
+	--muted-foreground: oklch(0.556 0 0);
+	--accent: #d94332;
+	--accent-foreground: #fff;
+	--border: #ddd;
+}
+
+.dark {
+	--background: oklch(0.145 0 0);
+	--foreground: oklch(0.985 0 0);
+	--surface: oklch(0.205 0 0);
+	--surface-foreground: oklch(0.985 0 0);
+	--muted: oklch(0.269 0 0);
+	--muted-foreground: oklch(0.708 0 0);
 }

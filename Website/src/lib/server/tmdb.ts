@@ -23,7 +23,9 @@ export async function tmdbGet(
 ): Promise<unknown> {
 	let result: CacheResult<string>;
 	try {
-		result = await cache.getOrCreate(cacheKey, ttlMilliseconds, () => fetchTmdb(path, parameters));
+		result = await cache.getOrCreate(cacheKey, ttlMilliseconds, () =>
+			fetchTmdb(path, parameters)
+		);
 	} catch (error) {
 		log('warn', 'tmdb_failure', {
 			request_id: requestId,
@@ -40,10 +42,17 @@ export async function tmdbGet(
 	return JSON.parse(result.value) as unknown;
 }
 
-async function fetchTmdb(path: string, parameters: URLSearchParams): Promise<string> {
+async function fetchTmdb(
+	path: string,
+	parameters: URLSearchParams
+): Promise<string> {
 	const token = env.TMDB_TOKEN?.trim();
 	if (!token) {
-		throw new ApiError(500, 'internal_error', 'An unexpected server error occurred.');
+		throw new ApiError(
+			500,
+			'internal_error',
+			'An unexpected server error occurred.'
+		);
 	}
 
 	const url = new URL(`${TMDB_BASE_URL}${path}`);
@@ -55,51 +64,87 @@ async function fetchTmdb(path: string, parameters: URLSearchParams): Promise<str
 			signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
 		});
 	} catch {
-		throw new ApiError(503, 'tmdb_unavailable', 'Movie data is temporarily unavailable.');
+		throw new ApiError(
+			503,
+			'tmdb_unavailable',
+			'Movie data is temporarily unavailable.'
+		);
 	}
 
 	const declaredLength = Number(response.headers.get('content-length'));
 	if (Number.isFinite(declaredLength) && declaredLength > MAX_RESPONSE_BYTES) {
-		throw new ApiError(503, 'tmdb_unavailable', 'Movie data is temporarily unavailable.');
+		throw new ApiError(
+			503,
+			'tmdb_unavailable',
+			'Movie data is temporarily unavailable.'
+		);
 	}
 	let body: string;
 	try {
 		body = await readLimitedBody(response);
 	} catch (error) {
-		if (error instanceof ApiError) throw error;
-		throw new ApiError(503, 'tmdb_unavailable', 'Movie data is temporarily unavailable.');
+		if (error instanceof ApiError) {
+			throw error;
+		}
+		throw new ApiError(
+			503,
+			'tmdb_unavailable',
+			'Movie data is temporarily unavailable.'
+		);
 	}
 
-	if (!response.ok) throw upstreamError(response.status, response.headers.get('retry-after'));
+	if (!response.ok) {
+		throw upstreamError(response.status, response.headers.get('retry-after'));
+	}
 	try {
 		JSON.parse(body);
 	} catch {
-		throw new ApiError(503, 'tmdb_unavailable', 'Movie data is temporarily unavailable.');
+		throw new ApiError(
+			503,
+			'tmdb_unavailable',
+			'Movie data is temporarily unavailable.'
+		);
 	}
 	return body;
 }
 
 async function readLimitedBody(response: Response): Promise<string> {
-	if (!response.body) return '';
+	if (!response.body) {
+		return '';
+	}
 	const reader = response.body.getReader();
 	const decoder = new TextDecoder();
 	let size = 0;
 	let body = '';
 	while (true) {
 		const { done, value } = await reader.read();
-		if (done) return body + decoder.decode();
+		if (done) {
+			return body + decoder.decode();
+		}
 		size += value.byteLength;
 		if (size > MAX_RESPONSE_BYTES) {
 			await reader.cancel();
-			throw new ApiError(503, 'tmdb_unavailable', 'Movie data is temporarily unavailable.');
+			throw new ApiError(
+				503,
+				'tmdb_unavailable',
+				'Movie data is temporarily unavailable.'
+			);
 		}
 		body += decoder.decode(value, { stream: true });
 	}
 }
 
-function upstreamError(status: number, retryAfterHeader: string | null): ApiError {
-	if (status === 404)
-		return new ApiError(404, 'not_found', 'The requested movie data was not found.');
+function upstreamError(
+	status: number,
+	retryAfterHeader: string | null
+): ApiError {
+	if (status === 404) {
+		return new ApiError(
+			404,
+			'not_found',
+			'The requested movie data was not found.'
+		);
+	}
 	if (status === 429) {
 		return new ApiError(
 			429,
@@ -109,17 +154,30 @@ function upstreamError(status: number, retryAfterHeader: string | null): ApiErro
 		);
 	}
 	if (status >= 500) {
-		return new ApiError(503, 'tmdb_unavailable', 'Movie data is temporarily unavailable.');
+		return new ApiError(
+			503,
+			'tmdb_unavailable',
+			'Movie data is temporarily unavailable.'
+		);
 	}
 	return new ApiError(502, 'tmdb_error', 'Movie data could not be retrieved.');
 }
 
 function parseRetryAfter(value: string | null): number | undefined {
-	if (!value) return undefined;
-	if (/^\d+$/.test(value)) return Math.min(Number(value), 86_400);
+	if (!value) {
+		return undefined;
+	}
+	if (/^\d+$/.test(value)) {
+		return Math.min(Number(value), 86_400);
+	}
 	const timestamp = Date.parse(value);
-	if (!Number.isFinite(timestamp)) return undefined;
-	return Math.min(Math.max(Math.ceil((timestamp - Date.now()) / 1000), 0), 86_400);
+	if (!Number.isFinite(timestamp)) {
+		return undefined;
+	}
+	return Math.min(
+		Math.max(Math.ceil((timestamp - Date.now()) / 1000), 0),
+		86_400
+	);
 }
 
 export function jsonResponse(value: unknown): Response {

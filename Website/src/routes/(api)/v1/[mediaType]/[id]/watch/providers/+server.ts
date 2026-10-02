@@ -15,17 +15,26 @@ export const GET: RequestHandler = ({ locals, params, url }) =>
 			cacheTtl.details,
 			locals.requestId
 		);
-		if (!region) return jsonResponse(result);
+		if (!region) {
+			return jsonResponse(result);
+		}
 		return jsonResponse(filterRegion(result, region));
 	});
 
 function filterRegion(value: unknown, region: string): unknown {
-	if (!value || typeof value !== 'object') return value;
+	if (!value || typeof value !== 'object') {
+		return value;
+	}
 
 	const response = value as { id?: unknown; results?: unknown };
 	const results = response.results;
-	if (!results || typeof results !== 'object') return { id: response.id, results: {} };
+	if (!results || typeof results !== 'object') {
+		return { id: response.id, results: {} };
+	}
 
 	const match = (results as Record<string, unknown>)[region];
-	return { id: response.id, results: match === undefined ? {} : { [region]: match } };
+	return {
+		id: response.id,
+		results: match === undefined ? {} : { [region]: match }
+	};
 }
