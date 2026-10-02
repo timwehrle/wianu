@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { WeeklyEntry, WeeklySelectionMovie } from '$lib/server/weekly';
+	import type { WeeklyEntry, WeeklySelectionMovie } from '$lib/weekly/types';
 	import { ArrowDownIcon, ArrowUpIcon, XIcon } from '@lucide/svelte';
 
 	let {

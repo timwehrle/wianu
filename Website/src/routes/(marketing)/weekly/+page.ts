@@ -1,19 +1,15 @@
-import { resolve } from '$app/paths';
 import { error } from '@sveltejs/kit';
-import type {
-	WeeklyArchive,
-	WeeklyMovie,
-	WeeklySelectionMovie
-} from '$lib/server/weekly';
+import { fetchWeeklyArchive, fetchWeeklyMovies } from '$lib/weekly/load';
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ fetch, url }) => {
-	const response = await fetch(resolve('/v1/weekly'));
-	if (!response.ok) {
+	let archive;
+	try {
+		archive = await fetchWeeklyArchive(fetch);
+	} catch {
 		error(503, 'Weekly selections are unavailable.');
 	}
 
-	const archive = (await response.json()) as WeeklyArchive;
 	const requestedWeek = url.searchParams.get('week');
 	const selection = requestedWeek
 		? archive.weeks.find((entry) => entry.week === requestedWeek)
@@ -23,18 +19,12 @@ export const load: PageLoad = async ({ fetch, url }) => {
 		error(404, 'That week was not found.');
 	}
 
-	const movies = await Promise.all(
-		(selection?.movieIds ?? []).map(async (id) => {
-			const details = await fetch(resolve(`/v1/movie/${id}`));
-			if (!details.ok) {
-				error(503, 'Movie details are unavailable.');
-			}
-			return {
-				...((await details.json()) as WeeklyMovie),
-				reason: selection?.reasons[id] ?? ''
-			} satisfies WeeklySelectionMovie;
-		})
-	);
+	let movies;
+	try {
+		movies = await fetchWeeklyMovies(fetch, selection);
+	} catch {
+		error(503, 'Movie details are unavailable.');
+	}
 
 	return { archive: archive.weeks, selection: selection ?? null, movies };
 };

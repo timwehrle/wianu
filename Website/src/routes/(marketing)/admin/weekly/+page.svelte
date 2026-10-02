@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import TextLink from '$lib/components/text-link.svelte';
-	import type { WeeklyMovie, WeeklySelectionMovie } from '$lib/server/weekly';
+	import type { WeeklyMovie, WeeklySelectionMovie } from '$lib/weekly/types';
 	import { untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 	import FilmSearch from './_components/film-search.svelte';

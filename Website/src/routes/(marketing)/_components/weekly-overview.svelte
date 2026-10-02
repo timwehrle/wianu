@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { WeeklySelectionMovie } from '$lib/server/weekly';
+	import type { WeeklySelectionMovie } from '$lib/weekly/types';
 	import TextLink from '$lib/components/text-link.svelte';
 	import WeeklyList from './weekly-list.svelte';
 

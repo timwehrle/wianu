@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { WeeklyEntry } from '$lib/server/weekly';
+	import type { WeeklyEntry } from '$lib/weekly/types';
 	import { issueNumber } from '../utils';
 
 	let {

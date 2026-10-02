@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { WeeklyMovie } from '$lib/server/weekly';
+	import type { WeeklyMovie } from '$lib/weekly/types';
 	import { SearchIcon } from '@lucide/svelte';
 
 	let {

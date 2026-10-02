@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import TextLink from '$lib/components/text-link.svelte';
-	import type { WeeklySelectionMovie } from '$lib/server/weekly';
+	import type { WeeklySelectionMovie } from '$lib/weekly/types';
 	import { ArrowUpRightIcon } from '@lucide/svelte';
 
 	let { movies }: { movies: WeeklySelectionMovie[] } = $props();

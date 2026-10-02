@@ -4,28 +4,11 @@ import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { ApiError } from './api';
 import { cacheTtl, tmdbGet } from './tmdb';
-
-export interface WeeklyMovie {
-	id: number;
-	title: string;
-	releaseDate: string;
-	overview: string;
-	posterPath: string | null;
-	backdropPath: string | null;
-}
-
-export type WeeklySelectionMovie = WeeklyMovie & { reason: string };
-
-export interface WeeklyEntry {
-	week: string;
-	movieIds: number[];
-	reasons: Record<string, string>;
-	updatedAt: string;
-}
-
-export interface WeeklyArchive {
-	weeks: WeeklyEntry[];
-}
+import type {
+	WeeklyArchive,
+	WeeklyEntry,
+	WeeklyMovie
+} from '$lib/weekly/types';
 
 let pendingWrite: Promise<void> = Promise.resolve();
 

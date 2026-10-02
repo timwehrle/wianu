@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { WeeklySelectionMovie } from '$lib/server/weekly';
+	import type { WeeklySelectionMovie } from '$lib/weekly/types';
 	import { year } from '../utils';
 
 	let { movie, index }: { movie: WeeklySelectionMovie; index: number } =

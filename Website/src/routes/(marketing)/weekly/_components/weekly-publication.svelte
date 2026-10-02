@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { WeeklyEntry, WeeklySelectionMovie } from '$lib/server/weekly';
+	import type { WeeklyEntry, WeeklySelectionMovie } from '$lib/weekly/types';
 	import WeeklyArchive from './weekly-archive.svelte';
 	import WeeklyCover from './weekly-cover.svelte';
 	import WeeklyFilm from './weekly-film.svelte';
