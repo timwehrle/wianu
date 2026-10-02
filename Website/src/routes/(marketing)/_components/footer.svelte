@@ -15,6 +15,8 @@
 				<p>All your streaming. One home.</p>
 			</div>
 			<nav aria-label="Footer navigation">
+				<a href={resolve('the-app')}>App</a>
+				<a href={resolve('about')}>About</a>
 				<a href={resolve('weekly')}>Weekly</a>
 				<a
 					href={resolve('download')}
@@ -28,7 +30,7 @@
 	</div>
 </footer>
 
-<style>
+<style lang="scss">
 	.footer {
 		padding: 3rem 1rem 1.5rem;
 		background: var(--background);
@@ -36,7 +38,7 @@
 	}
 
 	.footer-content {
-		max-width: 1100px;
+		max-width: var(--page-width);
 		margin: 0 auto;
 	}
 
@@ -45,6 +47,11 @@
 		flex-direction: column;
 		gap: 2rem;
 		padding-bottom: 3rem;
+
+		@include at-least(medium) {
+			flex-direction: row;
+			justify-content: space-between;
+		}
 	}
 
 	.footer-brand {
@@ -74,12 +81,5 @@
 		padding-top: 1.25rem;
 		border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
 		font-size: 0.85rem;
-	}
-
-	@media (min-width: 700px) {
-		.footer-main {
-			flex-direction: row;
-			justify-content: space-between;
-		}
 	}
 </style>

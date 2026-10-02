@@ -67,11 +67,11 @@
 		border-top: 1px solid var(--weekly-border);
 		scroll-margin-top: 5rem;
 
-		@media (min-width: 421px) {
+		@include at-least(small) {
 			column-gap: clamp(0.5rem, 2vw, 2rem);
 		}
 
-		@media (min-width: 701px) {
+		@include at-least(medium) {
 			grid-template-columns: repeat(12, minmax(0, 1fr));
 			padding: clamp(4rem, 8vw, 9rem) 0;
 		}
@@ -86,14 +86,14 @@
 				grid-column: 2 / 7;
 				grid-row: 1;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 2 / 13;
 				}
 
 				&.poster-fallback {
 					grid-column: 2 / 6;
 
-					@media (min-width: 701px) {
+					@include at-least(medium) {
 						grid-column: 3 / 9;
 					}
 				}
@@ -104,14 +104,14 @@
 				grid-row: 2;
 				display: block;
 
-				@media (min-width: 421px) {
+				@include at-least(small) {
 					display: flex;
 					justify-content: space-between;
 					align-items: baseline;
 					gap: 2rem;
 				}
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 2 / 12;
 				}
 
@@ -119,7 +119,7 @@
 					margin-top: 0.5rem;
 					text-align: right;
 
-					@media (min-width: 421px) {
+					@include at-least(small) {
 						margin-top: 0;
 						text-align: left;
 					}
@@ -130,7 +130,7 @@
 				grid-column: 2 / 7;
 				grid-row: 3;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 6 / 12;
 				}
 			}
@@ -141,7 +141,7 @@
 				left: auto;
 				right: 0;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					top: 2rem;
 				}
 			}
@@ -150,7 +150,7 @@
 				grid-column: 1 / 5;
 				grid-row: 2;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 1 / 6;
 					grid-row: 1 / 4;
 					margin-top: 2rem;
@@ -167,7 +167,7 @@
 				grid-column: 2 / 7;
 				grid-row: 3;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 7 / 13;
 					grid-row: 2;
 				}
@@ -177,7 +177,7 @@
 				grid-column: 2 / 7;
 				grid-row: 4;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 7 / 12;
 					grid-row: 3;
 				}
@@ -187,22 +187,21 @@
 		&-3 {
 			.film-number {
 				top: 0.25em;
-				font-size: 48vw;
 
-				@media (min-width: 701px) {
-					font-size: clamp(12rem, 32vw, 36rem);
+				@include at-least(medium) {
+					font-size: clamp(12rem, 32vw, 25rem);
 				}
 			}
 
 			.film-art {
 				grid-column: 3 / 7;
 				grid-row: 1;
-				padding-top: 5rem;
+				padding-top: 26vw;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 3 / 9;
 					grid-row: 1 / 4;
-					padding-top: 4rem;
+					padding-top: min(19vw, 10rem);
 				}
 
 				img {
@@ -214,7 +213,7 @@
 				grid-column: 1 / 7;
 				grid-row: 2;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 9 / 13;
 				}
 			}
@@ -223,7 +222,7 @@
 				grid-column: 2 / 7;
 				grid-row: 3;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 9 / 13;
 				}
 			}
@@ -239,7 +238,7 @@
 				grid-row: 1;
 				text-align: right;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 5 / 13;
 				}
 			}
@@ -248,7 +247,7 @@
 				grid-column: 1 / 6;
 				grid-row: 2;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 1 / 10;
 				}
 
@@ -261,7 +260,7 @@
 				&.poster-fallback {
 					grid-column: 2 / 6;
 
-					@media (min-width: 701px) {
+					@include at-least(medium) {
 						grid-column: 4 / 9;
 					}
 				}
@@ -271,7 +270,7 @@
 				grid-column: 2 / 7;
 				grid-row: 3;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 8 / 13;
 				}
 			}
@@ -288,7 +287,7 @@
 				grid-column: 1 / 5;
 				grid-row: 1;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 2 / 7;
 				}
 			}
@@ -297,7 +296,7 @@
 				grid-column: 1 / 6;
 				grid-row: 2;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 2 / 7;
 				}
 
@@ -310,7 +309,7 @@
 				grid-column: 2 / 7;
 				grid-row: 3;
 
-				@media (min-width: 701px) {
+				@include at-least(medium) {
 					grid-column: 8 / 13;
 					grid-row: 2;
 				}
@@ -330,7 +329,7 @@
 		line-height: 0.75;
 		pointer-events: none;
 
-		@media (min-width: 701px) {
+		@include at-least(medium) {
 			top: clamp(3rem, 6vw, 7rem);
 			font-size: clamp(9rem, 22vw, 25rem);
 		}
@@ -372,11 +371,11 @@
 			letter-spacing: -1px;
 			overflow-wrap: anywhere;
 
-			@media (min-width: 421px) {
+			@include at-least(small) {
 				font-size: clamp(3.5rem, 11vw, 5.5rem);
 			}
 
-			@media (min-width: 701px) {
+			@include at-least(medium) {
 				font-size: clamp(3.5rem, 7.5vw, 8rem);
 			}
 		}

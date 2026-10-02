@@ -35,7 +35,7 @@
 
 <style lang="scss">
 	.archive {
-		max-width: 1500px;
+		max-width: var(--page-width);
 		margin-inline: auto;
 		padding-top: clamp(5rem, 10vw, 10rem);
 		border-top: 1px solid var(--weekly-border);

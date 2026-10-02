@@ -5,12 +5,14 @@
 
 <section class="stage">
 	<div class="stage-copy">
-		<h2 class="stage-title">All your streaming. <br />One home.</h2>
+		<h1 class="stage-title">All your streaming. <br /><em>One home.</em></h1>
 		<p>
 			Your streaming services, watchlist and a curated selection of films.
 			Together in one native Mac app.
 		</p>
-		<TextLink href={resolve('download')}>Download for macOS</TextLink>
+		<div>
+			<TextLink href={resolve('download')}>Download for macOS</TextLink>
+		</div>
 	</div>
 	<div class="stage-img-wrapper">
 		<enhanced:img
@@ -24,28 +26,52 @@
 <style lang="scss">
 	.stage {
 		overflow: hidden;
-		padding-block: 7rem 3rem;
+		padding-block: 7rem clamp(4rem, 8vw, 8rem);
 	}
 
 	.stage-copy {
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
-		padding: 0 1rem 1.5rem;
+		gap: 1.5rem;
+		max-width: var(--page-width);
+		margin-inline: auto;
+		padding: 0 var(--page-gutter) clamp(3rem, 6vw, 6rem);
+
+		p {
+			max-width: 35rem;
+		}
 	}
 
 	.stage-title {
-		font-size: clamp(2.5rem, 1.5rem + 4vw, 5rem);
-		font-weight: 500;
+		margin-top: clamp(2rem, 5vw, 5rem);
+		font-family: var(--font-serif);
+		font-size: clamp(3.75rem, 8vw, 8.5rem);
+		font-weight: 400;
+		line-height: 1;
+
+		em {
+			color: var(--accent);
+			font-weight: 400;
+		}
 	}
 
 	.stage-img-wrapper {
-		padding-inline: 1rem;
+		max-width: var(--page-width);
+		margin-inline: auto;
+		padding-inline: var(--page-gutter);
+		overflow: hidden;
 	}
 
 	.stage-img {
 		position: relative;
-		min-width: 700px;
+		width: 100%;
+		min-width: 37.5rem;
 		height: auto;
+
+		@include at-least(medium) {
+			min-width: 0;
+			width: calc(100% - clamp(3rem, 7vw, 7rem));
+			margin-left: clamp(3rem, 7vw, 7rem);
+		}
 	}
 </style>

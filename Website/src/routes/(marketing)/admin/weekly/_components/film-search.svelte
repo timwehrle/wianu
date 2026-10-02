@@ -66,16 +66,23 @@
 	class="film-search"
 	aria-labelledby="film-search-title"
 >
-	<h2 id="film-search-title">Find a film</h2>
+	<h2
+		class="admin-heading"
+		id="film-search-title"
+	>
+		Find a film
+	</h2>
 	<form onsubmit={search}>
 		<label for="movie-search">Movie title</label>
 		<div class="search-fields">
 			<input
+				class="admin-field"
 				id="movie-search"
 				bind:value={query}
 				placeholder="Search by title"
 			/>
 			<button
+				class="admin-action"
 				type="submit"
 				disabled={searching}
 			>
@@ -136,9 +143,6 @@
 	.film-search {
 		h2 {
 			margin-bottom: 2rem;
-			font-family: var(--font-serif);
-			font-size: clamp(2.5rem, 6vw, 4rem);
-			font-weight: 400;
 		}
 
 		form {
@@ -159,12 +163,6 @@
 		input {
 			flex: 1;
 			min-width: 0;
-			padding: 0.75rem;
-			border: 1px solid var(--border);
-			border-radius: 0;
-			background: var(--background);
-			color: var(--foreground);
-			font: inherit;
 		}
 
 		button {
@@ -172,16 +170,6 @@
 			align-items: center;
 			gap: 0.5rem;
 			padding: 0.75rem 1rem;
-			border: 0;
-			background: var(--foreground);
-			color: var(--background);
-			font: inherit;
-			cursor: pointer;
-
-			&:disabled {
-				opacity: 0.5;
-				cursor: not-allowed;
-			}
 		}
 	}
 

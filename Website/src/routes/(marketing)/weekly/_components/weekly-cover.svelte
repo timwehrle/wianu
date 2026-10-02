@@ -8,12 +8,12 @@
 <header class="issue-cover">
 	<div class="issue-topline">
 		<span>Wianu</span>
-		<span
-			>{selection ? selection.week.slice(0, 4) : new Date().getFullYear()}</span
-		>
+		<span>
+			{selection ? selection.week.slice(0, 4) : new Date().getFullYear()}
+		</span>
 	</div>
 	<div class="issue-titleline">
-		<h2 id="weekly-title"><em>Weekly</em></h2>
+		<h1 id="weekly-title"><em>Weekly</em></h1>
 		<span>{selection ? issueNumber(selection.week) : '—'}</span>
 	</div>
 	<p class="issue-deck">
@@ -27,13 +27,13 @@
 
 <style lang="scss">
 	.issue-cover {
-		max-width: 1500px;
+		max-width: var(--page-width);
 		margin-inline: auto;
-		min-height: 82svh;
+		min-height: 80svh;
 		display: flex;
 		flex-direction: column;
 
-		@media (min-width: 701px) {
+		@include at-least(medium) {
 			min-height: min(880px, 90svh);
 		}
 	}
@@ -59,21 +59,21 @@
 		border-bottom: 1px solid var(--weekly-border);
 		font-family: var(--font-serif);
 
-		@media (min-width: 701px) {
+		@include at-least(medium) {
 			margin-top: clamp(2rem, 6vw, 6rem);
 		}
 
-		h2 {
+		h1 {
 			margin-left: -8px;
 			font-size: 22vw;
 			font-weight: 400;
 			line-height: 0.75;
 
-			@media (min-width: 421px) {
+			@include at-least(small) {
 				font-size: clamp(4.25rem, 22vw, 11rem);
 			}
 
-			@media (min-width: 701px) {
+			@include at-least(medium) {
 				font-size: clamp(6rem, 23vw, 25rem);
 			}
 		}
@@ -82,11 +82,11 @@
 			font-size: 1.75rem;
 			line-height: 1;
 
-			@media (min-width: 421px) {
+			@include at-least(small) {
 				font-size: clamp(1.75rem, 7vw, 3rem);
 			}
 
-			@media (min-width: 701px) {
+			@include at-least(medium) {
 				font-size: clamp(2.5rem, 6vw, 6rem);
 			}
 		}
@@ -98,7 +98,7 @@
 		font-size: clamp(2rem, 7vw, 3.5rem);
 		line-height: 1;
 
-		@media (min-width: 701px) {
+		@include at-least(medium) {
 			font-size: clamp(2rem, 4vw, 4.5rem);
 		}
 	}

@@ -55,16 +55,16 @@
 		--weekly-overview: #56544e;
 		background: var(--weekly-background);
 		color: var(--weekly-foreground);
-		padding: 7rem clamp(0.75rem, 2vw, 2rem) 6rem;
+		padding: 7rem var(--page-gutter) 6rem;
 
-		@media (min-width: 701px) {
+		@include at-least(medium) {
 			padding-top: 8rem;
 		}
 	}
 
 	.empty-state,
 	.films {
-		max-width: 1500px;
+		max-width: var(--page-width);
 		margin-inline: auto;
 	}
 

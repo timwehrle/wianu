@@ -34,11 +34,18 @@
 			closeMenu();
 		}
 	}
+
+	function handleResize() {
+		if (isOpen && getComputedStyle(menuTrigger).display === 'none') {
+			closeMenu();
+		}
+	}
 </script>
 
 <svelte:window
 	onkeydown={handleKeydown}
 	onpointerdown={handlePointerdown}
+	onresize={handleResize}
 />
 
 {#if isOpen}
@@ -53,18 +60,38 @@
 	<div class="nav-shell">
 		<div class="nav-bar">
 			<div class="nav-main">
-				<h1 class="nav-logo">
+				<div class="nav-logo">
 					<a
 						href={resolve('')}
 						onclick={closeMenu}>Wianu</a
 					>
-				</h1>
+				</div>
 				<a
 					class="nav-weekly-link"
 					href={resolve('weekly')}
 					onclick={closeMenu}>Weekly</a
 				>
 			</div>
+			<nav
+				class="nav-desktop"
+				aria-label="Site navigation"
+			>
+				<a href={resolve('the-app')}>The App</a>
+				<a href={resolve('weekly')}>Weekly</a>
+				<a href={resolve('about')}>About</a>
+				<a
+					class="nav-desktop-download"
+					href={resolve('download')}
+					data-sveltekit-reload
+				>
+					Download
+					<ArrowDownIcon
+						size={18}
+						strokeWidth={1.5}
+						aria-hidden="true"
+					/>
+				</a>
+			</nav>
 			<button
 				bind:this={menuTrigger}
 				class="nav-menu-toggle"
@@ -89,7 +116,7 @@
 					<li>
 						<a
 							class="nav-menu-link"
-							href="#"
+							href={resolve('the-app')}
 							onclick={closeMenu}
 						>
 							<span class="nav-menu-copy">
@@ -109,7 +136,7 @@
 					<li>
 						<a
 							class="nav-menu-link"
-							href="#"
+							href={resolve('about')}
 							onclick={closeMenu}
 						>
 							<span class="nav-menu-copy">
@@ -173,8 +200,13 @@
 	}
 
 	.nav-shell {
-		margin: 1rem;
+		width: calc(100% - 2rem);
+		margin: 1rem auto;
 		color: var(--foreground);
+
+		@include at-least(medium) {
+			max-width: var(--page-width);
+		}
 	}
 
 	.nav-bar {
@@ -278,6 +310,7 @@
 		font-family: var(--font-serif);
 		font-size: 2rem;
 		font-weight: 400;
+		line-height: 1.1;
 
 		a {
 			text-decoration: none;
@@ -288,6 +321,41 @@
 	.nav-weekly-link {
 		text-decoration: none;
 		color: inherit;
+
+		@include at-least(large) {
+			display: none;
+		}
+	}
+
+	.nav-desktop {
+		display: none;
+
+		@include at-least(large) {
+			display: flex;
+			gap: 1px;
+		}
+
+		a {
+			display: inline-flex;
+			align-items: center;
+			padding-inline: 1rem;
+			border-radius: 3px;
+			background: rgb(248 248 248 / 80%);
+			backdrop-filter: blur(20px) saturate(180%);
+			-webkit-backdrop-filter: blur(20px) saturate(180%);
+			color: inherit;
+			text-decoration: none;
+			white-space: nowrap;
+
+			&:hover {
+				text-decoration: underline;
+				text-underline-offset: 0.25em;
+			}
+		}
+
+		.nav-desktop-download {
+			gap: 0.5rem;
+		}
 	}
 
 	.nav-menu-toggle {
@@ -303,6 +371,17 @@
 		align-items: center;
 		justify-content: center;
 		cursor: pointer;
+
+		@include at-least(large) {
+			display: none;
+		}
+	}
+
+	@include at-least(large) {
+		.nav-backdrop,
+		.nav-menu {
+			display: none;
+		}
 	}
 
 	.nav-shell:has(.nav-menu) {

@@ -30,6 +30,8 @@
 	h3,
 	h4 {
 		text-wrap: balance;
+		font-family: var(--font-serif);
+		font-weight: 400;
 	}
 
 	a:not([class]) {
@@ -70,6 +72,42 @@ body {
 	color: var(--foreground);
 }
 
+@layer components {
+	.page-frame {
+		max-width: var(--page-width);
+		margin-inline: auto;
+		padding: 7rem var(--page-gutter) 4rem;
+	}
+
+	.admin-heading {
+		font-family: var(--font-serif);
+		font-size: clamp(2.5rem, 6vw, 4rem);
+		font-weight: 400;
+	}
+
+	.admin-field {
+		padding: 0.75rem;
+		border: 1px solid var(--border);
+		border-radius: 0;
+		background: var(--background);
+		color: var(--foreground);
+		font: inherit;
+	}
+
+	.admin-action {
+		border: 0;
+		background: var(--foreground);
+		color: var(--background);
+		font: inherit;
+		cursor: pointer;
+
+		&:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+	}
+}
+
 @font-face {
 	font-display: swap;
 	font-family: 'Instrument Serif';
@@ -87,6 +125,8 @@ body {
 }
 
 :root {
+	--page-width: 90rem;
+	--page-gutter: clamp(0.75rem, 2vw, 2rem);
 	--font-serif: 'Instrument Serif';
 	--font-sans:
 		-apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;

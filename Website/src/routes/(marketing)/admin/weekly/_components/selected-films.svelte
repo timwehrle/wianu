@@ -25,7 +25,12 @@
 >
 	<div class="selection-heading">
 		<div>
-			<h2 id="selected-films-title">The five films</h2>
+			<h2
+				class="admin-heading"
+				id="selected-films-title"
+			>
+				The five films
+			</h2>
 			{#if selection}<p>Latest issue: {selection.week}</p>{/if}
 		</div>
 		<span>{selected.length} of 5</span>
@@ -95,6 +100,7 @@
 							>Why did you pick {movie.title}?</label
 						>
 						<textarea
+							class="admin-field"
 							id={`reason-${movie.id}`}
 							name="reason"
 							value={movie.reason}
@@ -111,7 +117,7 @@
 				Search for films to start this week's selection.
 			</p>{/if}
 		<button
-			class="publish"
+			class="publish admin-action"
 			type="submit"
 			disabled={selected.length !== 5 ||
 				selected.some((movie) => !movie.reason.trim())}
@@ -135,12 +141,6 @@
 		justify-content: space-between;
 		gap: 1rem;
 		margin-bottom: 2rem;
-
-		h2 {
-			font-family: var(--font-serif);
-			font-size: clamp(2.5rem, 6vw, 4rem);
-			font-weight: 400;
-		}
 
 		p,
 		span {
@@ -223,12 +223,6 @@
 		textarea {
 			width: 100%;
 			min-width: 0;
-			padding: 0.75rem;
-			border: 1px solid var(--border);
-			border-radius: 0;
-			background: var(--background);
-			color: var(--foreground);
-			font: inherit;
 			resize: vertical;
 		}
 	}
@@ -236,16 +230,8 @@
 	.publish {
 		margin-top: 1.5rem;
 		padding: 0.75rem 1.5rem;
-		border: 0;
 		background: var(--accent);
 		color: var(--accent-foreground);
-		font: inherit;
-		cursor: pointer;
-
-		&:disabled {
-			opacity: 0.5;
-			cursor: not-allowed;
-		}
 	}
 
 	.empty,

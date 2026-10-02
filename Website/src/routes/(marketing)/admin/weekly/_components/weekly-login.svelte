@@ -3,20 +3,24 @@
 </script>
 
 <div class="login">
-	<h2>Sign in</h2>
+	<h2 class="admin-heading">Sign in</h2>
 	<form
 		method="POST"
 		action="?/login"
 	>
 		<label for="password">Password</label>
 		<input
+			class="admin-field"
 			id="password"
 			type="password"
 			name="password"
 			autocomplete="current-password"
 			required
 		/>
-		<button type="submit">Sign in</button>
+		<button
+			class="admin-action"
+			type="submit">Sign in</button
+		>
 	</form>
 	{#if message}<p
 			class="message"
@@ -34,9 +38,6 @@
 
 		h2 {
 			margin-bottom: 2rem;
-			font-family: var(--font-serif);
-			font-size: clamp(2.5rem, 6vw, 4rem);
-			font-weight: 400;
 		}
 
 		form {
@@ -50,23 +51,12 @@
 
 		input {
 			width: 100%;
-			padding: 0.75rem;
-			border: 1px solid var(--border);
-			border-radius: 0;
-			background: var(--background);
-			color: var(--foreground);
-			font: inherit;
 		}
 
 		button {
 			justify-self: start;
 			margin-top: 0.5rem;
 			padding: 0.75rem 1.5rem;
-			border: 0;
-			background: var(--foreground);
-			color: var(--background);
-			font: inherit;
-			cursor: pointer;
 		}
 	}
 

@@ -13,22 +13,27 @@
 	{@const featured = movies[0]}
 	<ol class="weekly-list">
 		<li class="weekly-list-featured-film">
-			<div class="weekly-list-featured-poster">
-				{#if featured.posterPath}
-					<img
-						src={`https://image.tmdb.org/t/p/w500${featured.posterPath}`}
-						alt={`Poster for ${featured.title}`}
-						fetchpriority="high"
-					/>
-				{:else}
-					<div
-						class="weekly-list-poster-placeholder"
-						aria-hidden="true"
-					></div>
-				{/if}
+			<div class="weekly-list-featured-art">
+				<span
+					class="weekly-list-featured-number"
+					aria-hidden="true">01</span
+				>
+				<div class="weekly-list-featured-poster">
+					{#if featured.posterPath}
+						<img
+							src={`https://image.tmdb.org/t/p/w500${featured.posterPath}`}
+							alt={`Poster for ${featured.title}`}
+							fetchpriority="high"
+						/>
+					{:else}
+						<div
+							class="weekly-list-poster-placeholder"
+							aria-hidden="true"
+						></div>
+					{/if}
+				</div>
 			</div>
 			<div class="weekly-list-featured-copy">
-				<p class="weekly-list-eyebrow">01 / Featured film</p>
 				<h3>{featured.title}</h3>
 				{#if featured.releaseDate}
 					<p class="weekly-list-year">{year(featured.releaseDate)}</p>
@@ -50,7 +55,7 @@
 				<div class="weekly-list-row-poster">
 					{#if movie.posterPath}
 						<img
-							src={`https://image.tmdb.org/t/p/w154${movie.posterPath}`}
+							src={`https://image.tmdb.org/t/p/w500${movie.posterPath}`}
 							alt={`Poster for ${movie.title}`}
 							loading="lazy"
 						/>
@@ -87,14 +92,35 @@
 	.weekly-list-featured-film {
 		display: grid;
 		grid-template-columns: 1fr;
-		gap: 2rem;
+		gap: clamp(2rem, 4vw, 4rem);
 		align-items: center;
-		border-radius: 3px;
+		padding-top: clamp(2rem, 5vw, 5rem);
+		border-top: 1px solid var(--surface-border);
+
+		@include at-least(large) {
+			grid-template-columns: 22rem minmax(0, 1fr);
+			gap: clamp(3rem, 6vw, 6rem);
+		}
+	}
+
+	.weekly-list-featured-art {
+		display: flex;
+		align-items: start;
+		gap: 1rem;
+	}
+
+	.weekly-list-featured-number {
+		color: var(--accent);
+		font-family: var(--font-serif);
+		font-size: clamp(4rem, 7vw, 6rem);
+		line-height: 0.85;
 	}
 
 	.weekly-list-featured-poster {
 		width: 100%;
 		max-width: 200px;
+		min-width: 0;
+		flex: 1;
 	}
 
 	.weekly-list-featured-poster img,
@@ -114,9 +140,10 @@
 
 	.weekly-list-featured-copy h3 {
 		font-family: var(--font-serif);
-		font-size: 3.25rem;
+		font-size: clamp(3rem, 5vw, 5rem);
 		font-weight: 400;
-		margin: 0.5rem 0;
+		margin-bottom: 0.5rem;
+		overflow-wrap: anywhere;
 	}
 
 	.weekly-list-year {
@@ -125,8 +152,11 @@
 	}
 
 	.weekly-list-reason {
-		max-width: 55ch;
-		margin: 1.25rem 0;
+		max-width: 36ch;
+		margin: 2rem 0;
+		font-family: var(--font-serif);
+		font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+		line-height: 1.25;
 		display: -webkit-box;
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 4;
@@ -136,32 +166,51 @@
 
 	.weekly-list-film-row {
 		display: grid;
-		grid-template-columns: 2rem 70px minmax(0, 1fr) auto;
-		gap: 0.75rem;
+		grid-template-columns: 3rem 4rem minmax(0, 1fr) 2.75rem;
+		gap: 0.5rem;
 		align-items: center;
-		padding: 1.5rem 0;
-		border-bottom: 1px solid var(--surface-border);
+		padding: clamp(1.5rem, 3vw, 3rem) 0;
+		border-top: 1px solid var(--surface-border);
 
-		&:last-child {
-			border-bottom: 0;
+		@include at-least(small) {
+			grid-template-columns: 4rem 5.5rem minmax(0, 1fr) 2.75rem;
+			gap: 0.75rem;
+		}
+
+		@include at-least(medium) {
+			grid-template-columns: 6.5rem 7rem minmax(0, 1fr) 2.75rem;
 		}
 	}
 
 	.weekly-list-featured-film + .weekly-list-film-row {
-		margin-top: 3rem;
-		border-top: 1px solid var(--surface-border);
+		margin-top: clamp(4rem, 8vw, 8rem);
 	}
 
 	.weekly-list-number {
+		color: color-mix(in srgb, var(--foreground) 22%, transparent);
 		font-family: var(--font-serif);
-		font-size: 1.75rem;
-		line-height: 1;
+		font-size: clamp(2.75rem, 6vw, 6rem);
+		line-height: 0.85;
 		align-self: start;
 	}
 
 	.weekly-list-row-poster {
-		width: 70px;
+		width: 4rem;
 		aspect-ratio: 2 / 3;
+
+		@include at-least(small) {
+			width: 5.5rem;
+		}
+
+		@include at-least(medium) {
+			width: 7rem;
+		}
+
+		@include at-least(large) {
+			position: relative;
+			z-index: 1;
+			transform: translateX(-1.5rem);
+		}
 	}
 
 	.weekly-list-row-copy {
@@ -170,15 +219,19 @@
 
 	.weekly-list-row-copy h3 {
 		font-family: var(--font-serif);
-		font-size: 1.75rem;
+		font-size: clamp(1.75rem, 4.5vw, 2.5rem);
 		font-weight: 400;
 		line-height: 1;
 		margin-bottom: 0.25rem;
+		overflow-wrap: anywhere;
 	}
 
 	.weekly-list-row-link {
+		display: grid;
+		place-items: center;
+		width: 2.75rem;
+		height: 2.75rem;
 		text-decoration: none;
-		align-self: start;
-		color: inherit;
+		color: var(--accent);
 	}
 </style>

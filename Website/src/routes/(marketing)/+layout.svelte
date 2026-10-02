@@ -1,5 +1,5 @@
 <script lang="ts">
-	import '../../styles/index.css';
+	import '../../styles/index.scss';
 	import SiteLayout from './_components/site-layout.svelte';
 
 	let { children } = $props();

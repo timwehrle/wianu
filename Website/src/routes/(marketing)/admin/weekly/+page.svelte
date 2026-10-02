@@ -126,12 +126,12 @@
 
 <style lang="scss">
 	.weekly-admin {
-		max-width: 1440px;
+		max-width: var(--page-width);
 		margin-inline: auto;
 		padding: 7rem 1rem 5rem;
 		color: var(--foreground);
 
-		@media (min-width: 850px) {
+		@include at-least(large) {
 			padding: 8rem 2rem 6rem;
 		}
 	}
@@ -167,7 +167,7 @@
 		gap: 3rem;
 		border-top: 1px solid var(--border);
 
-		@media (min-width: 850px) {
+		@include at-least(large) {
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 			gap: 0;
 		}
@@ -182,7 +182,7 @@
 	.selection-column {
 		border-top: 1px solid var(--border);
 
-		@media (min-width: 850px) {
+		@include at-least(large) {
 			padding-left: clamp(2rem, 5vw, 5rem);
 			border-top: 0;
 			border-left: 1px solid var(--border);
@@ -190,7 +190,7 @@
 	}
 
 	.search-column {
-		@media (min-width: 850px) {
+		@include at-least(large) {
 			padding-right: clamp(2rem, 5vw, 5rem);
 		}
 	}

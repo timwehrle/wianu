@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-	<title>Wianu Weekly — Five films worth your time</title>
+	<title>Wianu Weekly - Five films worth your time</title>
 	<meta
 		name="description"
 		content="Five films picked for Wianu Weekly."
