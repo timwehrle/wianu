@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import TextLink from '$lib/components/text-link.svelte';
-	import type { WeeklySelectionMovie } from '$lib/weekly/types';
+	import TextLink from '#lib/components/text-link.svelte';
+	import type { WeeklySelectionMovie } from '#lib/weekly/types.js';
 	import { ArrowUpRightIcon } from '@lucide/svelte';
 
 	let { movies }: { movies: WeeklySelectionMovie[] } = $props();
@@ -36,9 +36,10 @@
 				{#if featured.reason}
 					<p class="weekly-list-reason">{featured.reason}</p>
 				{/if}
-				<TextLink href={resolve(`/weekly#movie-${featured.id}`)}>
-					About the film
-				</TextLink>
+
+				<TextLink href={resolve(`weekly#movie-${featured.id}`)}
+					>About the film</TextLink
+				>
 			</div>
 		</li>
 		{#each movies.slice(1) as movie, index (movie.id)}
@@ -68,7 +69,7 @@
 				</div>
 				<a
 					class="weekly-list-row-link"
-					href={resolve(`/weekly#movie-${movie.id}`)}
+					href={resolve(`weekly#movie-${movie.id}`)}
 					aria-label={`Read more about ${movie.title}`}
 				>
 					<ArrowUpRightIcon strokeWidth={1} />

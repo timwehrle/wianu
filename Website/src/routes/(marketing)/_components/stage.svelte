@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import WianuAppImage from '$lib/assets/wianu-app.png?enhanced';
-	import TextLink from '$lib/components/text-link.svelte';
+	import TextLink from '#lib/components/text-link.svelte';
 </script>
 
 <section class="stage">
@@ -11,14 +10,14 @@
 			Your streaming services, watchlist and a curated selection of films.
 			Together in one native Mac app.
 		</p>
-		<TextLink href={resolve('/download')}>Download for macOS</TextLink>
+		<TextLink href={resolve('download')}>Download for macOS</TextLink>
 	</div>
 	<div class="stage-img-wrapper">
 		<enhanced:img
 			class="stage-img"
-			src={WianuAppImage}
+			src="#lib/assets/wianu-app.png"
 			alt="A screenshot of the Wianu app"
-		/>
+		></enhanced:img>
 	</div>
 </section>
 

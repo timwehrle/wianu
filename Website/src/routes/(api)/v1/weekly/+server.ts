@@ -1,7 +1,7 @@
-import { apiHandler, ApiError } from '$lib/server/api';
-import { isAdmin } from '$lib/server/admin-auth';
-import { readWeekly, publishWeekly } from '$lib/server/weekly';
-import { jsonResponse } from '$lib/server/tmdb';
+import { apiHandler, ApiError } from '#lib/server/api.js';
+import { isAdmin } from '#lib/server/admin-auth.js';
+import { readWeekly, publishWeekly } from '#lib/server/weekly.js';
+import { jsonResponse } from '#lib/server/tmdb.js';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = () =>

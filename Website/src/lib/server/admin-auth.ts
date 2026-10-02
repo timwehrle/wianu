@@ -1,4 +1,7 @@
-import { env } from '$env/dynamic/private';
+import {
+	WEEKLY_ADMIN_PASSWORD_HASH,
+	WEEKLY_SESSION_SECRET
+} from '$app/env/private';
 import {
 	createHmac,
 	scrypt as scryptCallback,
@@ -35,8 +38,8 @@ export async function checkPassword(
 		return false;
 	}
 
-	const storedHash = env.WEEKLY_ADMIN_PASSWORD_HASH?.trim();
-	const secret = env.WEEKLY_SESSION_SECRET?.trim();
+	const storedHash = WEEKLY_ADMIN_PASSWORD_HASH?.trim();
+	const secret = WEEKLY_SESSION_SECRET?.trim();
 	let valid = false;
 	if (storedHash && secret) {
 		const parts = storedHash.split(':');
@@ -64,8 +67,8 @@ export async function checkPassword(
 }
 
 export function isAdmin(cookies: Cookies): boolean {
-	const secret = env.WEEKLY_SESSION_SECRET?.trim();
-	const passwordHash = env.WEEKLY_ADMIN_PASSWORD_HASH?.trim();
+	const secret = WEEKLY_SESSION_SECRET?.trim();
+	const passwordHash = WEEKLY_ADMIN_PASSWORD_HASH?.trim();
 	const token = cookies.get(cookieName);
 
 	if (!secret || !passwordHash || !token) {
@@ -95,8 +98,8 @@ export function isAdmin(cookies: Cookies): boolean {
 }
 
 export function signIn(cookies: Cookies, secure: boolean): void {
-	const secret = env.WEEKLY_SESSION_SECRET?.trim();
-	const passwordHash = env.WEEKLY_ADMIN_PASSWORD_HASH?.trim();
+	const secret = WEEKLY_SESSION_SECRET?.trim();
+	const passwordHash = WEEKLY_ADMIN_PASSWORD_HASH?.trim();
 	if (!secret || !passwordHash) {
 		throw new Error('Weekly admin authentication is not configured');
 	}

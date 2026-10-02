@@ -3,7 +3,6 @@
 	import { prefersReducedMotion } from 'svelte/motion';
 	import { fade, slide } from 'svelte/transition';
 	import { ArrowDownIcon, ArrowRightIcon } from '@lucide/svelte';
-	import BrooksImage from '$lib/assets/brooks.jpg?enhanced';
 
 	let isOpen = $state(false);
 	let menuTrigger: HTMLButtonElement;
@@ -56,13 +55,13 @@
 			<div class="nav-main">
 				<h1 class="nav-logo">
 					<a
-						href={resolve('/')}
+						href={resolve('')}
 						onclick={closeMenu}>Wianu</a
 					>
 				</h1>
 				<a
 					class="nav-weekly-link"
-					href={resolve('/weekly')}
+					href={resolve('weekly')}
 					onclick={closeMenu}>Weekly</a
 				>
 			</div>
@@ -125,15 +124,15 @@
 							</span>
 							<enhanced:img
 								class="nav-menu-img"
-								src={BrooksImage}
+								src="#lib/assets/brooks.jpg"
 								alt="A picture of Louise Brooks, an American actress and dancer."
-							/>
+							></enhanced:img>
 						</a>
 					</li>
 					<li class="nav-menu-download-item">
 						<a
 							class="nav-menu-download"
-							href={resolve('/download')}
+							href={resolve('download')}
 							data-sveltekit-reload
 							onclick={closeMenu}
 						>

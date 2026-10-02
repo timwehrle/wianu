@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { WeeklyEntry } from '$lib/weekly/types';
+	import type { WeeklyEntry } from '#lib/weekly/types.js';
 	import { issueNumber } from '../utils';
 
 	let { selection }: { selection: WeeklyEntry | null } = $props();

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { WeeklyEntry } from '$lib/weekly/types';
+	import type { WeeklyEntry } from '#lib/weekly/types.js';
 	import { issueNumber } from '../utils';
 
 	let {
@@ -18,7 +18,7 @@
 		{#each archive as entry (entry.week)}
 			<li>
 				<a
-					href={resolve(`/weekly?week=${entry.week}`)}
+					href={resolve(`weekly?week=${entry.week}`)}
 					aria-current={entry.week === selection?.week ? 'page' : undefined}
 				>
 					<span>{entry.week.slice(0, 4)} / {issueNumber(entry.week)}</span>

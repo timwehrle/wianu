@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import TextLink from '$lib/components/text-link.svelte';
-	import type { WeeklyMovie, WeeklySelectionMovie } from '$lib/weekly/types';
+	import TextLink from '#lib/components/text-link.svelte';
+	import type { WeeklyMovie, WeeklySelectionMovie } from '#lib/weekly/types.js';
 	import { untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 	import FilmSearch from './_components/film-search.svelte';
@@ -97,7 +97,7 @@
 		<footer class="page-footer">
 			<div class="public-link">
 				<TextLink
-					href={resolve('/weekly')}
+					href={resolve('weekly')}
 					target="_blank"
 					rel="noopener noreferrer">View Weekly</TextLink
 				>
@@ -109,7 +109,7 @@
 						{#each data.archive.slice(1) as entry (entry.week)}
 							<li>
 								<TextLink
-									href={resolve(`/weekly?week=${entry.week}`)}
+									href={resolve(`weekly?week=${entry.week}`)}
 									target="_blank"
 									rel="noopener noreferrer"
 								>

@@ -1,5 +1,5 @@
-import { apiHandler } from '$lib/server/api';
-import { cacheTtl, jsonResponse, tmdbGet } from '$lib/server/tmdb';
+import { apiHandler } from '#lib/server/api.js';
+import { cacheTtl, jsonResponse, tmdbGet } from '#lib/server/tmdb.js';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = ({ locals }) =>

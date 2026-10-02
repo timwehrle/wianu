@@ -1,7 +1,7 @@
-import { errorResponse, ApiError } from '$lib/server/api';
-import { log } from '$lib/server/log';
-import { allowRequest } from '$lib/server/rate-limit';
-import type { Handle } from '@sveltejs/kit';
+import type { Handle } from '@sveltejs/kit/hooks';
+import { errorResponse, ApiError } from '#lib/server/api.js';
+import { log } from '#lib/server/log.js';
+import { allowRequest } from '#lib/server/rate-limit.js';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const startedAt = performance.now();

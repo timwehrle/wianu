@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { fetchWeeklyArchive, fetchWeeklyMovies } from '$lib/weekly/load';
+import { fetchWeeklyArchive, fetchWeeklyMovies } from '#lib/weekly/load.js';
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ fetch, url }) => {

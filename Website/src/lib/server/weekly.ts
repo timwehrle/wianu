@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/private';
+import { WEEKLY_DATA_FILE } from '$app/env/private';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -8,12 +8,12 @@ import type {
 	WeeklyArchive,
 	WeeklyEntry,
 	WeeklyMovie
-} from '$lib/weekly/types';
+} from '#lib/weekly/types.js';
 
 let pendingWrite: Promise<void> = Promise.resolve();
 
 function dataPath(): string {
-	return resolve(env.WEEKLY_DATA_FILE?.trim() || '.data/weekly.json');
+	return resolve(WEEKLY_DATA_FILE);
 }
 
 export function isoWeek(date: Date): string {
@@ -62,6 +62,7 @@ function validEntry(value: unknown): value is WeeklyEntry {
 		return false;
 	}
 	const entry = value as Partial<WeeklyEntry>;
+
 	return (
 		typeof entry.week === 'string' &&
 		/^\d{4}-W(?:0[1-9]|[1-4]\d|5[0-3])$/.test(entry.week) &&

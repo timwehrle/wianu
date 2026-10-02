@@ -1,6 +1,6 @@
-import { apiHandler } from '$lib/server/api';
-import { cacheTtl, jsonResponse, tmdbGet } from '$lib/server/tmdb';
-import * as validate from '$lib/server/validation';
+import { apiHandler } from '#lib/server/api.js';
+import { cacheTtl, jsonResponse, tmdbGet } from '#lib/server/tmdb.js';
+import * as validate from '#lib/server/validation.js';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = ({ locals, url }) =>

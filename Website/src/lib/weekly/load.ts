@@ -9,7 +9,8 @@ import type {
 export async function fetchWeeklyArchive(
 	fetch: typeof globalThis.fetch
 ): Promise<WeeklyArchive> {
-	const response = await fetch(resolve('/v1/weekly'));
+	const response = await fetch(resolve('v1/weekly'));
+
 	if (!response.ok) {
 		throw new Error('Weekly selections are unavailable.');
 	}
@@ -22,7 +23,8 @@ export async function fetchWeeklyMovies(
 ): Promise<WeeklySelectionMovie[]> {
 	return Promise.all(
 		(selection?.movieIds ?? []).map(async (id) => {
-			const response = await fetch(resolve(`/v1/movie/${id}`));
+			const response = await fetch(resolve(`v1/movie/${id}`));
+
 			if (!response.ok) {
 				throw new Error('Movie details are unavailable.');
 			}

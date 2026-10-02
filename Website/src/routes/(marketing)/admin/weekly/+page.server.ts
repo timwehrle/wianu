@@ -1,12 +1,12 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { ApiError } from '$lib/server/api';
+import { ApiError } from '#lib/server/api.js';
 import {
 	checkPassword,
 	isAdmin,
 	signIn,
 	signOut
-} from '$lib/server/admin-auth';
-import { getMovie, publishWeekly, readWeekly } from '$lib/server/weekly';
+} from '#lib/server/admin-auth.js';
+import { getMovie, publishWeekly, readWeekly } from '#lib/server/weekly.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ cookies, locals }) => {

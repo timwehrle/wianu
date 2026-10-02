@@ -10,14 +10,14 @@
 			<div>
 				<a
 					class="footer-brand"
-					href={resolve('/')}>Wianu</a
+					href={resolve('')}>Wianu</a
 				>
 				<p>All your streaming. One home.</p>
 			</div>
 			<nav aria-label="Footer navigation">
-				<a href={resolve('/weekly')}>Weekly</a>
+				<a href={resolve('weekly')}>Weekly</a>
 				<a
-					href={resolve('/download')}
+					href={resolve('download')}
 					data-sveltekit-reload>Download for macOS</a
 				>
 			</nav>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { WeeklyMovie } from '$lib/weekly/types';
+	import type { WeeklyMovie } from '#lib/weekly/types.js';
 	import { SearchIcon } from '@lucide/svelte';
 
 	let {
@@ -29,8 +29,9 @@
 		searchError = '';
 		try {
 			const response = await fetch(
-				`${resolve('/v1/search/multi')}?query=${encodeURIComponent(query.trim())}`
+				`${resolve('v1/search/multi')}?query=${encodeURIComponent(query.trim())}`
 			);
+
 			if (!response.ok) {
 				throw new Error('Search is unavailable right now.');
 			}

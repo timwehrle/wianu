@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { WeeklySelectionMovie } from '$lib/weekly/types';
-	import TextLink from '$lib/components/text-link.svelte';
+	import type { WeeklySelectionMovie } from '#lib/weekly/types.js';
+	import TextLink from '#lib/components/text-link.svelte';
 	import WeeklyList from './weekly-list.svelte';
 
 	let { movies }: { movies: WeeklySelectionMovie[] } = $props();
@@ -24,10 +24,10 @@
 					<p>Five films worth your time, handpicked each week.</p>
 				</div>
 			</div>
-			<WeeklyList {movies} />
 
+			<WeeklyList {movies} />
 			<div class="weekly-link">
-				<TextLink href={resolve('/weekly')}>Explore this week</TextLink>
+				<TextLink href={resolve('weekly')}>Explore this week</TextLink>
 			</div>
 		</div>
 	</section>

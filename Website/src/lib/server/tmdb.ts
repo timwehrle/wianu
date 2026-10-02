@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/private';
+import { TMDB_TOKEN } from '$app/env/private';
 import { ApiError } from './api';
 import { TtlCache } from './cache';
 import type { CacheResult } from './cache';
@@ -46,7 +46,8 @@ async function fetchTmdb(
 	path: string,
 	parameters: URLSearchParams
 ): Promise<string> {
-	const token = env.TMDB_TOKEN?.trim();
+	const token = TMDB_TOKEN?.trim();
+
 	if (!token) {
 		throw new ApiError(
 			500,
