@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import TextLink from '#lib/components/text-link.svelte';
+	import TextLink from '#lib/components/TextLink.svelte';
 	import type { WeeklyMovie, WeeklySelectionMovie } from '#lib/weekly/types.js';
 	import { untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
-	import FilmSearch from './_components/film-search.svelte';
-	import SelectedFilms from './_components/selected-films.svelte';
-	import WeeklyLogin from './_components/weekly-login.svelte';
+	import FilmSearch from './FilmSearch.svelte';
+	import SelectedFilms from './SelectedFilms.svelte';
+	import WeeklyLogin from './WeeklyLogin.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let selected = $state<WeeklySelectionMovie[]>(

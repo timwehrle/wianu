@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Stage from './_components/stage.svelte';
-	import WeeklyOverview from './_components/weekly-overview.svelte';
+	import HomeHero from './HomeHero.svelte';
+	import WeeklyPreview from './WeeklyPreview.svelte';
 
 	let { data } = $props();
 </script>
@@ -9,6 +9,6 @@
 	<title>Wianu - All your streaming. One home.</title>
 </svelte:head>
 
-<Stage />
+<HomeHero />
 
-<WeeklyOverview movies={data.movies} />
+<WeeklyPreview movies={data.movies} />

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { WeeklyEntry } from '#lib/weekly/types.js';
-	import { issueNumber } from '../utils';
+	import { issueNumber } from './utils';
 
 	let {
 		archive,

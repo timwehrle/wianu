@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import TextLink from '#lib/components/text-link.svelte';
+	import TextLink from '#lib/components/TextLink.svelte';
 </script>
 
 <svelte:head>

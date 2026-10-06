@@ -1,16 +1,16 @@
 <script lang="ts">
-	import Nav from './nav.svelte';
-	import Footer from './footer.svelte';
+	import SiteNav from './SiteNav.svelte';
+	import SiteFooter from './SiteFooter.svelte';
 
 	let { children } = $props();
 </script>
 
 <div class="site-shell">
-	<Nav />
+	<SiteNav />
 	<main class="site-layout">
 		{@render children()}
 	</main>
-	<Footer />
+	<SiteFooter />
 </div>
 
 <style>

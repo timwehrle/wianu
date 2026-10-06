@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import TextLink from '#lib/components/text-link.svelte';
+	import TextLink from '#lib/components/TextLink.svelte';
 </script>
 
-<section class="stage">
-	<div class="stage-copy">
-		<h1 class="stage-title">All your streaming. <br /><em>One home.</em></h1>
+<section class="home-hero">
+	<div class="home-hero-copy">
+		<h1 class="home-hero-title">
+			All your streaming. <br /><em>One home.</em>
+		</h1>
 		<p>
 			Your streaming services, watchlist and a curated selection of films.
 			Together in one native Mac app.
@@ -14,9 +16,9 @@
 			<TextLink href={resolve('download')}>Download for macOS</TextLink>
 		</div>
 	</div>
-	<div class="stage-img-wrapper">
+	<div class="home-hero-image-wrapper">
 		<enhanced:img
-			class="stage-img"
+			class="home-hero-image"
 			src="#lib/assets/wianu-app.png"
 			alt="A screenshot of the Wianu app"
 		></enhanced:img>
@@ -24,12 +26,12 @@
 </section>
 
 <style lang="scss">
-	.stage {
+	.home-hero {
 		overflow: hidden;
 		padding-block: 7rem clamp(4rem, 8vw, 8rem);
 	}
 
-	.stage-copy {
+	.home-hero-copy {
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
@@ -42,7 +44,7 @@
 		}
 	}
 
-	.stage-title {
+	.home-hero-title {
 		margin-top: clamp(2rem, 5vw, 5rem);
 		font-family: var(--font-serif);
 		font-size: clamp(3.75rem, 8vw, 8.5rem);
@@ -55,14 +57,14 @@
 		}
 	}
 
-	.stage-img-wrapper {
+	.home-hero-image-wrapper {
 		max-width: var(--page-width);
 		margin-inline: auto;
 		padding-inline: var(--page-gutter);
 		overflow: hidden;
 	}
 
-	.stage-img {
+	.home-hero-image {
 		position: relative;
 		width: 100%;
 		min-width: 37.5rem;

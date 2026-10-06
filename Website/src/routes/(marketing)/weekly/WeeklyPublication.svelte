@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { WeeklyEntry, WeeklySelectionMovie } from '#lib/weekly/types.js';
-	import WeeklyArchive from './weekly-archive.svelte';
-	import WeeklyCover from './weekly-cover.svelte';
-	import WeeklyFilm from './weekly-film.svelte';
+	import WeeklyArchive from './WeeklyArchive.svelte';
+	import WeeklyCover from './WeeklyCover.svelte';
+	import WeeklyFilm from './WeeklyFilm.svelte';
 
 	let {
 		movies,

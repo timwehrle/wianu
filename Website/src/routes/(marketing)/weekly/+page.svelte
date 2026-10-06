@@ -1,5 +1,5 @@
 <script lang="ts">
-	import WeeklyPublication from './_components/weekly-publication.svelte';
+	import WeeklyPublication from './WeeklyPublication.svelte';
 	let { data } = $props();
 </script>
 

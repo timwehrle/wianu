@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { WeeklySelectionMovie } from '#lib/weekly/types.js';
-	import TextLink from '#lib/components/text-link.svelte';
-	import WeeklyList from './weekly-list.svelte';
+	import TextLink from '#lib/components/TextLink.svelte';
+	import WeeklyList from './WeeklyList.svelte';
 
 	let { movies }: { movies: WeeklySelectionMovie[] } = $props();
 </script>
