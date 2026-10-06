@@ -13,10 +13,20 @@
 		aria-labelledby="weekly-title"
 	>
 		<div class="weekly-container">
-			<div class="weekly-heading">
-				<h2 id="weekly-title">Wianu <em>Weekly</em></h2>
-				<p>Five films worth your time, handpicked each week.</p>
-			</div>
+			<header class="weekly-heading">
+				<div class="weekly-topline">
+					<span>Wianu</span>
+					<span>Handpicked each week</span>
+				</div>
+				<div class="weekly-titleline">
+					<h2 id="weekly-title"><em>Weekly</em></h2>
+					<span
+						class="weekly-mark"
+						aria-hidden="true">●</span
+					>
+				</div>
+				<p class="weekly-deck">Five films worth your time.</p>
+			</header>
 
 			<WeeklyList {movies} />
 			<div class="weekly-link">
@@ -28,8 +38,12 @@
 
 <style lang="scss">
 	.weekly-preview {
+		--weekly-border: #242321;
+		--weekly-muted: #e8e6e1;
+		--weekly-quiet: #716f6a;
+		--weekly-image-placeholder: #e5e3df;
 		padding-block: clamp(4rem, 8vw, 6rem);
-		background-color: var(--surface);
+		background-color: var(--background);
 	}
 
 	.weekly-container {
@@ -39,29 +53,54 @@
 	}
 
 	.weekly-heading {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
 		margin-bottom: clamp(3rem, 6vw, 6rem);
-		padding-top: clamp(2rem, 4vw, 4rem);
+	}
 
-		p {
-			max-width: 40rem;
+	.weekly-topline {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 1rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--weekly-border);
+		font-family: var(--font-serif);
+		font-size: clamp(1.25rem, 2.5vw, 2.5rem);
+
+		> span:last-child {
+			text-align: right;
 		}
 	}
 
-	h2 {
-		font-size: clamp(3.75rem, 9vw, 8rem);
-		font-weight: 400;
-		font-family: var(--font-serif);
-		line-height: 1;
+	.weekly-titleline {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 1rem;
+		margin-top: clamp(2rem, 5vw, 5rem);
+		padding-bottom: 1rem;
+		border-bottom: 1px solid var(--weekly-border);
 
-		em {
-			color: var(--accent);
+		h2 {
+			font-size: clamp(5rem, 20vw, 18rem);
+			line-height: 0.75;
+			letter-spacing: -0.025em;
 		}
+	}
+
+	.weekly-mark {
+		color: var(--accent);
+		font-size: clamp(1rem, 2vw, 1.5rem);
+	}
+
+	.weekly-deck {
+		margin-top: clamp(2rem, 4vw, 4rem);
+		font-family: var(--font-serif);
+		font-size: clamp(2rem, 4vw, 4rem);
+		line-height: 1;
 	}
 
 	.weekly-link {
-		margin-top: clamp(3rem, 6vw, 6rem);
+		padding-top: 2rem;
+		border-top: 1px solid var(--weekly-border);
 	}
 </style>
