@@ -79,13 +79,12 @@
 
 	em {
 		color: var(--accent);
-		font-weight: 400;
+		font-weight: var(--weight-regular);
 	}
 
 	h1 {
-		margin-block: clamp(3.5rem, 8vw, 7rem);
-		font-size: clamp(4.25rem, 12vw, 11rem);
-		line-height: 1;
+		margin-block: var(--space-fluid-lg);
+		font-size: var(--text-display);
 	}
 
 	.hero-bottom,
@@ -94,58 +93,54 @@
 		flex-wrap: wrap;
 		justify-content: space-between;
 		align-items: end;
-		gap: 1.5rem 3rem;
+		gap: var(--space-6) var(--space-12);
 	}
 
 	.hero-bottom {
 		margin-top: auto;
-		padding-bottom: clamp(3rem, 6vw, 6rem);
+		padding-bottom: var(--space-fluid-lg);
 	}
 
 	.hero-bottom p {
-		max-width: 35rem;
-		font-size: clamp(1.25rem, 2vw, 1.75rem);
+		max-width: var(--measure-copy);
+		font-size: var(--text-lead);
 	}
 
 	.app-image {
-		margin-left: clamp(0rem, 7vw, 7rem);
-
 		:global(img) {
-			border-radius: 3px;
+			border-radius: var(--radius-small);
 			height: auto;
 		}
 	}
 
 	.features {
-		margin-top: clamp(3.75rem, 7.5vw, 7.5rem);
+		margin-top: var(--space-fluid-xl);
 	}
 
 	.feature {
 		display: grid;
-		gap: 1.5rem;
-		padding-block: clamp(2rem, 5vw, 4rem);
-		border-top: 1px solid var(--border);
+		gap: var(--space-6);
+		padding-block: var(--space-fluid-md);
+		border-top: var(--border-width) solid var(--border);
 	}
 
 	.feature h2 {
-		font-size: clamp(2.5rem, 5vw, 5.5rem);
-		line-height: 1;
+		font-size: var(--text-heading-large);
 	}
 
 	.feature p {
-		max-width: 25rem;
-		font-size: 1.25rem;
+		max-width: var(--measure-short);
+		font-size: var(--text-body-large);
 	}
 
 	.download {
-		margin-top: clamp(3rem, 6vw, 6rem);
-		border-top: 1px solid var(--foreground);
+		margin-top: var(--space-fluid-lg);
+		border-top: var(--border-width) solid var(--border-strong);
 	}
 
 	.download h2 {
-		margin-block: clamp(2rem, 4vw, 4rem);
-		font-size: clamp(3.75rem, 10vw, 9rem);
-		line-height: 1;
+		margin-block: var(--space-fluid-md);
+		font-size: var(--text-display);
 	}
 
 	.download-bottom p {
@@ -153,13 +148,17 @@
 	}
 
 	@include at-least(medium) {
+		.app-image {
+			margin-left: var(--space-fluid-lg);
+		}
+
 		.feature {
 			grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.75fr);
 			align-items: start;
 		}
 
 		.feature p {
-			padding-top: 0.5rem;
+			padding-top: var(--space-2);
 		}
 	}
 </style>

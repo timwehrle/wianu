@@ -12,7 +12,7 @@
 		class="weekly-preview"
 		aria-labelledby="weekly-title"
 	>
-		<div class="weekly-container">
+		<div class="weekly-container page-container">
 			<header class="weekly-heading">
 				<div class="weekly-topline">
 					<span>Wianu</span>
@@ -38,33 +38,24 @@
 
 <style lang="scss">
 	.weekly-preview {
-		--weekly-border: #242321;
-		--weekly-muted: #e8e6e1;
-		--weekly-quiet: #716f6a;
-		--weekly-image-placeholder: #e5e3df;
-		padding-block: clamp(4rem, 8vw, 6rem);
+		padding-block: var(--space-fluid-xl);
 		background-color: var(--background);
 	}
 
-	.weekly-container {
-		max-width: var(--page-width);
-		margin-inline: auto;
-		padding-inline: var(--page-gutter);
-	}
-
 	.weekly-heading {
-		margin-bottom: clamp(3rem, 6vw, 6rem);
+		margin-bottom: var(--space-fluid-md);
 	}
 
 	.weekly-topline {
+		flex-wrap: wrap;
 		display: flex;
 		justify-content: space-between;
 		align-items: baseline;
-		gap: 1rem;
-		padding-top: 0.75rem;
-		border-top: 1px solid var(--weekly-border);
+		gap: var(--space-4);
+		padding-top: var(--space-3);
+		border-top: var(--border-width) solid var(--border-strong);
 		font-family: var(--font-serif);
-		font-size: clamp(1.25rem, 2.5vw, 2.5rem);
+		font-size: var(--text-editorial-meta);
 
 		> span:last-child {
 			text-align: right;
@@ -72,35 +63,36 @@
 	}
 
 	.weekly-titleline {
+		flex-wrap: wrap;
 		display: flex;
 		justify-content: space-between;
 		align-items: baseline;
-		gap: 1rem;
-		margin-top: clamp(2rem, 5vw, 5rem);
-		padding-bottom: 1rem;
-		border-bottom: 1px solid var(--weekly-border);
+		gap: var(--space-4);
+		margin-top: var(--space-fluid-md);
+		padding-bottom: var(--space-4);
+		border-bottom: var(--border-width) solid var(--border-strong);
 
 		h2 {
-			font-size: clamp(5rem, 20vw, 18rem);
-			line-height: 0.75;
-			letter-spacing: -0.025em;
+			min-width: 0;
+			font-size: var(--text-masthead);
+			line-height: var(--leading-display);
 		}
 	}
 
 	.weekly-mark {
 		color: var(--accent);
-		font-size: clamp(1rem, 2vw, 1.5rem);
+		font-size: var(--text-body-large);
 	}
 
 	.weekly-deck {
-		margin-top: clamp(2rem, 4vw, 4rem);
+		margin-top: var(--space-fluid-md);
 		font-family: var(--font-serif);
-		font-size: clamp(2rem, 4vw, 4rem);
-		line-height: 1;
+		font-size: var(--text-deck);
+		line-height: var(--leading-heading);
 	}
 
 	.weekly-link {
-		padding-top: 2rem;
-		border-top: 1px solid var(--weekly-border);
+		padding-top: var(--space-8);
+		border-top: var(--border-width) solid var(--border-strong);
 	}
 </style>

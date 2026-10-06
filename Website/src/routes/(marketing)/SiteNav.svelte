@@ -86,7 +86,7 @@
 				>
 					Download
 					<ArrowDownIcon
-						size={18}
+						size="var(--icon-size)"
 						strokeWidth={1.5}
 						aria-hidden="true"
 					/>
@@ -129,7 +129,10 @@
 								class="nav-menu-arrow"
 								aria-hidden="true"
 							>
-								<ArrowRightIcon strokeWidth={1} />
+								<ArrowRightIcon
+									size="var(--icon-size)"
+									strokeWidth={1.5}
+								/>
 							</span>
 						</a>
 					</li>
@@ -147,12 +150,15 @@
 								class="nav-menu-arrow"
 								aria-hidden="true"
 							>
-								<ArrowRightIcon />
+								<ArrowRightIcon
+									size="var(--icon-size)"
+									strokeWidth={1.5}
+								/>
 							</span>
 							<enhanced:img
 								class="nav-menu-img"
 								src="#lib/assets/brooks.jpg"
-								alt="A picture of Louise Brooks, an American actress and dancer."
+								alt="Louise Brooks, an American actress and dancer."
 							></enhanced:img>
 						</a>
 					</li>
@@ -172,7 +178,8 @@
 								aria-hidden="true"
 							>
 								<ArrowDownIcon
-									strokeWidth={1}
+									size="var(--icon-size)"
+									strokeWidth={1.5}
 									aria-hidden="true"
 								/>
 							</span>
@@ -190,7 +197,7 @@
 		inset: 0;
 		z-index: 9;
 		backdrop-filter: blur(2px);
-		background-color: rgb(0 0 0 / 25%);
+		background-color: var(--overlay);
 	}
 
 	header {
@@ -200,41 +207,43 @@
 	}
 
 	.nav-shell {
-		width: calc(100% - 2rem);
-		margin: 1rem auto;
+		width: calc(100% - 2 * var(--page-gutter));
+		max-width: var(--content-width);
+		margin: var(--space-4) auto;
 		color: var(--foreground);
-
-		@include at-least(medium) {
-			max-width: var(--page-width);
-		}
 	}
 
 	.nav-bar {
 		display: flex;
-		gap: 1px;
+		gap: var(--border-width);
+	}
+
+	.nav-main,
+	.nav-desktop a,
+	.nav-menu-toggle {
+		background: var(--surface-glass);
+		backdrop-filter: blur(20px) saturate(180%);
+		-webkit-backdrop-filter: blur(20px) saturate(180%);
+		border-radius: var(--radius-small);
 	}
 
 	.nav-main {
-		padding: 0.75rem;
+		padding: var(--space-3);
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		flex: 1;
 		min-width: 0;
-		background: rgb(248 248 248 / 80%);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border-radius: 3px;
 	}
 
 	.nav-menu {
-		padding-top: 1px;
+		padding-top: var(--border-width);
 	}
 
 	.nav-menu-list {
 		display: flex;
 		flex-direction: column;
-		gap: 1px;
+		gap: var(--border-width);
 		list-style: none;
 	}
 
@@ -242,35 +251,35 @@
 		position: relative;
 		display: flex;
 		align-items: center;
-		gap: 1rem;
+		gap: var(--space-4);
 		width: 100%;
 		min-height: 7.5rem;
 		overflow: hidden;
 		text-decoration: none;
 		color: inherit;
 		background-color: var(--surface);
-		border-radius: 3px;
-		padding-block: 1.25rem;
-		padding-inline: 1rem;
+		border-radius: var(--radius-small);
+		padding-block: var(--space-5);
+		padding-inline: var(--space-4);
 	}
 
 	.nav-menu-download-item {
 		background-color: var(--surface);
-		border-radius: 3px;
+		border-radius: var(--radius-small);
 	}
 
 	.nav-menu-download {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.5rem;
-		padding: 1rem;
+		gap: var(--space-2);
+		padding: var(--space-4);
 		color: inherit;
 		text-decoration: none;
 		white-space: nowrap;
 		width: 100%;
 
 		.nav-menu-description {
-			margin-block: 0 0.25rem;
+			margin-block: 0 var(--space-1);
 		}
 	}
 
@@ -283,13 +292,13 @@
 
 	.nav-menu-title {
 		font-family: var(--font-serif);
-		font-size: clamp(2rem, 4vw, 3rem);
-		line-height: 1;
+		font-size: var(--text-heading-small);
+		line-height: var(--leading-heading);
 	}
 
 	.nav-menu-description {
-		margin-top: 0.25rem;
-		font-size: 0.8rem;
+		margin-top: var(--space-1);
+		font-size: var(--text-small);
 	}
 
 	.nav-menu-img {
@@ -308,9 +317,9 @@
 
 	.nav-logo {
 		font-family: var(--font-serif);
-		font-size: 2rem;
-		font-weight: 400;
-		line-height: 1.1;
+		font-size: var(--text-brand);
+		font-weight: var(--weight-regular);
+		line-height: var(--leading-heading);
 
 		a {
 			text-decoration: none;
@@ -332,17 +341,13 @@
 
 		@include at-least(large) {
 			display: flex;
-			gap: 1px;
+			gap: var(--border-width);
 		}
 
 		a {
 			display: inline-flex;
 			align-items: center;
-			padding-inline: 1rem;
-			border-radius: 3px;
-			background: rgb(248 248 248 / 80%);
-			backdrop-filter: blur(20px) saturate(180%);
-			-webkit-backdrop-filter: blur(20px) saturate(180%);
+			padding-inline: var(--space-4);
 			color: inherit;
 			text-decoration: none;
 			white-space: nowrap;
@@ -354,19 +359,17 @@
 		}
 
 		.nav-desktop-download {
-			gap: 0.5rem;
+			gap: var(--space-2);
 		}
 	}
 
 	.nav-menu-toggle {
-		padding: 0.75rem;
+		min-height: var(--control-size);
+		min-width: var(--control-size);
+		padding: var(--space-3);
 		color: inherit;
-		background: rgb(248 248 248 / 80%);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		border: 0;
-		border-radius: 3px;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -385,13 +388,13 @@
 	}
 
 	.nav-shell:has(.nav-menu) {
-		color: #1d1d1f;
+		color: var(--foreground);
 
 		.nav-main,
 		.nav-menu-toggle,
 		.nav-menu-link,
 		.nav-menu-download-item {
-			background: #fff;
+			background: var(--background);
 			backdrop-filter: none;
 			-webkit-backdrop-filter: none;
 		}

@@ -53,7 +53,7 @@
 	/>
 </svelte:head>
 
-<section class="weekly-admin">
+<section class="weekly-admin page-frame">
 	{#if data.authenticated}
 		<form
 			method="POST"
@@ -125,36 +125,19 @@
 </section>
 
 <style lang="scss">
-	.weekly-admin {
-		max-width: var(--page-width);
-		margin-inline: auto;
-		padding: 7rem 1rem 5rem;
-		color: var(--foreground);
-
-		@include at-least(large) {
-			padding: 8rem 2rem 6rem;
-		}
-	}
-
 	.page-header {
-		padding-block: 1rem;
+		padding-block: var(--space-4);
 
 		h1 {
-			font-family: var(--font-serif);
-			font-size: clamp(4rem, 10vw, 9rem);
-			font-weight: 400;
-		}
-
-		p {
-			margin-top: 2rem;
-			color: var(--muted-foreground);
+			font-size: var(--text-display);
 		}
 	}
 
 	.sign-out {
-		padding: 0.5rem 0;
+		min-height: var(--control-size);
+		padding: var(--space-2) 0;
 		border: 0;
-		border-bottom: 1px solid currentColor;
+		border-bottom: var(--border-width) solid currentColor;
 		background: none;
 		color: var(--foreground);
 		font: inherit;
@@ -164,8 +147,8 @@
 
 	.editor-grid {
 		display: grid;
-		gap: 3rem;
-		border-top: 1px solid var(--border);
+		gap: var(--space-12);
+		border-top: var(--border-width) solid var(--border);
 
 		@include at-least(large) {
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -176,31 +159,31 @@
 	.search-column,
 	.selection-column {
 		min-width: 0;
-		padding-top: 2rem;
+		padding-top: var(--space-8);
 	}
 
 	.selection-column {
-		border-top: 1px solid var(--border);
+		border-top: var(--border-width) solid var(--border);
 
 		@include at-least(large) {
-			padding-left: clamp(2rem, 5vw, 5rem);
+			padding-left: var(--space-fluid-md);
 			border-top: 0;
-			border-left: 1px solid var(--border);
+			border-left: var(--border-width) solid var(--border);
 		}
 	}
 
 	.search-column {
 		@include at-least(large) {
-			padding-right: clamp(2rem, 5vw, 5rem);
+			padding-right: var(--space-fluid-md);
 		}
 	}
 
 	.page-footer {
 		display: grid;
-		gap: 3rem;
-		margin-top: 5rem;
-		padding-top: 1.5rem;
-		border-top: 1px solid var(--foreground);
+		gap: var(--space-12);
+		margin-top: var(--space-20);
+		padding-top: var(--space-6);
+		border-top: var(--border-width) solid var(--border-strong);
 	}
 
 	.public-link {
@@ -209,16 +192,14 @@
 
 	.archive {
 		h2 {
-			margin-bottom: 1rem;
-			font-family: var(--font-serif);
-			font-size: 2.5rem;
-			font-weight: 400;
+			margin-bottom: var(--space-4);
+			font-size: var(--text-heading);
 		}
 
 		ul {
 			display: flex;
 			flex-wrap: wrap;
-			gap: 1rem 2rem;
+			gap: var(--space-4) var(--space-8);
 			list-style: none;
 		}
 	}

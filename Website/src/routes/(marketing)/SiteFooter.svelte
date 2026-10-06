@@ -5,7 +5,7 @@
 </script>
 
 <footer class="footer">
-	<div class="footer-content">
+	<div class="footer-content page-container">
 		<div class="footer-main">
 			<div>
 				<a
@@ -32,21 +32,16 @@
 
 <style lang="scss">
 	.footer {
-		padding: 3rem 1rem 1.5rem;
+		padding-block: var(--space-12) var(--space-6);
 		background: var(--background);
 		color: var(--foreground);
-	}
-
-	.footer-content {
-		max-width: var(--page-width);
-		margin: 0 auto;
 	}
 
 	.footer-main {
 		display: flex;
 		flex-direction: column;
-		gap: 2rem;
-		padding-bottom: 3rem;
+		gap: var(--space-8);
+		padding-bottom: var(--space-12);
 
 		@include at-least(medium) {
 			flex-direction: row;
@@ -56,20 +51,20 @@
 
 	.footer-brand {
 		font-family: var(--font-serif);
-		font-size: clamp(2.5rem, 6vw, 4rem);
-		line-height: 1;
+		font-size: var(--text-heading);
+		line-height: var(--leading-heading);
 		text-decoration: none;
 	}
 
 	.footer-main p {
-		margin-top: 0.75rem;
+		margin-top: var(--space-3);
 	}
 
 	.footer-main nav {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: start;
-		gap: 0.75rem 1.5rem;
+		gap: var(--space-3) var(--space-6);
 	}
 
 	.footer a {
@@ -78,8 +73,8 @@
 	}
 
 	.footer-bottom {
-		padding-top: 1.25rem;
-		border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
-		font-size: 0.85rem;
+		padding-top: var(--space-5);
+		border-top: var(--border-width) solid var(--border);
+		font-size: var(--text-small);
 	}
 </style>

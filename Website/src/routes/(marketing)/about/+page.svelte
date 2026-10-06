@@ -71,54 +71,46 @@
 </div>
 
 <style lang="scss">
-	h1,
-	h2 {
-		font-family: var(--font-serif);
-		font-weight: 400;
-	}
-
 	em {
 		color: var(--accent);
-		font-weight: 400;
+		font-weight: var(--weight-regular);
 	}
 
 	.intro h1 {
-		margin-block: clamp(3rem, 7vw, 7rem);
-		font-size: clamp(3.75rem, 10vw, 9.5rem);
-		line-height: 1;
+		margin-block: var(--space-fluid-lg);
+		font-size: var(--text-display);
 	}
 
 	.story {
-		max-width: 48rem;
+		max-width: var(--measure-prose);
 		margin-left: auto;
-		padding-block: clamp(2rem, 5vw, 5rem) clamp(5rem, 10vw, 10rem);
-		border-top: 1px solid var(--border);
+		padding-block: var(--space-fluid-md) var(--space-section);
+		border-top: var(--border-width) solid var(--border);
 	}
 
 	.story p {
-		font-size: clamp(1.25rem, 2.4vw, 2rem);
+		font-size: var(--text-lead);
 	}
 
 	.story p + p {
-		margin-top: 1.75rem;
+		margin-top: var(--space-8);
 	}
 
 	.story .story-beat {
 		font-family: var(--font-serif);
-		font-size: clamp(2rem, 4vw, 3rem);
-		line-height: 1.25;
+		font-size: var(--text-heading-small);
+		line-height: var(--leading-copy);
 	}
 
 	.two-parts,
 	.maker {
-		border-top: 1px solid var(--foreground);
+		border-top: var(--border-width) solid var(--border-strong);
 	}
 
 	.two-parts h2,
 	.maker h2 {
-		margin-block: clamp(3rem, 6vw, 6rem);
-		font-size: clamp(3.75rem, 9vw, 8.5rem);
-		line-height: 0.9;
+		margin-block: var(--space-fluid-lg);
+		font-size: var(--text-heading-display);
 	}
 
 	.two-parts h2 span {
@@ -127,8 +119,8 @@
 
 	.part-grid {
 		display: grid;
-		gap: 2rem;
-		padding-bottom: clamp(5rem, 10vw, 10rem);
+		gap: var(--space-8);
+		padding-bottom: var(--space-section);
 
 		@include at-least(medium) {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -139,14 +131,14 @@
 		display: flex;
 		flex-direction: column;
 		align-items: start;
-		gap: 1.5rem;
+		gap: var(--space-6);
 	}
 
 	.part p {
-		max-width: 27rem;
+		max-width: var(--measure-short);
 		font-family: var(--font-serif);
-		font-size: clamp(2rem, 3.5vw, 3.5rem);
-		line-height: 1;
+		font-size: var(--text-deck);
+		line-height: var(--leading-heading);
 	}
 
 	.maker {
@@ -154,8 +146,8 @@
 	}
 
 	.maker > p:last-child {
-		max-width: 25rem;
+		max-width: var(--measure-short);
 		margin-left: auto;
-		font-size: 1.25rem;
+		font-size: var(--text-body-large);
 	}
 </style>

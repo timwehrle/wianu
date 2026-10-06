@@ -64,8 +64,8 @@
 								aria-hidden="true"
 							>
 								<ArrowUpRightIcon
-									size={24}
-									strokeWidth={1}
+									size="var(--icon-size)"
+									strokeWidth={1.5}
 								/>
 							</span>
 						</a>
@@ -88,7 +88,7 @@
 <style lang="scss">
 	.weekly-list {
 		display: grid;
-		gap: 0 clamp(1.5rem, 4vw, 4rem);
+		gap: 0 var(--space-fluid-md);
 		list-style: none;
 
 		@include at-least(medium) {
@@ -100,23 +100,23 @@
 		position: relative;
 		display: grid;
 		grid-template-columns: repeat(6, minmax(0, 1fr));
-		column-gap: clamp(0.5rem, 1.5vw, 1rem);
-		row-gap: 1.5rem;
+		column-gap: var(--grid-gap);
+		row-gap: var(--space-6);
 		align-content: start;
 		min-width: 0;
-		padding-block: clamp(2rem, 4vw, 4rem);
-		border-top: 1px solid var(--weekly-border);
+		padding-block: var(--space-fluid-md);
+		border-top: var(--border-width) solid var(--border-strong);
 	}
 
 	.weekly-list-number {
 		position: absolute;
 		z-index: 2;
-		top: clamp(2rem, 4vw, 4rem);
+		top: var(--space-fluid-md);
 		left: 0;
-		color: var(--weekly-muted);
+		color: var(--muted);
 		font-family: var(--font-serif);
-		font-size: clamp(6rem, 18vw, 12rem);
-		line-height: 0.75;
+		font-size: var(--text-number-small);
+		line-height: var(--leading-display);
 		pointer-events: none;
 	}
 
@@ -125,8 +125,8 @@
 		grid-column: 2 / 7;
 		aspect-ratio: 16 / 10;
 		min-width: 0;
-		margin-top: 1rem;
-		background: var(--weekly-image-placeholder);
+		margin-top: var(--space-4);
+		background: var(--image-placeholder);
 
 		img,
 		.weekly-list-art-placeholder {
@@ -148,9 +148,7 @@
 		min-width: 0;
 
 		h3 {
-			font-size: clamp(2.5rem, 5vw, 4.5rem);
-			line-height: 1;
-			letter-spacing: -0.025em;
+			font-size: var(--text-heading);
 			overflow-wrap: anywhere;
 		}
 	}
@@ -161,29 +159,29 @@
 
 		&:hover {
 			text-decoration: underline;
-			text-decoration-thickness: 1px;
+			text-decoration-thickness: var(--border-width);
 			text-underline-offset: 0.12em;
 		}
 
 		&:focus-visible {
-			outline: 2px solid var(--accent);
-			outline-offset: 5px;
+			outline: var(--focus-width) solid var(--accent);
+			outline-offset: var(--focus-offset);
 		}
 	}
 
 	.weekly-list-link-icon {
 		display: inline-flex;
-		margin-left: 0.25rem;
+		margin-left: var(--space-1);
 		color: var(--accent);
 		vertical-align: baseline;
 	}
 
 	.weekly-list-year {
-		margin-top: 0.5rem;
-		color: var(--weekly-quiet);
+		margin-top: var(--space-2);
+		color: var(--muted-foreground);
 		font-family: var(--font-serif);
-		font-size: clamp(1.5rem, 2.5vw, 2rem);
-		line-height: 1;
+		font-size: var(--text-editorial-meta);
+		line-height: var(--leading-heading);
 	}
 
 	.weekly-list-reason {
@@ -192,32 +190,32 @@
 	}
 
 	.weekly-list-reason-label {
-		margin-bottom: 0.75rem;
-		font-size: 1rem;
-		font-weight: 650;
+		margin-bottom: var(--space-3);
+		font-size: var(--text-body);
+		font-weight: var(--weight-semibold);
 	}
 
 	.weekly-list-reason-text {
-		max-width: 36ch;
+		max-width: var(--measure-editorial);
 		font-family: var(--font-serif);
-		font-size: clamp(1.75rem, 2.5vw, 2.75rem);
-		line-height: 1.25;
+		font-size: var(--text-editorial);
+		line-height: var(--leading-copy);
 		overflow-wrap: anywhere;
 	}
 
 	.weekly-list-featured {
 		grid-column: 1 / -1;
-		row-gap: clamp(2rem, 4vw, 4rem);
-		padding-block: clamp(3rem, 6vw, 6rem);
+		row-gap: var(--space-fluid-md);
+		padding-block: var(--space-fluid-lg);
 
 		.weekly-list-number {
-			top: clamp(3rem, 6vw, 6rem);
+			top: var(--space-fluid-lg);
 			color: var(--accent);
-			font-size: clamp(7rem, 25vw, 22rem);
+			font-size: var(--text-number);
 		}
 
 		.weekly-list-art {
-			margin-top: 1.5rem;
+			margin-top: var(--space-6);
 
 			&.poster-fallback {
 				max-width: 26rem;
@@ -225,7 +223,7 @@
 		}
 
 		.weekly-list-heading h3 {
-			font-size: clamp(3rem, 8vw, 8rem);
+			font-size: var(--text-heading-display);
 		}
 
 		@include at-least(medium) {

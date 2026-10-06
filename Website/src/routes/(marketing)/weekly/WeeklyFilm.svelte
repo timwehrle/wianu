@@ -61,25 +61,21 @@
 		position: relative;
 		display: grid;
 		grid-template-columns: repeat(6, minmax(0, 1fr));
-		column-gap: 0.5rem;
-		row-gap: clamp(1.5rem, 3vw, 3rem);
-		padding: 5rem 0;
-		border-top: 1px solid var(--weekly-border);
-		scroll-margin-top: 5rem;
-
-		@include at-least(small) {
-			column-gap: clamp(0.5rem, 2vw, 2rem);
-		}
+		column-gap: var(--grid-gap);
+		row-gap: var(--space-fluid-sm);
+		padding: var(--space-20) 0;
+		border-top: var(--border-width) solid var(--border-strong);
+		scroll-margin-top: var(--space-20);
 
 		@include at-least(medium) {
 			grid-template-columns: repeat(12, minmax(0, 1fr));
-			padding: clamp(4rem, 8vw, 9rem) 0;
+			padding: var(--space-fluid-xl) 0;
 		}
 
 		&-1 {
 			.film-number {
 				z-index: 2;
-				color: var(--weekly-accent);
+				color: var(--accent);
 			}
 
 			.film-art {
@@ -108,7 +104,7 @@
 					display: flex;
 					justify-content: space-between;
 					align-items: baseline;
-					gap: 2rem;
+					gap: var(--space-8);
 				}
 
 				@include at-least(medium) {
@@ -116,7 +112,7 @@
 				}
 
 				> p {
-					margin-top: 0.5rem;
+					margin-top: var(--space-2);
 					text-align: right;
 
 					@include at-least(small) {
@@ -153,7 +149,7 @@
 				@include at-least(medium) {
 					grid-column: 1 / 6;
 					grid-row: 1 / 4;
-					margin-top: 2rem;
+					margin-top: var(--space-8);
 				}
 
 				img,
@@ -187,10 +183,6 @@
 		&-3 {
 			.film-number {
 				top: 0.25em;
-
-				@include at-least(medium) {
-					font-size: clamp(12rem, 32vw, 25rem);
-				}
 			}
 
 			.film-art {
@@ -230,7 +222,7 @@
 
 		&-4 {
 			.film-number {
-				top: 3rem;
+				top: var(--space-12);
 			}
 
 			.film-heading {
@@ -278,7 +270,7 @@
 
 		&-5 {
 			.film-number {
-				top: 3rem;
+				top: var(--space-12);
 				left: auto;
 				right: 0;
 			}
@@ -301,7 +293,7 @@
 				}
 
 				h3 {
-					font-size: clamp(3.25rem, 5vw, 5rem);
+					font-size: var(--text-heading-large);
 				}
 			}
 
@@ -319,19 +311,18 @@
 
 	.film-number {
 		position: absolute;
-		top: 4rem;
+		top: var(--space-16);
 		left: 0;
 		z-index: 0;
-		color: var(--weekly-muted);
+		color: var(--muted);
 		font-family: var(--font-serif);
-		font-size: clamp(7rem, 34vw, 14rem);
-		font-weight: 400;
-		line-height: 0.75;
+		font-size: var(--text-number);
+		font-weight: var(--weight-regular);
+		line-height: var(--leading-display);
 		pointer-events: none;
 
 		@include at-least(medium) {
-			top: clamp(3rem, 6vw, 7rem);
-			font-size: clamp(9rem, 22vw, 25rem);
+			top: var(--space-fluid-lg);
 		}
 	}
 
@@ -347,7 +338,7 @@
 			width: 100%;
 			aspect-ratio: 16 / 10;
 			object-fit: cover;
-			background: var(--weekly-image-placeholder);
+			background: var(--image-placeholder);
 		}
 
 		&.poster-fallback {
@@ -364,27 +355,15 @@
 		min-width: 0;
 
 		h3 {
-			font-family: var(--font-serif);
-			font-size: 12vw;
-			font-weight: 400;
-			line-height: 1;
-			letter-spacing: -1px;
+			font-size: var(--text-heading-display);
 			overflow-wrap: anywhere;
-
-			@include at-least(small) {
-				font-size: clamp(3.5rem, 11vw, 5.5rem);
-			}
-
-			@include at-least(medium) {
-				font-size: clamp(3.5rem, 7.5vw, 8rem);
-			}
 		}
 
 		> p {
-			color: var(--weekly-quiet);
+			color: var(--muted-foreground);
 			font-family: var(--font-serif);
-			font-size: clamp(1.5rem, 2.5vw, 2.5rem);
-			line-height: 1;
+			font-size: var(--text-editorial-meta);
+			line-height: var(--leading-heading);
 		}
 	}
 
@@ -396,23 +375,23 @@
 
 	.film-reason {
 		&-label {
-			margin-bottom: 0.75rem;
-			font-size: 1rem;
-			font-weight: 650;
+			margin-bottom: var(--space-3);
+			font-size: var(--text-body);
+			font-weight: var(--weight-semibold);
 		}
 
 		> p:last-child {
 			font-family: var(--font-serif);
-			font-size: clamp(1.75rem, 2.5vw, 2.75rem);
-			line-height: 1.25;
+			font-size: var(--text-editorial);
+			line-height: var(--leading-copy);
 		}
 	}
 
 	.film-overview {
 		max-width: 58ch;
-		margin-top: 2rem;
-		color: var(--weekly-overview);
-		font-size: 1rem;
-		line-height: 1.75;
+		margin-top: var(--space-8);
+		color: var(--secondary-foreground);
+		font-size: var(--text-body);
+		line-height: var(--leading-reading);
 	}
 </style>

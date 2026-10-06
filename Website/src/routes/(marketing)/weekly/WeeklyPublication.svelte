@@ -44,35 +44,22 @@
 
 <style lang="scss">
 	.weekly-publication {
-		--weekly-background: var(--background);
-		--weekly-foreground: var(--foreground);
-		--weekly-border: #242321;
-		--weekly-muted: #e8e6e1;
-		--weekly-quiet: #716f6a;
-		--weekly-rule: #cbc9c3;
-		--weekly-accent: var(--accent);
-		--weekly-image-placeholder: #e5e3df;
-		--weekly-overview: #56544e;
-		background: var(--weekly-background);
-		color: var(--weekly-foreground);
-		padding: 7rem var(--page-gutter) 6rem;
-
-		@include at-least(medium) {
-			padding-top: 8rem;
-		}
+		background: var(--background);
+		color: var(--foreground);
+		padding: var(--page-top) var(--page-gutter) var(--space-fluid-lg);
 	}
 
 	.empty-state,
 	.films {
-		max-width: var(--page-width);
+		max-width: var(--content-width);
 		margin-inline: auto;
 	}
 
 	.empty-state {
-		padding: 5rem 0;
-		border-top: 1px solid var(--weekly-rule);
+		padding: var(--space-20) 0;
+		border-top: var(--border-width) solid var(--border);
 		font-family: var(--font-serif);
-		font-size: 2rem;
+		font-size: var(--text-heading-small);
 	}
 
 	.films {

@@ -87,7 +87,7 @@
 				disabled={searching}
 			>
 				<SearchIcon
-					size={18}
+					size="var(--icon-size)"
 					strokeWidth={1.5}
 					aria-hidden="true"
 				/>
@@ -142,34 +142,34 @@
 <style lang="scss">
 	.film-search {
 		h2 {
-			margin-bottom: 2rem;
+			margin-bottom: var(--space-8);
 		}
 
 		form {
-			margin-bottom: 2rem;
+			margin-bottom: var(--space-8);
 		}
 
 		label {
 			display: block;
-			margin-bottom: 0.5rem;
-			font-weight: 600;
+			margin-bottom: var(--space-2);
+			font-weight: var(--weight-semibold);
 		}
 	}
 
 	.search-fields {
+		flex-wrap: wrap;
 		display: flex;
-		gap: 0.5rem;
+		gap: var(--space-2);
 
 		input {
-			flex: 1;
+			flex: 1 1 12rem;
 			min-width: 0;
 		}
 
 		button {
 			display: inline-flex;
 			align-items: center;
-			gap: 0.5rem;
-			padding: 0.75rem 1rem;
+			gap: var(--space-2);
 		}
 	}
 
@@ -179,24 +179,26 @@
 		li {
 			display: flex;
 			align-items: center;
-			gap: 1rem;
-			padding: 1rem 0;
-			border-top: 1px solid var(--border);
+			gap: var(--space-4);
+			padding: var(--space-4) 0;
+			border-top: var(--border-width) solid var(--border);
 		}
 
 		img,
 		.poster-placeholder {
-			width: 42px;
-			height: 63px;
+			width: var(--poster-thumbnail-width);
+			aspect-ratio: 2 / 3;
 			flex: none;
 			object-fit: cover;
 			background: var(--surface);
 		}
 
 		button {
-			padding: 0.25rem 0;
+			min-width: var(--control-size);
+			min-height: var(--control-size);
+			padding: var(--space-1) 0;
 			border: 0;
-			border-bottom: 1px solid currentColor;
+			border-bottom: var(--border-width) solid currentColor;
 			background: none;
 			color: var(--foreground);
 			font: inherit;
@@ -212,24 +214,23 @@
 
 	.film-info {
 		min-width: 0;
-		flex: 1;
+		flex: 1 1 12rem;
 
 		h3 {
-			font-family: var(--font-serif);
-			font-size: 1.75rem;
-			font-weight: 400;
-			line-height: 1;
+			font-size: var(--text-title);
+			overflow-wrap: anywhere;
 		}
 
 		p {
-			margin-top: 0.25rem;
+			margin-top: var(--space-1);
 			color: var(--muted-foreground);
+			font-size: var(--text-small);
 		}
 	}
 
 	.message,
 	.empty {
-		margin: 1rem 0;
+		margin: var(--space-4) 0;
 		color: var(--muted-foreground);
 	}
 </style>

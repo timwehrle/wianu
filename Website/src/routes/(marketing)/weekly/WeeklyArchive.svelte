@@ -35,17 +35,14 @@
 
 <style lang="scss">
 	.archive {
-		max-width: var(--page-width);
+		max-width: var(--content-width);
 		margin-inline: auto;
-		padding-top: clamp(5rem, 10vw, 10rem);
-		border-top: 1px solid var(--weekly-border);
+		padding-top: var(--space-section);
+		border-top: var(--border-width) solid var(--border-strong);
 
 		h3 {
-			margin-bottom: 2rem;
-			font-family: var(--font-serif);
-			font-size: clamp(3.5rem, 8vw, 8rem);
-			font-weight: 400;
-			line-height: 1;
+			margin-bottom: var(--space-8);
+			font-size: var(--text-heading-display);
 		}
 
 		ul {
@@ -53,28 +50,28 @@
 		}
 
 		li {
-			border-top: 1px solid var(--weekly-rule);
+			border-top: var(--border-width) solid var(--border);
 
 			&:last-child {
-				border-bottom: 1px solid var(--weekly-rule);
+				border-bottom: var(--border-width) solid var(--border);
 			}
 		}
 
 		a {
 			display: flex;
 			justify-content: space-between;
-			gap: 1rem;
-			padding: 1rem 0;
-			color: var(--weekly-foreground);
+			gap: var(--space-4);
+			padding: var(--space-4) 0;
+			color: var(--foreground);
 			text-decoration: none;
 
 			&[aria-current='page'] {
-				color: var(--weekly-accent);
+				color: var(--accent-text);
 			}
 
 			&:focus-visible {
-				outline: 2px solid var(--weekly-accent);
-				outline-offset: 4px;
+				outline: var(--focus-width) solid var(--accent);
+				outline-offset: var(--focus-offset);
 			}
 		}
 	}

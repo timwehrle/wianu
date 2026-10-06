@@ -20,8 +20,8 @@
 		aria-hidden="true"
 	>
 		<ArrowUpRightIcon
-			size={20}
-			strokeWidth={1}
+			size="var(--icon-size)"
+			strokeWidth={1.5}
 		/>
 	</span>
 </a>
@@ -30,20 +30,22 @@
 	.text-link {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.5rem;
+		gap: var(--space-2);
 		color: var(--foreground);
-		font-weight: 600;
+		font-size: var(--text-body);
+		line-height: var(--leading-copy);
+		font-weight: var(--weight-semibold);
 		text-decoration: none;
 	}
 
 	.text-link-icon {
 		display: grid;
 		place-items: center;
-		width: 1.75rem;
-		height: 1.75rem;
+		width: var(--link-icon-box-size);
+		height: var(--link-icon-box-size);
 		flex: none;
 		background-color: var(--accent);
 		color: var(--accent-foreground);
-		border-radius: 3px;
+		border-radius: var(--radius-small);
 	}
 </style>

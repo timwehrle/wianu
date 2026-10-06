@@ -1,3 +1,5 @@
+@use 'tokens';
+
 @layer reset {
 	*,
 	*::before,
@@ -8,21 +10,16 @@
 	}
 
 	html {
-		color-scheme: light dark;
 		-webkit-font-smoothing: antialiased;
 		-webkit-text-size-adjust: none;
 		text-size-adjust: none;
 		hanging-punctuation: first allow-end last;
 	}
 
-	h1,
-	h2,
-	h3,
-	h4,
 	button,
 	input,
 	label {
-		line-height: 1.1;
+		line-height: var(--leading-copy);
 	}
 
 	h1,
@@ -30,8 +27,11 @@
 	h3,
 	h4 {
 		text-wrap: balance;
+		overflow-wrap: anywhere;
 		font-family: var(--font-serif);
-		font-weight: 400;
+		font-weight: var(--weight-regular);
+		line-height: var(--leading-heading);
+		letter-spacing: var(--tracking-tight);
 	}
 
 	a:not([class]) {
@@ -64,30 +64,42 @@
 }
 
 body {
+	overflow-wrap: break-word;
 	min-height: 100vh;
-	line-height: 1.5;
-	font-size: 1rem;
+	line-height: var(--leading-body);
+	font-size: var(--text-body);
+	font-weight: var(--weight-regular);
 	font-family: var(--font-sans);
 	background-color: var(--background);
 	color: var(--foreground);
 }
 
 @layer components {
+	:where(a, button, input, textarea, select):focus-visible {
+		outline: var(--focus-width) solid var(--accent);
+		outline-offset: var(--focus-offset);
+	}
+
+	.page-container,
 	.page-frame {
+		width: 100%;
 		max-width: var(--page-width);
 		margin-inline: auto;
-		padding: 7rem var(--page-gutter) 4rem;
+		padding-inline: var(--page-gutter);
+	}
+
+	.page-frame {
+		padding-block: var(--page-top) var(--space-fluid-lg);
 	}
 
 	.admin-heading {
-		font-family: var(--font-serif);
-		font-size: clamp(2.5rem, 6vw, 4rem);
-		font-weight: 400;
+		font-size: var(--text-heading);
 	}
 
 	.admin-field {
-		padding: 0.75rem;
-		border: 1px solid var(--border);
+		min-height: var(--control-size);
+		padding: var(--space-3);
+		border: var(--border-width) solid var(--border);
 		border-radius: 0;
 		background: var(--background);
 		color: var(--foreground);
@@ -95,10 +107,15 @@ body {
 	}
 
 	.admin-action {
+		max-width: 100%;
+		min-height: var(--control-size);
+		padding: var(--space-3) var(--space-6);
 		border: 0;
 		background: var(--foreground);
 		color: var(--background);
 		font: inherit;
+		font-weight: var(--weight-semibold);
+		line-height: var(--leading-copy);
 		cursor: pointer;
 
 		&:disabled {
@@ -122,32 +139,4 @@ body {
 	font-style: italic;
 	font-weight: 400;
 	src: url('/fonts/instrument-serif-v5-latin-italic.woff2') format('woff2');
-}
-
-:root {
-	--page-width: 90rem;
-	--page-gutter: clamp(0.75rem, 2vw, 2rem);
-	--font-serif: 'Instrument Serif';
-	--font-sans:
-		-apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-	--background: oklch(1 0 0);
-	--foreground: #1d1d1f;
-	--surface: #f5f5f7;
-	--surface-foreground: #1d1d1f;
-	--surface-foreground-muted: #6d6d6d;
-	--surface-border: #d5d5d8;
-	--muted: oklch(0.97 0 0);
-	--muted-foreground: oklch(0.556 0 0);
-	--accent: #d94332;
-	--accent-foreground: #fff;
-	--border: #ddd;
-}
-
-.dark {
-	--background: oklch(0.145 0 0);
-	--foreground: oklch(0.985 0 0);
-	--surface: oklch(0.205 0 0);
-	--surface-foreground: oklch(0.985 0 0);
-	--muted: oklch(0.269 0 0);
-	--muted-foreground: oklch(0.708 0 0);
 }

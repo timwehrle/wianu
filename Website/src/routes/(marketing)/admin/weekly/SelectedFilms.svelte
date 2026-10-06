@@ -65,7 +65,7 @@
 								onclick={() => onMove(index, -1)}
 							>
 								<ArrowUpIcon
-									size={20}
+									size="var(--icon-size)"
 									strokeWidth={1.5}
 									aria-hidden="true"
 								/>
@@ -77,7 +77,7 @@
 								onclick={() => onMove(index, 1)}
 							>
 								<ArrowDownIcon
-									size={20}
+									size="var(--icon-size)"
 									strokeWidth={1.5}
 									aria-hidden="true"
 								/>
@@ -88,7 +88,7 @@
 								onclick={() => onRemove(movie.id)}
 							>
 								<XIcon
-									size={20}
+									size="var(--icon-size)"
 									strokeWidth={1.5}
 									aria-hidden="true"
 								/>
@@ -139,12 +139,14 @@
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
-		gap: 1rem;
-		margin-bottom: 2rem;
+		gap: var(--space-4);
+		flex-wrap: wrap;
+		margin-bottom: var(--space-8);
 
 		p,
 		span {
 			color: var(--muted-foreground);
+			font-size: var(--text-small);
 		}
 	}
 
@@ -152,51 +154,61 @@
 		list-style: none;
 
 		li {
-			padding: 1.5rem 0 2rem;
-			border-top: 1px solid var(--border);
+			padding: var(--space-6) 0 var(--space-8);
+			border-top: var(--border-width) solid var(--border);
 		}
 	}
 
 	.film-heading {
 		display: grid;
-		grid-template-columns: 3rem minmax(0, 1fr) auto;
+		grid-template-columns: var(--space-12) minmax(0, 1fr);
 		align-items: start;
-		gap: 0.75rem;
+		gap: var(--space-3);
+
+		@include at-least(small) {
+			grid-template-columns: var(--space-12) minmax(0, 1fr) auto;
+		}
 	}
 
 	.position {
 		color: var(--muted-foreground);
 		font-family: var(--font-serif);
-		font-size: 2.5rem;
-		line-height: 1;
+		font-size: var(--text-title);
+		line-height: var(--leading-heading);
 	}
 
 	.film-title {
 		min-width: 0;
 
 		h3 {
-			font-family: var(--font-serif);
-			font-size: clamp(1.75rem, 4vw, 2.5rem);
-			font-weight: 400;
-			line-height: 1;
+			font-size: var(--text-title);
 			overflow-wrap: anywhere;
 		}
 
 		p {
-			margin-top: 0.25rem;
+			margin-top: var(--space-1);
 			color: var(--muted-foreground);
+			font-size: var(--text-small);
 		}
 	}
 
 	.controls {
 		display: flex;
-		gap: 0.25rem;
+		flex-wrap: wrap;
+		grid-column: 2;
+		gap: var(--space-1);
+
+		@include at-least(small) {
+			grid-column: 3;
+			grid-row: 1;
+		}
 
 		button {
 			display: grid;
+			flex: none;
 			place-items: center;
-			width: 2rem;
-			height: 2rem;
+			width: var(--control-size);
+			height: var(--control-size);
 			padding: 0;
 			border: 0;
 			background: none;
@@ -211,13 +223,14 @@
 	}
 
 	.reason-field {
+		grid-template-columns: minmax(0, 1fr);
 		display: grid;
-		gap: 0.5rem;
-		margin-top: 1.5rem;
-		margin-left: 3.75rem;
+		gap: var(--space-2);
+		margin-top: var(--space-6);
+		margin-left: calc(var(--space-12) + var(--space-3));
 
 		label {
-			font-weight: 600;
+			font-weight: var(--weight-semibold);
 		}
 
 		textarea {
@@ -228,15 +241,14 @@
 	}
 
 	.publish {
-		margin-top: 1.5rem;
-		padding: 0.75rem 1.5rem;
-		background: var(--accent);
-		color: var(--accent-foreground);
+		margin-top: var(--space-6);
+		background: var(--action-background);
+		color: var(--action-foreground);
 	}
 
 	.empty,
 	.message {
-		margin-top: 1rem;
+		margin-top: var(--space-4);
 		color: var(--muted-foreground);
 	}
 </style>

@@ -32,21 +32,21 @@
 
 <style lang="scss">
 	.login {
-		max-width: 34rem;
-		padding-top: 2rem;
-		border-top: 1px solid var(--border);
+		max-width: var(--measure-copy);
+		padding-top: var(--space-8);
+		border-top: var(--border-width) solid var(--border);
 
 		h2 {
-			margin-bottom: 2rem;
+			margin-bottom: var(--space-8);
 		}
 
 		form {
 			display: grid;
-			gap: 0.75rem;
+			gap: var(--space-3);
 		}
 
 		label {
-			font-weight: 600;
+			font-weight: var(--weight-semibold);
 		}
 
 		input {
@@ -55,13 +55,12 @@
 
 		button {
 			justify-self: start;
-			margin-top: 0.5rem;
-			padding: 0.75rem 1.5rem;
+			margin-top: var(--space-2);
 		}
 	}
 
 	.message {
-		margin-top: 1rem;
-		color: var(--accent);
+		margin-top: var(--space-4);
+		color: var(--accent-text);
 	}
 </style>

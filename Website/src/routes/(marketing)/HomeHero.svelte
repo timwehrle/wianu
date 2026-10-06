@@ -4,7 +4,7 @@
 </script>
 
 <section class="home-hero">
-	<div class="home-hero-copy">
+	<div class="home-hero-copy page-container">
 		<h1 class="home-hero-title">
 			All your streaming. <br /><em>One home.</em>
 		</h1>
@@ -16,7 +16,7 @@
 			<TextLink href={resolve('download')}>Download for macOS</TextLink>
 		</div>
 	</div>
-	<div class="home-hero-image-wrapper">
+	<div class="home-hero-image-wrapper page-container">
 		<enhanced:img
 			class="home-hero-image"
 			src="#lib/assets/wianu-app.png"
@@ -28,39 +28,35 @@
 <style lang="scss">
 	.home-hero {
 		overflow: hidden;
-		padding-block: 7rem clamp(4rem, 8vw, 8rem);
+		padding-block: var(--page-top) var(--space-fluid-xl);
 	}
 
 	.home-hero-copy {
 		display: flex;
 		flex-direction: column;
-		gap: 1.5rem;
-		max-width: var(--page-width);
-		margin-inline: auto;
-		padding: 0 var(--page-gutter) clamp(3rem, 6vw, 6rem);
+		gap: var(--space-6);
+		padding-bottom: var(--space-fluid-lg);
 
 		p {
-			max-width: 35rem;
+			max-width: var(--measure-copy);
+			font-size: var(--text-lead);
 		}
 	}
 
 	.home-hero-title {
-		margin-top: clamp(2rem, 5vw, 5rem);
+		margin-top: var(--space-fluid-md);
 		font-family: var(--font-serif);
-		font-size: clamp(3.75rem, 8vw, 8.5rem);
-		font-weight: 400;
-		line-height: 1;
+		font-size: var(--text-display);
+		font-weight: var(--weight-regular);
+		line-height: var(--leading-heading);
 
 		em {
 			color: var(--accent);
-			font-weight: 400;
+			font-weight: var(--weight-regular);
 		}
 	}
 
 	.home-hero-image-wrapper {
-		max-width: var(--page-width);
-		margin-inline: auto;
-		padding-inline: var(--page-gutter);
 		overflow: hidden;
 	}
 
@@ -72,8 +68,8 @@
 
 		@include at-least(medium) {
 			min-width: 0;
-			width: calc(100% - clamp(3rem, 7vw, 7rem));
-			margin-left: clamp(3rem, 7vw, 7rem);
+			width: calc(100% - var(--space-fluid-lg));
+			margin-left: var(--space-fluid-lg);
 		}
 	}
 </style>
