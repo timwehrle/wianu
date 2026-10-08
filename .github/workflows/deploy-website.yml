@@ -66,7 +66,7 @@ jobs:
           target="$DEPLOY_USER@$DEPLOY_HOST"
           ssh "${ssh_options[@]}" "$target" 'mkdir -p /srv/wianu/incoming'
           scp "${ssh_options[@]}" "$RUNNER_TEMP/website.tar.gz" "$target:/srv/wianu/incoming/$release_id.tar.gz"
-          ssh "${ssh_options[@]}" "$target" "bash -s -- $release_id" < deploy/activate-release.sh
+          ssh "${ssh_options[@]}" "$target" "bash -s -- $release_id" < "$GITHUB_WORKSPACE/Website/deploy/activate-release.sh"
 
       - name: Clean SSH credentials
         if: always()
