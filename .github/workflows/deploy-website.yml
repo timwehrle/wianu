@@ -52,21 +52,37 @@ jobs:
           DEPLOY_HOST_KEY: ${{ secrets.DEPLOY_HOST_KEY }}
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          WEBSITE_DEPLOY_PATH: ${{ secrets.WEBSITE_DEPLOY_PATH }}
+          WEBSITE_SERVICE: ${{ secrets.WEBSITE_SERVICE }}
+          WEBSITE_HEALTH_URL: ${{ secrets.WEBSITE_HEALTH_URL }}
         run: |
-          set -euo pipefail
+          set +x
+          set -Eeuo pipefail
+          trap 'echo "::error::Deployment failed. Check the private server configuration."' ERR
+          for name in DEPLOY_HOST DEPLOY_USER SSH_PRIVATE_KEY DEPLOY_HOST_KEY WEBSITE_DEPLOY_PATH WEBSITE_SERVICE WEBSITE_HEALTH_URL; do
+            if [[ -z "${!name}" ]]; then
+              echo '::error::Deployment configuration is incomplete.'
+              exit 1
+            fi
+          done
           [[ "$DEPLOY_HOST" =~ ^[a-zA-Z0-9.-]+$ ]]
           [[ "$DEPLOY_USER" =~ ^[a-zA-Z0-9_-]+$ ]]
-          test -n "$SSH_PRIVATE_KEY"
-          test -n "$DEPLOY_HOST_KEY"
+          [[ "$WEBSITE_DEPLOY_PATH" =~ ^/[a-zA-Z0-9_/-]+$ && "$WEBSITE_DEPLOY_PATH" != / ]]
+          [[ "$WEBSITE_SERVICE" =~ ^[a-zA-Z0-9_-]+\.service$ ]]
+          [[ "$WEBSITE_HEALTH_URL" =~ ^http://127\.0\.0\.1:[0-9]+/[a-zA-Z0-9/_-]+$ ]]
+          test -f "$GITHUB_WORKSPACE/Website/deploy/activate-release.sh"
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/website-key"
           printf '%s\n' "$DEPLOY_HOST_KEY" > "$RUNNER_TEMP/website-known-hosts"
           chmod 600 "$RUNNER_TEMP/website-key" "$RUNNER_TEMP/website-known-hosts"
-          ssh_options=(-i "$RUNNER_TEMP/website-key" -o "UserKnownHostsFile=$RUNNER_TEMP/website-known-hosts" -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=15)
+          ssh_options=(-i "$RUNNER_TEMP/website-key" -o "UserKnownHostsFile=$RUNNER_TEMP/website-known-hosts" -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=15 -o LogLevel=ERROR)
           release_id="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           target="$DEPLOY_USER@$DEPLOY_HOST"
-          ssh "${ssh_options[@]}" "$target" 'mkdir -p /srv/wianu/incoming'
-          scp "${ssh_options[@]}" "$RUNNER_TEMP/website.tar.gz" "$target:/srv/wianu/incoming/$release_id.tar.gz"
-          ssh "${ssh_options[@]}" "$target" "bash -s -- $release_id" < "$GITHUB_WORKSPACE/Website/deploy/activate-release.sh"
+          printf -v prepare_command 'mkdir -p %q' "$WEBSITE_DEPLOY_PATH/incoming"
+          ssh "${ssh_options[@]}" "$target" "$prepare_command" > /dev/null 2>&1
+          scp "${ssh_options[@]}" "$RUNNER_TEMP/website.tar.gz" "$target:$WEBSITE_DEPLOY_PATH/incoming/$release_id.tar.gz" > /dev/null 2>&1
+          printf -v activate_command 'bash -s -- %q %q %q %q' "$release_id" "$WEBSITE_DEPLOY_PATH" "$WEBSITE_SERVICE" "$WEBSITE_HEALTH_URL"
+          ssh "${ssh_options[@]}" "$target" "$activate_command" < "$GITHUB_WORKSPACE/Website/deploy/activate-release.sh" > /dev/null 2>&1
+          echo 'Deployment completed.'
 
       - name: Clean SSH credentials
         if: always()
