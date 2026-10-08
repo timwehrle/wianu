@@ -4,10 +4,11 @@ set -Eeuo pipefail
 
 exec 3>&1
 exec > /dev/null 2>&1
-trap 'printf "Deployment failed.\n" >&3' ERR
+failure_code=31
+trap 'printf "Deployment failed.\n" >&3; exit "$failure_code"' ERR
 fail() {
   printf 'Deployment failed.\n' >&3
-  exit 1
+  exit "$failure_code"
 }
 
 release_id=${1:-}
@@ -21,13 +22,17 @@ health_url=${4:-}
 release="$root/releases/$release_id"
 archive="$root/incoming/$release_id.tar.gz"
 
+failure_code=32
 command -v pnpm > /dev/null
 command -v curl > /dev/null
+failure_code=33
 mkdir -p "$release"
 tar --exclude='*.map' --exclude='*.map.gz' --exclude='*.map.br' -xzf "$archive" -C "$release"
 cd "$release"
+failure_code=34
 pnpm install --prod --frozen-lockfile --ignore-scripts
 
+failure_code=35
 previous=$(readlink -f "$root/current" || true)
 
 ln -s "$release" "$root/current.next"
@@ -43,7 +48,9 @@ rollback() {
   fi
 }
 
+failure_code=36
 if sudo -n /usr/bin/systemctl restart "$service"; then
+  failure_code=37
   for attempt in {1..20}; do
     if curl --fail --silent --max-time 3 "$health_url" > /dev/null; then
       printf 'Deployment completed.\n' >&3
@@ -52,5 +59,7 @@ if sudo -n /usr/bin/systemctl restart "$service"; then
     sleep 2
   done
 fi
-rollback
+result_code=$failure_code
+rollback || true
+failure_code=$result_code
 fail

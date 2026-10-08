@@ -58,7 +58,7 @@ jobs:
         run: |
           set +x
           set -Eeuo pipefail
-          trap 'echo "::error::Deployment failed. Check the private server configuration."' ERR
+          trap 'printf "::error::Deployment failed (code %s).\n" "$?"' ERR
           for name in DEPLOY_HOST DEPLOY_USER SSH_PRIVATE_KEY DEPLOY_HOST_KEY WEBSITE_DEPLOY_PATH WEBSITE_SERVICE WEBSITE_HEALTH_URL; do
             if [[ -z "${!name}" ]]; then
               echo '::error::Deployment configuration is incomplete.'
