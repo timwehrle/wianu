@@ -1,0 +1,73 @@
+name: Deploy Website
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    defaults:
+      run:
+        working-directory: Website
+        shell: bash
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install pnpm
+        run: npm install --global pnpm@12
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check website
+        run: |
+          pnpm check
+          pnpm lint
+
+      - name: Build production website
+        run: pnpm build
+
+      - name: Package release
+        run: |
+          tar -czf "$RUNNER_TEMP/website.tar.gz" build package.json pnpm-lock.yaml pnpm-workspace.yaml
+
+      - name: Deploy and restart production
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_HOST_KEY: ${{ secrets.DEPLOY_HOST_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          set -euo pipefail
+          [[ "$DEPLOY_HOST" =~ ^[a-zA-Z0-9.-]+$ ]]
+          [[ "$DEPLOY_USER" =~ ^[a-zA-Z0-9_-]+$ ]]
+          test -n "$SSH_PRIVATE_KEY"
+          test -n "$DEPLOY_HOST_KEY"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/website-key"
+          printf '%s\n' "$DEPLOY_HOST_KEY" > "$RUNNER_TEMP/website-known-hosts"
+          chmod 600 "$RUNNER_TEMP/website-key" "$RUNNER_TEMP/website-known-hosts"
+          ssh_options=(-i "$RUNNER_TEMP/website-key" -o "UserKnownHostsFile=$RUNNER_TEMP/website-known-hosts" -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=15)
+          release_id="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          target="$DEPLOY_USER@$DEPLOY_HOST"
+          ssh "${ssh_options[@]}" "$target" 'mkdir -p /srv/wianu/incoming'
+          scp "${ssh_options[@]}" "$RUNNER_TEMP/website.tar.gz" "$target:/srv/wianu/incoming/$release_id.tar.gz"
+          ssh "${ssh_options[@]}" "$target" "bash -s -- $release_id" < deploy/activate-release.sh
+
+      - name: Clean SSH credentials
+        if: always()
+        run: rm -f "$RUNNER_TEMP/website-key" "$RUNNER_TEMP/website-known-hosts"
