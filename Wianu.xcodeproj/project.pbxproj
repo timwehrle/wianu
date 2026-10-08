@@ -25,7 +25,6 @@
 		D1B972753015341900B64B10 /* PageTitleCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972613015341900B64B10 /* PageTitleCleaner.swift */; };
 		D1B972763015341900B64B10 /* URLNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972623015341900B64B10 /* URLNormalizer.swift */; };
 		D1B972773015341900B64B10 /* WatchlistRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972513015341900B64B10 /* WatchlistRow.swift */; };
-		D1B972863015341900B64B10 /* WatchlistItemEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972873015341900B64B10 /* WatchlistItemEditorView.swift */; };
 		D1B972783015341900B64B10 /* SiteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B9725B3015341900B64B10 /* SiteStore.swift */; };
 		D1B972793015341900B64B10 /* RenameContinueWatchingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B9724D3015341900B64B10 /* RenameContinueWatchingView.swift */; };
 		D1B9727A3015341900B64B10 /* LetterboxdWatchlistImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B9724F3015341900B64B10 /* LetterboxdWatchlistImporter.swift */; };
@@ -40,6 +39,7 @@
 		D1B972833015341900B64B10 /* WatchlistStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972523015341900B64B10 /* WatchlistStore.swift */; };
 		D1B972843015341900B64B10 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972553015341900B64B10 /* SidebarView.swift */; };
 		D1B972853015341900B64B10 /* SavedSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972573015341900B64B10 /* SavedSite.swift */; };
+		D1B972863015341900B64B10 /* WatchlistItemEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972873015341900B64B10 /* WatchlistItemEditorView.swift */; };
 		D1B973023015341900B64B10 /* StreamingSearchURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B973003015341900B64B10 /* StreamingSearchURL.swift */; };
 		D1B973033015341900B64B10 /* CommandPaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B973013015341900B64B10 /* CommandPaletteView.swift */; };
 		D1C000023020000000000002 /* TMDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C000013020000000000001 /* TMDB.swift */; };
@@ -101,7 +101,6 @@
 		D1B972503015341900B64B10 /* WatchlistItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistItem.swift; sourceTree = "<group>"; };
 		D1B972513015341900B64B10 /* WatchlistRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistRow.swift; sourceTree = "<group>"; };
 		D1B972523015341900B64B10 /* WatchlistStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistStore.swift; sourceTree = "<group>"; };
-		D1B972873015341900B64B10 /* WatchlistItemEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistItemEditorView.swift; sourceTree = "<group>"; };
 		D1B972543015341900B64B10 /* SidebarSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarSelection.swift; sourceTree = "<group>"; };
 		D1B972553015341900B64B10 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		D1B972573015341900B64B10 /* SavedSite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSite.swift; sourceTree = "<group>"; };
@@ -114,6 +113,7 @@
 		D1B972623015341900B64B10 /* URLNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLNormalizer.swift; sourceTree = "<group>"; };
 		D1B972643015341900B64B10 /* FaviconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaviconView.swift; sourceTree = "<group>"; };
 		D1B972673015341900B64B10 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D1B972873015341900B64B10 /* WatchlistItemEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistItemEditorView.swift; sourceTree = "<group>"; };
 		D1B973003015341900B64B10 /* StreamingSearchURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingSearchURL.swift; sourceTree = "<group>"; };
 		D1B973013015341900B64B10 /* CommandPaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandPaletteView.swift; sourceTree = "<group>"; };
 		D1C000013020000000000001 /* TMDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDB.swift; sourceTree = "<group>"; };
@@ -711,7 +711,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.6.0;
+				MARKETING_VERSION = 1.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = timwehrle.Wianu;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -761,7 +761,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.6.0;
+				MARKETING_VERSION = 1.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = timwehrle.Wianu;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
