@@ -25,7 +25,7 @@ protocol AnalyticsTracking {
     func track(_ event: AnalyticsEvent)
 }
 
-protocol AnalyticsSession: Sendable {
+nonisolated protocol AnalyticsSession: Sendable {
     func data(for request: URLRequest) async throws -> (Data, URLResponse)
 }
 

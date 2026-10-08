@@ -181,7 +181,7 @@ enum TMDBError: LocalizedError, Equatable {
     }
 }
 
-protocol TMDBSession: Sendable {
+nonisolated protocol TMDBSession: Sendable {
     func data(for request: URLRequest) async throws -> (Data, URLResponse)
 }
 
