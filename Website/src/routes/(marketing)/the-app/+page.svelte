@@ -59,6 +59,25 @@
 	</section>
 
 	<section
+		class="maker"
+		aria-labelledby="maker-title"
+	>
+		<h2 id="maker-title">Made by <em>Tim.</em></h2>
+		<div class="maker-copy">
+			<p>
+				I'm Tim Wehrle, an independent software developer from Germany. I built
+				Wianu because I kept losing track of what I was watching across
+				streaming services. It's the Mac app I wanted for my own everyday
+				watching.
+			</p>
+			<div class="maker-links">
+				<TextLink href="https://github.com/timwehrle">GitHub</TextLink>
+				<TextLink href="https://www.timwehrle.de">Personal website</TextLink>
+			</div>
+		</div>
+	</section>
+
+	<section
 		class="download"
 		aria-labelledby="download-title"
 	>
@@ -133,6 +152,30 @@
 		font-size: var(--text-body-large);
 	}
 
+	.maker {
+		display: grid;
+		gap: var(--space-6);
+		margin-top: var(--space-fluid-lg);
+		padding-block: var(--space-fluid-md);
+		border-top: var(--border-width) solid var(--border-strong);
+	}
+
+	.maker h2 {
+		font-size: var(--text-heading-large);
+	}
+
+	.maker-copy p {
+		max-width: var(--measure-short);
+		font-size: var(--text-body-large);
+	}
+
+	.maker-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-4) var(--space-6);
+		margin-top: var(--space-6);
+	}
+
 	.download {
 		margin-top: var(--space-fluid-lg);
 		border-top: var(--border-width) solid var(--border-strong);
@@ -152,7 +195,8 @@
 			margin-left: var(--space-fluid-lg);
 		}
 
-		.feature {
+		.feature,
+		.maker {
 			grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.75fr);
 			align-items: start;
 		}

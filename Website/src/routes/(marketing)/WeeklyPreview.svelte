@@ -16,7 +16,6 @@
 			<header class="weekly-heading">
 				<div class="weekly-topline">
 					<span>Wianu</span>
-					<span>Handpicked each week</span>
 				</div>
 				<div class="weekly-titleline">
 					<h2 id="weekly-title"><em>Weekly</em></h2>
@@ -30,7 +29,7 @@
 
 			<WeeklyList {movies} />
 			<div class="weekly-link">
-				<TextLink href={resolve('weekly')}>Explore this week</TextLink>
+				<TextLink href={resolve('weekly')}>Explore the latest issue</TextLink>
 			</div>
 		</div>
 	</section>
@@ -56,10 +55,6 @@
 		border-top: var(--border-width) solid var(--border-strong);
 		font-family: var(--font-serif);
 		font-size: var(--text-editorial-meta);
-
-		> span:last-child {
-			text-align: right;
-		}
 	}
 
 	.weekly-titleline {

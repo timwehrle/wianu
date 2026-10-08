@@ -114,7 +114,7 @@
 			{/each}
 		</ol>
 		{#if selected.length === 0}<p class="empty">
-				Search for films to start this week's selection.
+				Search for films to start the next selection.
 			</p>{/if}
 		<button
 			class="publish admin-action"

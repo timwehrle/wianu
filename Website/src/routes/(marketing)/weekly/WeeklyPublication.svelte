@@ -19,10 +19,13 @@
 	class="weekly-publication"
 	aria-labelledby="weekly-title"
 >
-	<WeeklyCover {selection} />
+	<WeeklyCover
+		{selection}
+		{archive}
+	/>
 
 	{#if movies.length === 0}
-		<p class="empty-state">This week's films are coming soon.</p>
+		<p class="empty-state">The next selection is coming soon.</p>
 	{:else}
 		<ol class="films">
 			{#each movies as movie, index (movie.id)}

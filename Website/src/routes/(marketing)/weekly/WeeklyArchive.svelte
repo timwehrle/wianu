@@ -21,7 +21,7 @@
 					href={resolve(`weekly?week=${entry.week}`)}
 					aria-current={entry.week === selection?.week ? 'page' : undefined}
 				>
-					<span>{entry.week.slice(0, 4)} / {issueNumber(entry.week)}</span>
+					<span>{entry.week.slice(0, 4)} / {issueNumber(entry, archive)}</span>
 					<span
 						>{entry.week === selection?.week
 							? 'Current issue'

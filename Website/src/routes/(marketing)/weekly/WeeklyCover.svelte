@@ -2,7 +2,10 @@
 	import type { WeeklyEntry } from '#lib/weekly/types.js';
 	import { issueNumber } from './utils';
 
-	let { selection }: { selection: WeeklyEntry | null } = $props();
+	let {
+		selection,
+		archive
+	}: { selection: WeeklyEntry | null; archive: WeeklyEntry[] } = $props();
 </script>
 
 <header class="issue-cover">
@@ -14,11 +17,9 @@
 	</div>
 	<div class="issue-titleline">
 		<h1 id="weekly-title"><em>Weekly</em></h1>
-		<span>{selection ? issueNumber(selection.week) : '—'}</span>
+		<span>{selection ? issueNumber(selection, archive) : '—'}</span>
 	</div>
-	<p class="issue-deck">
-		Five films worth your time,<br />handpicked each week.
-	</p>
+	<p class="issue-deck">Five films worth your time.</p>
 	<span
 		class="issue-mark"
 		aria-hidden="true">●</span

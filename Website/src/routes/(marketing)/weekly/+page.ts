@@ -16,7 +16,7 @@ export const load: PageLoad = async ({ fetch, url }) => {
 		: archive.weeks[0];
 
 	if (requestedWeek && !selection) {
-		error(404, 'That week was not found.');
+		error(404, 'That issue was not found.');
 	}
 
 	let movies;

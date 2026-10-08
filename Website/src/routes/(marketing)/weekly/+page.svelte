@@ -7,7 +7,7 @@
 	<title>Wianu Weekly - Five films worth your time</title>
 	<meta
 		name="description"
-		content="Five films picked for Wianu Weekly."
+		content="Five films worth your time."
 	/>
 </svelte:head>
 

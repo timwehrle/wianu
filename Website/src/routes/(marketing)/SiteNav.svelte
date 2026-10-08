@@ -78,7 +78,6 @@
 			>
 				<a href={resolve('the-app')}>The App</a>
 				<a href={resolve('weekly')}>Weekly</a>
-				<a href={resolve('about')}>About</a>
 				<a
 					class="nav-desktop-download"
 					href={resolve('download')}
@@ -134,32 +133,6 @@
 									strokeWidth={1.5}
 								/>
 							</span>
-						</a>
-					</li>
-					<li>
-						<a
-							class="nav-menu-link"
-							href={resolve('about')}
-							onclick={closeMenu}
-						>
-							<span class="nav-menu-copy">
-								<span class="nav-menu-title">About</span>
-								<span class="nav-menu-description">The idea behind Wianu</span>
-							</span>
-							<span
-								class="nav-menu-arrow"
-								aria-hidden="true"
-							>
-								<ArrowRightIcon
-									size="var(--icon-size)"
-									strokeWidth={1.5}
-								/>
-							</span>
-							<enhanced:img
-								class="nav-menu-img"
-								src="#lib/assets/brooks.jpg"
-								alt="Louise Brooks, an American actress and dancer."
-							></enhanced:img>
 						</a>
 					</li>
 					<li class="nav-menu-download-item">
@@ -299,15 +272,6 @@
 	.nav-menu-description {
 		margin-top: var(--space-1);
 		font-size: var(--text-small);
-	}
-
-	.nav-menu-img {
-		position: absolute;
-		inset: 0 0 0 auto;
-		width: 40%;
-		height: 100%;
-		object-fit: cover;
-		clip-path: polygon(38% 0, 100% 0, 100% 100%, 0 100%);
 	}
 
 	.nav-menu-arrow {

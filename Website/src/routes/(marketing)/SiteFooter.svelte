@@ -16,7 +16,6 @@
 			</div>
 			<nav aria-label="Footer navigation">
 				<a href={resolve('the-app')}>App</a>
-				<a href={resolve('about')}>About</a>
 				<a href={resolve('weekly')}>Weekly</a>
 				<a
 					href={resolve('download')}
