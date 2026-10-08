@@ -1,0 +1,206 @@
+<script lang="ts">
+	import { resolve } from '$app/paths';
+	import TextLink from '#lib/components/TextLink.svelte';
+	import type { WeeklyMovie, WeeklySelectionMovie } from '#lib/weekly/types.js';
+	import { untrack } from 'svelte';
+	import type { ActionData, PageData } from './$types';
+	import FilmSearch from './FilmSearch.svelte';
+	import SelectedFilms from './SelectedFilms.svelte';
+	import WeeklyLogin from './WeeklyLogin.svelte';
+
+	let { data, form }: { data: PageData; form: ActionData } = $props();
+	let selected = $state<WeeklySelectionMovie[]>(
+		untrack(() =>
+			data.movies.map((movie) => ({
+				...movie,
+				reason: data.selection?.reasons[movie.id] ?? ''
+			}))
+		)
+	);
+
+	function addFilm(movie: WeeklyMovie) {
+		if (selected.length < 5 && !selected.some((item) => item.id === movie.id)) {
+			selected = [...selected, { ...movie, reason: '' }];
+		}
+	}
+
+	function moveFilm(index: number, direction: number) {
+		const target = index + direction;
+		if (target < 0 || target >= selected.length) {
+			return;
+		}
+		const next = [...selected];
+		[next[index], next[target]] = [next[target], next[index]];
+		selected = next;
+	}
+
+	function removeFilm(id: number) {
+		selected = selected.filter((movie) => movie.id !== id);
+	}
+
+	function updateReason(id: number, reason: string) {
+		selected = selected.map((movie) =>
+			movie.id === id ? { ...movie, reason } : movie
+		);
+	}
+</script>
+
+<svelte:head>
+	<title>Weekly editor — Wianu</title>
+	<meta
+		name="robots"
+		content="noindex, nofollow"
+	/>
+</svelte:head>
+
+<section class="weekly-admin page-frame">
+	{#if data.authenticated}
+		<form
+			method="POST"
+			action="?/logout"
+		>
+			<button
+				class="sign-out"
+				type="submit">Sign out</button
+			>
+		</form>
+	{/if}
+	<header class="page-header">
+		<div>
+			<h1>Wianu <em>Weekly</em></h1>
+		</div>
+	</header>
+
+	{#if !data.authenticated}
+		<WeeklyLogin message={form?.message} />
+	{:else}
+		<div class="editor-grid">
+			<div class="search-column">
+				<FilmSearch
+					selectedIds={selected.map((movie) => movie.id)}
+					atLimit={selected.length === 5}
+					onAdd={addFilm}
+				/>
+			</div>
+			<div class="selection-column">
+				<SelectedFilms
+					{selected}
+					selection={data.selection}
+					message={form?.message}
+					onMove={moveFilm}
+					onRemove={removeFilm}
+					onReasonChange={updateReason}
+				/>
+			</div>
+		</div>
+
+		<footer class="page-footer">
+			<div class="public-link">
+				<TextLink
+					href={resolve('weekly')}
+					target="_blank"
+					rel="noopener noreferrer">View Weekly</TextLink
+				>
+			</div>
+			{#if data.archive.length > 1}
+				<div class="archive">
+					<h2>Previous issues</h2>
+					<ul>
+						{#each data.archive.slice(1) as entry (entry.week)}
+							<li>
+								<TextLink
+									href={resolve(`weekly?week=${entry.week}`)}
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									{entry.week}
+								</TextLink>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+		</footer>
+	{/if}
+</section>
+
+<style lang="scss">
+	.page-header {
+		padding-block: var(--space-4);
+
+		h1 {
+			font-size: var(--text-display);
+		}
+	}
+
+	.sign-out {
+		min-height: var(--control-size);
+		padding: var(--space-2) 0;
+		border: 0;
+		border-bottom: var(--border-width) solid currentColor;
+		background: none;
+		color: var(--foreground);
+		font: inherit;
+		white-space: nowrap;
+		cursor: pointer;
+	}
+
+	.editor-grid {
+		display: grid;
+		gap: var(--space-12);
+		border-top: var(--border-width) solid var(--border);
+
+		@include at-least(large) {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			gap: 0;
+		}
+	}
+
+	.search-column,
+	.selection-column {
+		min-width: 0;
+		padding-top: var(--space-8);
+	}
+
+	.selection-column {
+		border-top: var(--border-width) solid var(--border);
+
+		@include at-least(large) {
+			padding-left: var(--space-fluid-md);
+			border-top: 0;
+			border-left: var(--border-width) solid var(--border);
+		}
+	}
+
+	.search-column {
+		@include at-least(large) {
+			padding-right: var(--space-fluid-md);
+		}
+	}
+
+	.page-footer {
+		display: grid;
+		gap: var(--space-12);
+		margin-top: var(--space-20);
+		padding-top: var(--space-6);
+		border-top: var(--border-width) solid var(--border-strong);
+	}
+
+	.public-link {
+		justify-self: start;
+	}
+
+	.archive {
+		h2 {
+			margin-bottom: var(--space-4);
+			font-size: var(--text-heading);
+		}
+
+		ul {
+			display: flex;
+			flex-wrap: wrap;
+			gap: var(--space-4) var(--space-8);
+			list-style: none;
+		}
+	}
+</style>

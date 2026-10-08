@@ -49,3 +49,6 @@ clean: ## Remove Xcode build products
 
 open: ## Open the project in Xcode
 	open "$(PROJECT)"
+
+web: ## Start the SvelteKit development server
+	cd Website && pnpm run dev --host
