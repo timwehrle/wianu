@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D10EF48E3015F2800070703E /* WianuIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = D10EF48D3015F2800070703E /* WianuIcon.icon */; };
+		D10EF48E3015F2800070703E /* WianuLogo.icon in Resources */ = {isa = PBXBuildFile; fileRef = D10EF48D3015F2800070703E /* WianuLogo.icon */; };
 		D11E823430177C800092ECC8 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = D11E823330177C800092ECC8 /* Sparkle */; };
 		D13E65ED3018F6B400E58017 /* UpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13E65EB3018F6B400E58017 /* UpdateService.swift */; };
 		D1A100013060000000000001 /* AnalyticsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A100023060000000000002 /* AnalyticsClient.swift */; };
@@ -69,7 +69,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		D10EF48D3015F2800070703E /* WianuIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = WianuIcon.icon; sourceTree = "<group>"; };
+		D10EF48D3015F2800070703E /* WianuLogo.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = WianuLogo.icon; sourceTree = "<group>"; };
 		D11E8238301787330092ECC8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D11E823930178A6D0092ECC8 /* Wianu.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Wianu.entitlements; sourceTree = "<group>"; };
 		D11E823C3017921C0092ECC8 /* ExportOptions.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = ExportOptions.plist; sourceTree = "<group>"; };
@@ -355,7 +355,7 @@
 				D1B972603015341900B64B10 /* Infrastructure */,
 				D1B972663015341900B64B10 /* Shared */,
 				D1B972673015341900B64B10 /* Assets.xcassets */,
-				D10EF48D3015F2800070703E /* WianuIcon.icon */,
+				D10EF48D3015F2800070703E /* WianuLogo.icon */,
 				D11E823930178A6D0092ECC8 /* Wianu.entitlements */,
 			);
 			path = Wianu;
@@ -479,7 +479,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D10EF48E3015F2800070703E /* WianuIcon.icon in Resources */,
+				D10EF48E3015F2800070703E /* WianuLogo.icon in Resources */,
 				D1B9726A3015341900B64B10 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -679,7 +679,7 @@
 		D14338AF3013E5B800BA847C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = WianuIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = WianuLogo;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = Wianu/Wianu.entitlements;
@@ -729,7 +729,7 @@
 		D14338B03013E5B800BA847C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = WianuIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = WianuLogo;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = Wianu/Wianu.entitlements;
