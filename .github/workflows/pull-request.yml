@@ -19,21 +19,16 @@ env:
 jobs:
   quality:
     name: Format and lint
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 10
 
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Select validated Xcode
-        shell: bash
+      - name: Show runner Xcode version
         run: |
-          set -euo pipefail
-
-          XCODE_PATH="/Applications/Xcode_26.6.app"
-          test -d "$XCODE_PATH"
-          sudo xcode-select --switch "$XCODE_PATH/Contents/Developer"
+          xcode-select --print-path
           xcodebuild -version
 
       - name: Install code quality tools
@@ -47,21 +42,16 @@ jobs:
 
   tests:
     name: Test
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 20
 
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Select validated Xcode
-        shell: bash
+      - name: Show runner Xcode version
         run: |
-          set -euo pipefail
-
-          XCODE_PATH="/Applications/Xcode_26.6.app"
-          test -d "$XCODE_PATH"
-          sudo xcode-select --switch "$XCODE_PATH/Contents/Developer"
+          xcode-select --print-path
           xcodebuild -version
 
       - name: Run tests

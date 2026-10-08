@@ -24,7 +24,7 @@ env:
 
 jobs:
   release:
-    runs-on: macos-26
+    runs-on: xcode-27
 
     steps:
       - name: Check out repository
@@ -32,14 +32,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Select validated Xcode
-        shell: bash
+      - name: Show runner Xcode version
         run: |
-          set -euo pipefail
-
-          XCODE_PATH="/Applications/Xcode_26.6.app"
-          test -d "$XCODE_PATH"
-          sudo xcode-select --switch "$XCODE_PATH/Contents/Developer"
+          xcode-select --print-path
           xcodebuild -version
 
       - name: Determine release version
