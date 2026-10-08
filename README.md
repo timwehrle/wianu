@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="Assets/WianuIcon.png" width="120" alt="Wianu app icon">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="Assets/wianu-logo.svg">
+    <img src="Assets/wianu-logo-dark.svg" width="120" alt="Wianu app icon">
+  </picture>
 </p>
 
 <div align="center">
