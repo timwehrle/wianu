@@ -39,11 +39,7 @@ function validIds(ids: unknown): ids is number[] {
 }
 
 function validReason(value: unknown): value is string {
-	return (
-		typeof value === 'string' &&
-		value.trim().length > 0 &&
-		value.trim().length <= 500
-	);
+	return typeof value === 'string' && value.trim().length <= 500;
 }
 
 function validStoredReasons(value: unknown, ids: number[]): boolean {
@@ -146,6 +142,9 @@ export async function publishWeekly(
 			'Select exactly five different movies.'
 		);
 	}
+	if (reasons === undefined) {
+		reasons = ids.map(() => '');
+	}
 	if (
 		!Array.isArray(reasons) ||
 		reasons.length !== ids.length ||
@@ -154,7 +153,7 @@ export async function publishWeekly(
 		throw new ApiError(
 			400,
 			'invalid_reasons',
-			'Write a reason for each film (up to 500 characters).'
+			'Each reason must be text of up to 500 characters, or left blank.'
 		);
 	}
 	await Promise.all(ids.map((id) => getMovie(id, requestId)));
@@ -162,7 +161,9 @@ export async function publishWeekly(
 		week: isoWeek(new Date()),
 		movieIds: [...ids],
 		reasons: Object.fromEntries(
-			ids.map((id, index) => [id, reasons[index].trim()])
+			ids
+				.map((id, index) => [id, reasons[index].trim()])
+				.filter(([, reason]) => reason !== '')
 		),
 		updatedAt: new Date().toISOString()
 	};

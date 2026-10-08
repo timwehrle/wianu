@@ -97,7 +97,7 @@
 					</div>
 					<div class="reason-field">
 						<label for={`reason-${movie.id}`}
-							>Why did you pick {movie.title}?</label
+							>Why did you pick {movie.title}? (optional)</label
 						>
 						<textarea
 							class="admin-field"
@@ -107,7 +107,6 @@
 							oninput={(event) =>
 								onReasonChange(movie.id, event.currentTarget.value)}
 							maxlength="500"
-							required
 							rows="3"></textarea>
 					</div>
 				</li>
@@ -119,8 +118,7 @@
 		<button
 			class="publish admin-action"
 			type="submit"
-			disabled={selected.length !== 5 ||
-				selected.some((movie) => !movie.reason.trim())}
+			disabled={selected.length !== 5}
 			>Publish five films
 		</button>
 		{#if message}
