@@ -19,6 +19,7 @@ env:
   ARCHIVE_PATH: ${{ github.workspace }}/build/Wianu.xcarchive
   EXPORT_PATH: ${{ github.workspace }}/build/export
   APPCAST_PATH: ${{ github.workspace }}/build/appcast
+  DISTRIBUTION_PATH: ${{ github.workspace }}/build/distribution
   SPARKLE_VERSION: "2.9.4"
   SPARKLE_ARCHIVE_SHA256: "ce89daf967db1e1893ed3ebd67575ed82d3902563e3191ca92aaec9164fbdef9"
 
@@ -56,6 +57,22 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "zip_name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
+          echo "dmg_name=${APP_NAME}-${VERSION}.dmg" >> "$GITHUB_OUTPUT"
+
+      - name: Validate appcast deployment paths
+        shell: bash
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          APPCAST_DEPLOY_PATH: ${{ secrets.APPCAST_DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+
+          for destination in "$APPCAST_DEPLOY_PATH" "$DEPLOY_PATH"; do
+            if [[ ! "$destination" =~ ^/[a-zA-Z0-9_/-]+$ || "$destination" == / ]]; then
+              echo "Configure DEPLOY_PATH and APPCAST_DEPLOY_PATH as absolute directories without spaces."
+              exit 1
+            fi
+          done
 
       - name: Install signing certificate
         shell: bash
@@ -268,6 +285,47 @@ jobs:
           xcrun stapler validate "$FINAL_APP"
           spctl --assess --type execute --verbose=4 "$FINAL_APP"
 
+      - name: Create and sign installation DMG
+        shell: bash
+        env:
+          DMG_NAME: ${{ steps.version.outputs.dmg_name }}
+        run: |
+          set -euo pipefail
+
+          STAGING_PATH="$RUNNER_TEMP/dmg-staging"
+          mkdir -p "$STAGING_PATH" "$DISTRIBUTION_PATH"
+          ditto "$EXPORT_PATH/$APP_NAME.app" "$STAGING_PATH/$APP_NAME.app"
+          ln -s /Applications "$STAGING_PATH/Applications"
+
+          hdiutil create \
+            -volname "$APP_NAME" \
+            -srcfolder "$STAGING_PATH" \
+            -format UDZO \
+            "$DISTRIBUTION_PATH/$DMG_NAME"
+
+          codesign --sign "Developer ID Application" --timestamp "$DISTRIBUTION_PATH/$DMG_NAME"
+          codesign --verify --strict --verbose=2 "$DISTRIBUTION_PATH/$DMG_NAME"
+          hdiutil verify "$DISTRIBUTION_PATH/$DMG_NAME"
+
+      - name: Notarize and staple installation DMG
+        shell: bash
+        env:
+          DMG_NAME: ${{ steps.version.outputs.dmg_name }}
+          API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+
+          DMG_PATH="$DISTRIBUTION_PATH/$DMG_NAME"
+          xcrun notarytool submit "$DMG_PATH" \
+            --key "$RUNNER_TEMP/AuthKey_${API_KEY_ID}.p8" \
+            --key-id "$API_KEY_ID" \
+            --issuer "$API_ISSUER_ID" \
+            --wait
+          xcrun stapler staple "$DMG_PATH"
+          xcrun stapler validate "$DMG_PATH"
+          spctl --assess --type open --context context:primary-signature --verbose=4 "$DMG_PATH"
+
       - name: Download Sparkle publishing tools
         shell: bash
         run: |
@@ -326,6 +384,7 @@ jobs:
       - name: Create GitHub release
         shell: bash
         env:
+          DMG_NAME: ${{ steps.version.outputs.dmg_name }}
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
           ZIP_NAME: ${{ steps.version.outputs.zip_name }}
@@ -334,6 +393,7 @@ jobs:
 
           gh release create "$TAG" \
             "$APPCAST_PATH/$ZIP_NAME" \
+            "$DISTRIBUTION_PATH/$DMG_NAME" \
             --title "$APP_NAME $TAG" \
             --generate-notes \
             --verify-tag
@@ -352,50 +412,62 @@ jobs:
           printf '%s\n' "$DEPLOY_HOST_KEY" > "$RUNNER_TEMP/wianu-known-hosts"
           chmod 600 "$RUNNER_TEMP/wianu-known-hosts"
 
-      - name: Deploy appcast
+      - name: Deploy current and legacy appcasts
         shell: bash
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          APPCAST_DEPLOY_PATH: ${{ secrets.APPCAST_DEPLOY_PATH }}
         run: |
           set -euo pipefail
 
-          rsync \
-            --archive \
-            --verbose \
-            --compress \
-            -e "ssh -i $RUNNER_TEMP/wianu-deploy -o UserKnownHostsFile=$RUNNER_TEMP/wianu-known-hosts -o StrictHostKeyChecking=yes" \
-            "$APPCAST_PATH/appcast.xml" \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/appcast.xml"
+          for destination in "$APPCAST_DEPLOY_PATH" "$DEPLOY_PATH"; do
+            if [[ ! "$destination" =~ ^/[a-zA-Z0-9_/-]+$ || "$destination" == / ]]; then
+              echo "Appcast deployment paths must be absolute directories without spaces."
+              exit 1
+            fi
+          done
 
-          ssh \
-            -i "$RUNNER_TEMP/wianu-deploy" \
-            -o "UserKnownHostsFile=$RUNNER_TEMP/wianu-known-hosts" \
-            -o StrictHostKeyChecking=yes \
-            "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            "chmod 644 ${DEPLOY_PATH}/appcast.xml"
+          for destination in "$APPCAST_DEPLOY_PATH" "$DEPLOY_PATH"; do
+            rsync \
+              --archive \
+              --verbose \
+              --compress \
+              -e "ssh -i $RUNNER_TEMP/wianu-deploy -o UserKnownHostsFile=$RUNNER_TEMP/wianu-known-hosts -o StrictHostKeyChecking=yes" \
+              "$APPCAST_PATH/appcast.xml" \
+              "${DEPLOY_USER}@${DEPLOY_HOST}:${destination}/appcast.xml.next"
+
+            ssh \
+              -i "$RUNNER_TEMP/wianu-deploy" \
+              -o "UserKnownHostsFile=$RUNNER_TEMP/wianu-known-hosts" \
+              -o StrictHostKeyChecking=yes \
+              "${DEPLOY_USER}@${DEPLOY_HOST}" \
+              "chmod 644 ${destination}/appcast.xml.next && mv -f ${destination}/appcast.xml.next ${destination}/appcast.xml"
+          done
 
       - name: Verify deployed feed
         shell: bash
         run: |
           set -euo pipefail
 
-          curl \
-            --fail \
-            --location \
-            --retry 5 \
-            --retry-delay 3 \
-            "https://timwehrle.de/labs/wianu/appcast.xml" \
-            --output "$RUNNER_TEMP/deployed-appcast.xml"
+          for feed_url in "https://wianu.com/appcast.xml" "https://timwehrle.de/labs/wianu/appcast.xml"; do
+            curl \
+              --fail \
+              --location \
+              --retry 5 \
+              --retry-delay 3 \
+              "$feed_url" \
+              --output "$RUNNER_TEMP/deployed-appcast.xml"
 
-          grep -F \
-            "https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ steps.version.outputs.tag }}/${{ steps.version.outputs.zip_name }}" \
-            "$RUNNER_TEMP/deployed-appcast.xml"
+            grep -F \
+              "https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ steps.version.outputs.tag }}/${{ steps.version.outputs.zip_name }}" \
+              "$RUNNER_TEMP/deployed-appcast.xml"
 
-          grep -F \
-            'sparkle:edSignature=' \
-            "$RUNNER_TEMP/deployed-appcast.xml"
+            grep -F \
+              'sparkle:edSignature=' \
+              "$RUNNER_TEMP/deployed-appcast.xml"
+          done
 
       - name: Clean signing material
         if: always()

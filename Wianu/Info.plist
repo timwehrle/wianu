@@ -11,7 +11,7 @@
 	<key>SUEnableInstallerLauncherService</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://timwehrle.de/labs/wianu/appcast.xml</string>
+	<string>https://wianu.com/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>qII492mAKlK3l3NQRT93ckYSi7VfB/YuEweOAznp6rA=</string>
 	<key>UmamiBaseURL</key>
