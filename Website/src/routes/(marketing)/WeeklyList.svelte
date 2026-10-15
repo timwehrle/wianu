@@ -31,7 +31,10 @@
 				>
 					{#if movie.backdropPath}
 						<img
-							src={`https://image.tmdb.org/t/p/${index === 0 ? 'w1280' : 'w780'}${movie.backdropPath}`}
+							src={resolve('/(api)/images/tmdb/[size]/[file]', {
+								size: index === 0 ? 'w1280' : 'w780',
+								file: movie.backdropPath.slice(1)
+							})}
 							alt={`Still from ${movie.title}`}
 							loading="lazy"
 							width="1280"
@@ -39,7 +42,10 @@
 						/>
 					{:else if movie.posterPath}
 						<img
-							src={`https://image.tmdb.org/t/p/w500${movie.posterPath}`}
+							src={resolve('/(api)/images/tmdb/[size]/[file]', {
+								size: 'w500',
+								file: movie.posterPath.slice(1)
+							})}
 							alt={`Poster for ${movie.title}`}
 							loading="lazy"
 							width="500"

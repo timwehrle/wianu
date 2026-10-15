@@ -1,0 +1,26 @@
+$hover-background: rgba(240, 240, 243, 0.92);
+
+@mixin surface($elevation: 0 18px 48px #0000001f) {
+	background: var(--glass-background, rgba(255, 255, 255, 0.78));
+	color: var(--glass-foreground, #1d1d1f);
+	border: 1px solid transparent;
+	box-shadow:
+		0 0 0 0.5px #0000001f,
+		-1px 0 0 -0.25px #00000038,
+		1px 0 0 -0.25px #00000038,
+		inset 0 1px #ffffffb3,
+		inset 0 -1px #ffffffb3,
+		inset 0 6px 6px -6px #ffffff4d,
+		inset 0 -12px 10px -6px #fff6,
+		$elevation;
+	-webkit-backdrop-filter: saturate(var(--glass-card-saturate, 180%))
+		blur(var(--glass-card-blur, 10px));
+	backdrop-filter: saturate(var(--glass-card-saturate, 180%))
+		blur(var(--glass-card-blur, 10px));
+
+	@supports not (
+		(backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))
+	) {
+		background: #f5f5f7;
+	}
+}

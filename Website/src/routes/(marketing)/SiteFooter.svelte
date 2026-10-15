@@ -1,7 +1,14 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { onMount } from 'svelte';
+	import Button from '#lib/components/Button.svelte';
+	import { openPrivacySettings } from '#lib/privacy/analytics.js';
 
 	const year = new Date().getFullYear();
+	let interactive = $state(false);
+	onMount(() => {
+		interactive = true;
+	});
 </script>
 
 <footer class="footer">
@@ -15,16 +22,33 @@
 				<p>All your streaming. One home.</p>
 			</div>
 			<nav aria-label="Footer navigation">
-				<a href={resolve('the-app')}>App</a>
+				<a href={resolve('the-app')}>The App</a>
 				<a href={resolve('weekly')}>Weekly</a>
 				<a
 					href={resolve('download')}
-					data-sveltekit-reload>Download for macOS</a
+					data-sveltekit-reload
+					target="_blank"
+					rel="noopener noreferrer">Download for macOS</a
 				>
 			</nav>
 		</div>
 		<div class="footer-bottom">
 			<p>© {year} Wianu</p>
+			<nav aria-label="Legal navigation">
+				<a href={resolve('privacy-policy')}>Privacy policy</a>
+				<a href={resolve('imprint')}>Imprint</a>
+				{#if interactive}
+					<Button
+						variant="link"
+						id="privacy-settings-trigger"
+						onclick={openPrivacySettings}>Privacy settings</Button
+					>
+				{:else}
+					<a href={resolve('privacy-policy#analytics-settings')}
+						>Privacy settings</a
+					>
+				{/if}
+			</nav>
 		</div>
 	</div>
 </footer>
@@ -72,8 +96,19 @@
 	}
 
 	.footer-bottom {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: var(--space-4) var(--space-6);
 		padding-top: var(--space-5);
 		border-top: var(--border-width) solid var(--border);
 		font-size: var(--text-small);
+	}
+
+	.footer-bottom nav {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-4) var(--space-6);
 	}
 </style>

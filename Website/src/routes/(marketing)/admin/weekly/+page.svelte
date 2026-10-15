@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import { resolve } from '$app/paths';
 	import TextLink from '#lib/components/TextLink.svelte';
 	import type { WeeklyMovie, WeeklySelectionMovie } from '#lib/weekly/types.js';
@@ -59,10 +60,7 @@
 			method="POST"
 			action="?/logout"
 		>
-			<button
-				class="sign-out"
-				type="submit">Sign out</button
-			>
+			<Button type="submit">Sign out</Button>
 		</form>
 	{/if}
 	<header class="page-header">
@@ -131,18 +129,6 @@
 		h1 {
 			font-size: var(--text-display);
 		}
-	}
-
-	.sign-out {
-		min-height: var(--control-size);
-		padding: var(--space-2) 0;
-		border: 0;
-		border-bottom: var(--border-width) solid currentColor;
-		background: none;
-		color: var(--foreground);
-		font: inherit;
-		white-space: nowrap;
-		cursor: pointer;
 	}
 
 	.editor-grid {

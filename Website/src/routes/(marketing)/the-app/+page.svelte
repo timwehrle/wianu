@@ -20,7 +20,11 @@
 				remember where it lives. Your services, current shows, and watchlist are
 				together in one Mac app.
 			</p>
-			<TextLink href={resolve('download')}>Download for macOS</TextLink>
+			<TextLink
+				href={resolve('download')}
+				target="_blank"
+				rel="noopener noreferrer">Download for macOS</TextLink
+			>
 		</div>
 	</header>
 
@@ -71,8 +75,16 @@
 				watching.
 			</p>
 			<div class="maker-links">
-				<TextLink href="https://github.com/timwehrle">GitHub</TextLink>
-				<TextLink href="https://www.timwehrle.de">Personal website</TextLink>
+				<TextLink
+					href="https://github.com/timwehrle"
+					target="_blank"
+					rel="noopener noreferrer">GitHub</TextLink
+				>
+				<TextLink
+					href="https://www.timwehrle.de"
+					target="_blank"
+					rel="noopener noreferrer">Personal website</TextLink
+				>
 			</div>
 		</div>
 	</section>
@@ -84,7 +96,11 @@
 		<h2 id="download-title">Give Wianu<br /><em>a try.</em></h2>
 		<div class="download-bottom">
 			<p>Made for macOS 26 or later.</p>
-			<TextLink href={resolve('download')}>Download Wianu</TextLink>
+			<TextLink
+				href={resolve('download')}
+				target="_blank"
+				rel="noopener noreferrer">Download Wianu</TextLink
+			>
 		</div>
 	</section>
 </div>

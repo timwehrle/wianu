@@ -13,6 +13,7 @@
 		-webkit-font-smoothing: antialiased;
 		-webkit-text-size-adjust: none;
 		text-size-adjust: none;
+		scroll-padding-block-end: var(--privacy-notice-space, 0px);
 		hanging-punctuation: first allow-end last;
 	}
 
@@ -104,24 +105,6 @@ body {
 		background: var(--background);
 		color: var(--foreground);
 		font: inherit;
-	}
-
-	.admin-action {
-		max-width: 100%;
-		min-height: var(--control-size);
-		padding: var(--space-3) var(--space-6);
-		border: 0;
-		background: var(--foreground);
-		color: var(--background);
-		font: inherit;
-		font-weight: var(--weight-semibold);
-		line-height: var(--leading-copy);
-		cursor: pointer;
-
-		&:disabled {
-			opacity: 0.5;
-			cursor: not-allowed;
-		}
 	}
 }
 

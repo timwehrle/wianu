@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import type { WeeklyEntry, WeeklySelectionMovie } from '#lib/weekly/types.js';
 	import { ArrowDownIcon, ArrowUpIcon, XIcon } from '@lucide/svelte';
 
@@ -58,7 +59,8 @@
 							{#if movie.releaseDate}<p>{movie.releaseDate.slice(0, 4)}</p>{/if}
 						</div>
 						<div class="controls">
-							<button
+							<Button
+								size="icon"
 								type="button"
 								aria-label={`Move ${movie.title} up`}
 								disabled={index === 0}
@@ -69,8 +71,9 @@
 									strokeWidth={1.5}
 									aria-hidden="true"
 								/>
-							</button>
-							<button
+							</Button>
+							<Button
+								size="icon"
 								type="button"
 								aria-label={`Move ${movie.title} down`}
 								disabled={index === selected.length - 1}
@@ -81,8 +84,9 @@
 									strokeWidth={1.5}
 									aria-hidden="true"
 								/>
-							</button>
-							<button
+							</Button>
+							<Button
+								size="icon"
 								type="button"
 								aria-label={`Remove ${movie.title}`}
 								onclick={() => onRemove(movie.id)}
@@ -92,7 +96,7 @@
 									strokeWidth={1.5}
 									aria-hidden="true"
 								/>
-							</button>
+							</Button>
 						</div>
 					</div>
 					<div class="reason-field">
@@ -115,12 +119,12 @@
 		{#if selected.length === 0}<p class="empty">
 				Search for films to start the next selection.
 			</p>{/if}
-		<button
-			class="publish admin-action"
+		<Button
+			class="publish"
 			type="submit"
 			disabled={selected.length !== 5}
 			>Publish five films
-		</button>
+		</Button>
 		{#if message}
 			<p
 				class="message"
@@ -200,24 +204,6 @@
 			grid-column: 3;
 			grid-row: 1;
 		}
-
-		button {
-			display: grid;
-			flex: none;
-			place-items: center;
-			width: var(--control-size);
-			height: var(--control-size);
-			padding: 0;
-			border: 0;
-			background: none;
-			color: var(--foreground);
-			cursor: pointer;
-
-			&:disabled {
-				color: var(--muted-foreground);
-				cursor: not-allowed;
-			}
-		}
 	}
 
 	.reason-field {
@@ -238,10 +224,8 @@
 		}
 	}
 
-	.publish {
+	.selected-films :global(.publish) {
 		margin-top: var(--space-6);
-		background: var(--action-background);
-		color: var(--action-foreground);
 	}
 
 	.empty,

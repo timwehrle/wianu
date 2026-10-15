@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { WeeklySelectionMovie } from '#lib/weekly/types.js';
 	import { year } from './utils';
 
@@ -20,13 +21,19 @@
 	>
 		{#if movie.backdropPath}
 			<img
-				src={`https://image.tmdb.org/t/p/w1280${movie.backdropPath}`}
+				src={resolve('/(api)/images/tmdb/[size]/[file]', {
+					size: 'w1280',
+					file: movie.backdropPath.slice(1)
+				})}
 				alt={`Still from ${movie.title}`}
 				loading={index === 0 ? 'eager' : 'lazy'}
 			/>
 		{:else if movie.posterPath}
 			<img
-				src={`https://image.tmdb.org/t/p/w780${movie.posterPath}`}
+				src={resolve('/(api)/images/tmdb/[size]/[file]', {
+					size: 'w780',
+					file: movie.posterPath.slice(1)
+				})}
 				alt={`Poster for ${movie.title}`}
 				loading={index === 0 ? 'eager' : 'lazy'}
 			/>

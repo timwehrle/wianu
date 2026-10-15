@@ -1,11 +1,12 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import { resolve } from '$app/paths';
 	import { prefersReducedMotion } from 'svelte/motion';
 	import { fade, slide } from 'svelte/transition';
 	import { ArrowDownIcon, ArrowRightIcon } from '@lucide/svelte';
 
 	let isOpen = $state(false);
-	let menuTrigger: HTMLButtonElement;
+	let menuTrigger = $state<HTMLButtonElement>();
 	let menu = $state<HTMLElement>();
 
 	function toggleMenu() {
@@ -21,14 +22,14 @@
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Escape' && isOpen) {
 			closeMenu();
-			menuTrigger.focus();
+			menuTrigger?.focus();
 		}
 	}
 
 	function handlePointerdown(event: PointerEvent) {
 		if (
 			isOpen &&
-			!menuTrigger.contains(event.target as Node) &&
+			!menuTrigger?.contains(event.target as Node) &&
 			!menu?.contains(event.target as Node)
 		) {
 			closeMenu();
@@ -36,7 +37,11 @@
 	}
 
 	function handleResize() {
-		if (isOpen && getComputedStyle(menuTrigger).display === 'none') {
+		if (
+			isOpen &&
+			menuTrigger &&
+			getComputedStyle(menuTrigger).display === 'none'
+		) {
 			closeMenu();
 		}
 	}
@@ -82,17 +87,19 @@
 					class="nav-desktop-download"
 					href={resolve('download')}
 					data-sveltekit-reload
+					target="_blank"
+					rel="noopener noreferrer"
 				>
 					Download
 					<ArrowDownIcon
 						size="var(--icon-size)"
-						strokeWidth={1.5}
+						strokeWidth={1.0}
 						aria-hidden="true"
 					/>
 				</a>
 			</nav>
-			<button
-				bind:this={menuTrigger}
+			<Button
+				bind:element={menuTrigger}
 				class="nav-menu-toggle"
 				type="button"
 				aria-label={isOpen ? 'Close menu' : 'Open menu'}
@@ -101,7 +108,7 @@
 				onclick={toggleMenu}
 			>
 				<span>{isOpen ? 'Close' : 'Menu'}</span>
-			</button>
+			</Button>
 		</div>
 		{#if isOpen}
 			<nav
@@ -130,21 +137,23 @@
 							>
 								<ArrowRightIcon
 									size="var(--icon-size)"
-									strokeWidth={1.5}
+									strokeWidth={1.0}
 								/>
 							</span>
 						</a>
 					</li>
-					<li class="nav-menu-download-item">
+					<li>
 						<a
 							class="nav-menu-download"
 							href={resolve('download')}
 							data-sveltekit-reload
 							onclick={closeMenu}
+							target="_blank"
+							rel="noopener noreferrer"
 						>
 							<span class="nav-menu-copy">
-								<span class="nav-menu-description">For macOS 26 or later</span>
 								<span class="nav-menu-title">Download Wianu</span>
+								<span class="nav-menu-description">For macOS 26 or later</span>
 							</span>
 							<span
 								class="nav-menu-arrow"
@@ -152,7 +161,7 @@
 							>
 								<ArrowDownIcon
 									size="var(--icon-size)"
-									strokeWidth={1.5}
+									strokeWidth={1.0}
 									aria-hidden="true"
 								/>
 							</span>
@@ -165,12 +174,15 @@
 </header>
 
 <style lang="scss">
+	@use '../../styles/glass';
+
 	.nav-backdrop {
 		position: fixed;
 		inset: 0;
 		z-index: 9;
-		backdrop-filter: blur(2px);
-		background-color: var(--overlay);
+		-webkit-backdrop-filter: blur(3px);
+		backdrop-filter: blur(3px);
+		background: rgb(0 0 0 / 20%);
 	}
 
 	header {
@@ -183,100 +195,99 @@
 		width: calc(100% - 2 * var(--page-gutter));
 		max-width: var(--content-width);
 		margin: var(--space-4) auto;
-		color: var(--foreground);
+		color: #1d1d1f;
 	}
 
 	.nav-bar {
 		display: flex;
-		gap: var(--border-width);
+		gap: var(--space-2);
 	}
 
 	.nav-main,
-	.nav-desktop a,
-	.nav-menu-toggle {
-		background: var(--surface-glass);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border-radius: var(--radius-small);
+	.nav-desktop a {
+		@include glass.surface;
+		border-radius: 999px;
 	}
 
 	.nav-main {
-		padding: var(--space-3);
+		padding: var(--space-3) var(--space-5);
 		display: flex;
-		justify-content: space-between;
 		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-4);
 		flex: 1;
 		min-width: 0;
+		min-height: 3.5rem;
 	}
 
 	.nav-menu {
-		padding-top: var(--border-width);
+		margin-top: var(--space-3);
+	}
+
+	@media (max-height: 480px) {
+		.nav-menu {
+			max-height: calc(100dvh - 6.5rem);
+			overflow-y: auto;
+			overscroll-behavior: contain;
+		}
 	}
 
 	.nav-menu-list {
 		display: flex;
 		flex-direction: column;
-		gap: var(--border-width);
+		gap: var(--space-3);
 		list-style: none;
 	}
 
-	.nav-menu-link {
-		position: relative;
+	.nav-menu-link,
+	.nav-menu-download {
+		@include glass.surface;
 		display: flex;
 		align-items: center;
 		gap: var(--space-4);
 		width: 100%;
-		min-height: 7.5rem;
-		overflow: hidden;
-		text-decoration: none;
-		color: inherit;
-		background-color: var(--surface);
-		border-radius: var(--radius-small);
-		padding-block: var(--space-5);
-		padding-inline: var(--space-4);
-	}
-
-	.nav-menu-download-item {
-		background-color: var(--surface);
-		border-radius: var(--radius-small);
-	}
-
-	.nav-menu-download {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-2);
 		padding: var(--space-4);
+		border-radius: var(--space-4);
 		color: inherit;
 		text-decoration: none;
-		white-space: nowrap;
-		width: 100%;
+	}
 
-		.nav-menu-description {
-			margin-block: 0 var(--space-1);
-		}
+	.nav-main,
+	.nav-desktop a,
+	.nav-menu-link,
+	.nav-menu-download {
+		transition: background-color 150ms;
+	}
+
+	.nav-main:has(a:hover),
+	.nav-desktop a:hover,
+	.nav-menu-link:hover,
+	.nav-menu-download:hover {
+		background-color: glass.$hover-background;
 	}
 
 	.nav-menu-copy {
-		position: relative;
 		display: flex;
 		flex-direction: column;
 		flex: 1;
+		min-width: 0;
 	}
 
 	.nav-menu-title {
 		font-family: var(--font-serif);
-		font-size: var(--text-heading-small);
-		line-height: var(--leading-heading);
+		font-size: 1.75rem;
+		line-height: var(--leading-copy);
 	}
 
 	.nav-menu-description {
 		margin-top: var(--space-1);
 		font-size: var(--text-small);
+		line-height: var(--leading-body);
 	}
 
 	.nav-menu-arrow {
-		position: relative;
-		align-self: start;
+		display: inline-flex;
+		flex-shrink: 0;
 	}
 
 	.nav-logo {
@@ -292,8 +303,8 @@
 	}
 
 	.nav-weekly-link {
-		text-decoration: none;
 		color: inherit;
+		text-decoration: none;
 
 		@include at-least(large) {
 			display: none;
@@ -305,7 +316,7 @@
 
 		@include at-least(large) {
 			display: flex;
-			gap: var(--border-width);
+			gap: var(--space-2);
 		}
 
 		a {
@@ -315,11 +326,6 @@
 			color: inherit;
 			text-decoration: none;
 			white-space: nowrap;
-
-			&:hover {
-				text-decoration: underline;
-				text-underline-offset: 0.25em;
-			}
 		}
 
 		.nav-desktop-download {
@@ -327,20 +333,18 @@
 		}
 	}
 
-	.nav-menu-toggle {
-		min-height: var(--control-size);
-		min-width: var(--control-size);
-		padding: var(--space-3);
-		color: inherit;
-		font-weight: var(--weight-semibold);
-		border: 0;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		cursor: pointer;
-
+	.nav-bar :global(.nav-menu-toggle) {
 		@include at-least(large) {
 			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.nav-main,
+		.nav-desktop a,
+		.nav-menu-link,
+		.nav-menu-download {
+			transition: none;
 		}
 	}
 
@@ -348,19 +352,6 @@
 		.nav-backdrop,
 		.nav-menu {
 			display: none;
-		}
-	}
-
-	.nav-shell:has(.nav-menu) {
-		color: var(--foreground);
-
-		.nav-main,
-		.nav-menu-toggle,
-		.nav-menu-link,
-		.nav-menu-download-item {
-			background: var(--background);
-			backdrop-filter: none;
-			-webkit-backdrop-filter: none;
 		}
 	}
 </style>

@@ -13,7 +13,11 @@
 			Together in one native Mac app.
 		</p>
 		<div>
-			<TextLink href={resolve('download')}>Download for macOS</TextLink>
+			<TextLink
+				href={resolve('download')}
+				target="_blank"
+				rel="noopener noreferrer">Download for macOS</TextLink
+			>
 		</div>
 	</div>
 	<div class="home-hero-image-wrapper page-container">

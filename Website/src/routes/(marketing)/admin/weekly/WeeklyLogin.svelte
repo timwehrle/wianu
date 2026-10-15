@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	let { message }: { message?: string } = $props();
 </script>
 
@@ -17,9 +18,9 @@
 			autocomplete="current-password"
 			required
 		/>
-		<button
-			class="admin-action"
-			type="submit">Sign in</button
+		<Button
+			class="login-action"
+			type="submit">Sign in</Button
 		>
 	</form>
 	{#if message}<p
@@ -53,7 +54,7 @@
 			width: 100%;
 		}
 
-		button {
+		:global(.login-action) {
 			justify-self: start;
 			margin-top: var(--space-2);
 		}

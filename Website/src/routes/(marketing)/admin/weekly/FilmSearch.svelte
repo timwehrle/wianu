@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '#lib/components/Button.svelte';
 	import { resolve } from '$app/paths';
 	import type { WeeklyMovie } from '#lib/weekly/types.js';
 	import { SearchIcon } from '@lucide/svelte';
@@ -81,8 +82,7 @@
 				bind:value={query}
 				placeholder="Search by title"
 			/>
-			<button
-				class="admin-action"
+			<Button
 				type="submit"
 				disabled={searching}
 			>
@@ -92,7 +92,7 @@
 					aria-hidden="true"
 				/>
 				{searching ? 'Searching…' : 'Search'}
-			</button>
+			</Button>
 		</div>
 	</form>
 	{#if searchError}<p
@@ -113,7 +113,10 @@
 				<li>
 					{#if movie.posterPath}
 						<img
-							src={`https://image.tmdb.org/t/p/w92${movie.posterPath}`}
+							src={resolve('/(api)/images/tmdb/[size]/[file]', {
+								size: 'w92',
+								file: movie.posterPath.slice(1)
+							})}
 							alt=""
 							loading="lazy"
 						/>
@@ -127,11 +130,11 @@
 						<h3>{movie.title}</h3>
 						{#if movie.releaseDate}<p>{movie.releaseDate.slice(0, 4)}</p>{/if}
 					</div>
-					<button
+					<Button
 						type="button"
 						disabled={atLimit || selectedIds.includes(movie.id)}
 						onclick={() => onAdd(movie)}
-						>{selectedIds.includes(movie.id) ? 'Added' : 'Add'}</button
+						>{selectedIds.includes(movie.id) ? 'Added' : 'Add'}</Button
 					>
 				</li>
 			{/each}
@@ -165,12 +168,6 @@
 			flex: 1 1 12rem;
 			min-width: 0;
 		}
-
-		button {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-2);
-		}
 	}
 
 	.results {
@@ -191,24 +188,6 @@
 			flex: none;
 			object-fit: cover;
 			background: var(--surface);
-		}
-
-		button {
-			min-width: var(--control-size);
-			min-height: var(--control-size);
-			padding: var(--space-1) 0;
-			border: 0;
-			border-bottom: var(--border-width) solid currentColor;
-			background: none;
-			color: var(--foreground);
-			font: inherit;
-			cursor: pointer;
-
-			&:disabled {
-				border-bottom-color: transparent;
-				color: var(--muted-foreground);
-				cursor: not-allowed;
-			}
 		}
 	}
 

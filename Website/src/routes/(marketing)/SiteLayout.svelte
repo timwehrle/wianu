@@ -1,6 +1,7 @@
 <script lang="ts">
 	import SiteNav from './SiteNav.svelte';
 	import SiteFooter from './SiteFooter.svelte';
+	import PrivacyPreferences from '#lib/components/PrivacyPreferences.svelte';
 
 	let { children } = $props();
 </script>
@@ -11,6 +12,7 @@
 		{@render children()}
 	</main>
 	<SiteFooter />
+	<PrivacyPreferences />
 </div>
 
 <style>
