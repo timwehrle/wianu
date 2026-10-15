@@ -37,9 +37,11 @@ export const GET: RequestHandler = async ({ fetch }) => {
 		throw error(502, 'The latest Wianu release has an unexpected version.');
 	}
 
-	const archiveName = `Wianu-${tag.slice(1)}.zip`;
+	const archiveName = ['dmg', 'zip']
+		.map((extension) => `Wianu-${tag.slice(1)}.${extension}`)
+		.find((name) => release.assets?.some((asset) => asset.name === name));
 
-	if (!release.assets?.some((asset) => asset.name === archiveName)) {
+	if (!archiveName) {
 		throw error(404, 'The latest Wianu release has no download available.');
 	}
 
