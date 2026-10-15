@@ -84,3 +84,17 @@ export function mediaId(value: string): string {
 	}
 	return value;
 }
+
+export function releaseYear(value: string | null): string | undefined {
+	if (value === null || value === '') {
+		return undefined;
+	}
+	if (!/^\d{4}$/.test(value) || Number(value) < 1800 || Number(value) > 2200) {
+		throw new ApiError(
+			400,
+			'invalid_year',
+			'Year must be between 1800 and 2200.'
+		);
+	}
+	return value;
+}
