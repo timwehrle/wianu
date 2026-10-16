@@ -26,6 +26,7 @@ final class WatchlistStore {
 
     func item(matching url: URL) -> WatchlistItem? {
         let key = URLNormalizer.comparisonKey(for: url)
+
         return items.first {
             $0.url.map(URLNormalizer.comparisonKey(for:)) == key
         }
@@ -39,11 +40,14 @@ final class WatchlistStore {
         let existingIDs = items.reduce(into: [String: WatchlistItem.ID]()) {
             ids, item in
             guard item.source == .letterboxd, let url = item.url else { return }
+
             ids[URLNormalizer.comparisonKey(for: url)] = item.id
         }
 
         let importedItems = newItems.enumerated().map { index, item in
-            WatchlistItem(
+            let existing = item.url.flatMap { self.item(matching: $0) }
+
+            return WatchlistItem(
                 id: item.url.flatMap {
                     existingIDs[URLNormalizer.comparisonKey(for: $0)]
                 } ?? item.id,
@@ -52,9 +56,12 @@ final class WatchlistStore {
                 url: item.url,
                 addedAt: item.addedAt,
                 sourceOrder: index,
-                source: .letterboxd
+                source: .letterboxd,
+                tmdbID: item.tmdbID ?? existing?.tmdbID,
+                tmdbMetadata: item.tmdbMetadata ?? existing?.tmdbMetadata
             )
         }
+
         let customItems = items
             .filter { $0.source == .custom }
             .enumerated()
@@ -63,6 +70,19 @@ final class WatchlistStore {
             }
 
         items = importedItems + customItems
+        persist()
+    }
+
+    func mergeImportedItems(_ newItems: [WatchlistItem]) {
+        var keys = Set(items.compactMap { $0.url.map(URLNormalizer.comparisonKey(for:)) })
+
+        for item in newItems {
+            guard let url = item.url,
+                  keys.insert(URLNormalizer.comparisonKey(for: url)).inserted else { continue }
+
+            items.append(item.withSourceOrder(items.count))
+        }
+
         persist()
     }
 
@@ -89,6 +109,7 @@ final class WatchlistStore {
         guard let index = items.firstIndex(where: { $0.id == id }) else {
             return
         }
+
         items[index] = items[index].updating(title: title, year: year, url: url)
         persist()
     }
@@ -98,6 +119,7 @@ final class WatchlistStore {
         items = items.enumerated().map {
             $0.element.withSourceOrder($0.offset)
         }
+
         persist()
     }
 

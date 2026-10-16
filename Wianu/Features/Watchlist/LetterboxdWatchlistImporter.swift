@@ -36,9 +36,11 @@ nonisolated enum LetterboxdWatchlistImporter {
         let resourceValues = try url.resourceValues(
             forKeys: [.fileSizeKey, .isRegularFileKey]
         )
+
         guard resourceValues.isRegularFile == true else {
             throw CocoaError(.fileReadUnsupportedScheme)
         }
+
         if let fileSize = resourceValues.fileSize,
            fileSize > maximumBytes
         {
@@ -48,11 +50,13 @@ nonisolated enum LetterboxdWatchlistImporter {
         }
 
         let data = try Data(contentsOf: url, options: .mappedIfSafe)
+
         guard data.count <= maximumBytes else {
             throw LetterboxdWatchlistImportError.fileTooLarge(
                 maximumBytes: maximumBytes
             )
         }
+
         return try importItems(from: data)
     }
 
@@ -65,7 +69,14 @@ nonisolated enum LetterboxdWatchlistImporter {
             text.removeFirst()
         }
 
-        let rows = try parseCSV(text)
+        let rows: [[String]]
+
+        do {
+            rows = try CSVParser.parse(text)
+        } catch {
+            throw LetterboxdWatchlistImportError.malformedCSV
+        }
+
         let columns = try importColumns(from: rows.first)
         var seenURLs = Set<String>()
         var items: [WatchlistItem] = []
@@ -80,10 +91,12 @@ nonisolated enum LetterboxdWatchlistImporter {
                 skippedRowCount += 1
                 continue
             }
+
             guard seenURLs.insert(parsedItem.comparisonKey).inserted else {
                 skippedRowCount += 1
                 continue
             }
+
             items.append(parsedItem.item)
         }
 
@@ -108,16 +121,21 @@ nonisolated enum LetterboxdWatchlistImporter {
         guard let header else {
             throw LetterboxdWatchlistImportError.missingRequiredColumns
         }
+
         var indices: [String: Int] = [:]
+
         for (index, name) in header.enumerated() {
             let key = normalizedHeader(name)
+
             if indices[key] == nil {
                 indices[key] = index
             }
         }
+
         guard let name = indices["name"], let url = indices["letterboxduri"] else {
             throw LetterboxdWatchlistImportError.missingRequiredColumns
         }
+
         return ImportColumns(
             name: name,
             url: url,
@@ -133,6 +151,7 @@ nonisolated enum LetterboxdWatchlistImporter {
     ) -> (item: WatchlistItem, comparisonKey: String)? {
         let title = trimmedValue(at: columns.name, in: row)
         let urlString = trimmedValue(at: columns.url, in: row)
+
         guard !title.isEmpty,
               let url = URL(string: urlString),
               let secureURL = secureLetterboxdURL(url)
@@ -142,6 +161,7 @@ nonisolated enum LetterboxdWatchlistImporter {
         let addedAt = columns.date.flatMap {
             parseDate(trimmedValue(at: $0, in: row))
         }
+
         return (
             item: WatchlistItem(
                 title: title,
@@ -157,69 +177,6 @@ nonisolated enum LetterboxdWatchlistImporter {
     private static func trimmedValue(at index: Int, in row: [String]) -> String {
         value(at: index, in: row)
             .trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private static func parseCSV(_ text: String) throws -> [[String]] {
-        var rows: [[String]] = []
-        var row: [String] = []
-        var field = ""
-        var isInsideQuotes = false
-        var index = text.startIndex
-
-        while index < text.endIndex {
-            let character = text[index]
-
-            if character == "\"" {
-                let nextIndex = text.index(after: index)
-
-                if isInsideQuotes,
-                   nextIndex < text.endIndex,
-                   text[nextIndex] == "\""
-                {
-                    field.append("\"")
-                    index = nextIndex
-                } else {
-                    isInsideQuotes.toggle()
-                }
-            } else if character == ",", !isInsideQuotes {
-                row.append(field)
-                field = ""
-            } else if character == "\n"
-                || character == "\r"
-                || character == "\r\n",
-                !isInsideQuotes
-            {
-                row.append(field)
-                field = ""
-
-                if row.contains(where: { !$0.isEmpty }) {
-                    rows.append(row)
-                }
-                row = []
-
-                if character == "\r" {
-                    let nextIndex = text.index(after: index)
-                    if nextIndex < text.endIndex, text[nextIndex] == "\n" {
-                        index = nextIndex
-                    }
-                }
-            } else {
-                field.append(character)
-            }
-
-            index = text.index(after: index)
-        }
-
-        guard !isInsideQuotes else {
-            throw LetterboxdWatchlistImportError.malformedCSV
-        }
-
-        if !field.isEmpty || !row.isEmpty {
-            row.append(field)
-            rows.append(row)
-        }
-
-        return rows
     }
 
     private static func value(at index: Int, in row: [String]) -> String {
@@ -248,9 +205,11 @@ nonisolated enum LetterboxdWatchlistImporter {
             url: url,
             resolvingAgainstBaseURL: false
         ) else { return nil }
+
         components.scheme = "https"
         components.user = nil
         components.password = nil
+
         return components.url
     }
 
@@ -260,6 +219,7 @@ nonisolated enum LetterboxdWatchlistImporter {
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         formatter.dateFormat = "yyyy-MM-dd"
+
         return formatter.date(from: value)
     }
 }

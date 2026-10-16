@@ -7,6 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B3144AD4AE04689FBCA59B6C /* LetterboxdImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 297D70DC28BF39EC09DA4C62 /* LetterboxdImportTests.swift */; };
+		55C122BADDDD039B4265DAC8 /* LetterboxdSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46915CEBD3855DE754349E18 /* LetterboxdSearchTests.swift */; };
+		E397569E96586D7858595AD4 /* LetterboxdTestSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EFF6F7118F05B89732A32C3 /* LetterboxdTestSession.swift */; };
+		F5927CBD90A6F2FAC3C7C7DA /* LetterboxdMatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97A346E0C79A80327AC8AB99 /* LetterboxdMatcherTests.swift */; };
+		AC45CD0901EDDBABED4E43F6 /* CSVParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9535F5F2FB2BD52EF81E8460 /* CSVParser.swift */; };
+		2A8A8308E06AA024385EF725 /* TMDBResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2779DA82DAB320184F2669D1 /* TMDBResponses.swift */; };
+		21392BB5A368A104286329C5 /* TMDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4864F4CC291E958A50456E1F /* TMDBClient.swift */; };
+		8D84D79D036A41ED1C43AFFC /* LetterboxdMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F39C616C5A98BDB046546184 /* LetterboxdMatcher.swift */; };
+		C6C68C6ACD477659C8AB02C6 /* LetterboxdImportReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4ABD7CF583F976CCA50316E /* LetterboxdImportReviewView.swift */; };
+		3B696CC64A0307E645BFBE56 /* LetterboxdImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AB648782105E118BE086F8 /* LetterboxdImportView.swift */; };
+		EE632D160867851E435ED914 /* LetterboxdImportModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B4353EB434BACE445011DA /* LetterboxdImportModel.swift */; };
+		6DFC8E95C2334682FED9F22F /* ImportReviewEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A0FF93F2328EC8D656A0D9 /* ImportReviewEntry.swift */; };
+		A9C036BB01A04FAE823CE001 /* TMDBSearchModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9C036BB01A04FAE823CE002 /* TMDBSearchModel.swift */; };
 		D10EF48E3015F2800070703E /* WianuLogo.icon in Resources */ = {isa = PBXBuildFile; fileRef = D10EF48D3015F2800070703E /* WianuLogo.icon */; };
 		D11E823430177C800092ECC8 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = D11E823330177C800092ECC8 /* Sparkle */; };
 		D13E65ED3018F6B400E58017 /* UpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13E65EB3018F6B400E58017 /* UpdateService.swift */; };
@@ -42,7 +55,7 @@
 		D1B972863015341900B64B10 /* WatchlistItemEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972873015341900B64B10 /* WatchlistItemEditorView.swift */; };
 		D1B973023015341900B64B10 /* StreamingSearchURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B973003015341900B64B10 /* StreamingSearchURL.swift */; };
 		D1B973033015341900B64B10 /* CommandPaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B973013015341900B64B10 /* CommandPaletteView.swift */; };
-		D1C000023020000000000002 /* TMDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C000013020000000000001 /* TMDB.swift */; };
+		D1C000023020000000000002 /* TMDBModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C000013020000000000001 /* TMDBModels.swift */; };
 		D1C100013020000000000101 /* TMDBClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C100023020000000000102 /* TMDBClientTests.swift */; };
 		D1C1000D302000000000010D /* BrowserNavigationRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C1000C302000000000010C /* BrowserNavigationRouterTests.swift */; };
 		D1D000013020000000000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D000023020000000000002 /* SettingsView.swift */; };
@@ -69,6 +82,19 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		297D70DC28BF39EC09DA4C62 /* LetterboxdImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportTests.swift; sourceTree = "<group>"; };
+		46915CEBD3855DE754349E18 /* LetterboxdSearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdSearchTests.swift; sourceTree = "<group>"; };
+		1EFF6F7118F05B89732A32C3 /* LetterboxdTestSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdTestSession.swift; sourceTree = "<group>"; };
+		97A346E0C79A80327AC8AB99 /* LetterboxdMatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdMatcherTests.swift; sourceTree = "<group>"; };
+		9535F5F2FB2BD52EF81E8460 /* CSVParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVParser.swift; sourceTree = "<group>"; };
+		2779DA82DAB320184F2669D1 /* TMDBResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBResponses.swift; sourceTree = "<group>"; };
+		4864F4CC291E958A50456E1F /* TMDBClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBClient.swift; sourceTree = "<group>"; };
+		F39C616C5A98BDB046546184 /* LetterboxdMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdMatcher.swift; sourceTree = "<group>"; };
+		F4ABD7CF583F976CCA50316E /* LetterboxdImportReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportReviewView.swift; sourceTree = "<group>"; };
+		A3AB648782105E118BE086F8 /* LetterboxdImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportView.swift; sourceTree = "<group>"; };
+		92B4353EB434BACE445011DA /* LetterboxdImportModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportModel.swift; sourceTree = "<group>"; };
+		68A0FF93F2328EC8D656A0D9 /* ImportReviewEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportReviewEntry.swift; sourceTree = "<group>"; };
+		A9C036BB01A04FAE823CE002 /* TMDBSearchModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBSearchModel.swift; sourceTree = "<group>"; };
 		D10EF48D3015F2800070703E /* WianuLogo.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = WianuLogo.icon; sourceTree = "<group>"; };
 		D11E8238301787330092ECC8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D11E823930178A6D0092ECC8 /* Wianu.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Wianu.entitlements; sourceTree = "<group>"; };
@@ -116,7 +142,7 @@
 		D1B972873015341900B64B10 /* WatchlistItemEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistItemEditorView.swift; sourceTree = "<group>"; };
 		D1B973003015341900B64B10 /* StreamingSearchURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingSearchURL.swift; sourceTree = "<group>"; };
 		D1B973013015341900B64B10 /* CommandPaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandPaletteView.swift; sourceTree = "<group>"; };
-		D1C000013020000000000001 /* TMDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDB.swift; sourceTree = "<group>"; };
+		D1C000013020000000000001 /* TMDBModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBModels.swift; sourceTree = "<group>"; };
 		D1C100023020000000000102 /* TMDBClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBClientTests.swift; sourceTree = "<group>"; };
 		D1C100033020000000000103 /* WianuTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WianuTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1C1000C302000000000010C /* BrowserNavigationRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserNavigationRouterTests.swift; sourceTree = "<group>"; };
@@ -257,6 +283,11 @@
 		D1B972533015341900B64B10 /* Watchlist */ = {
 			isa = PBXGroup;
 			children = (
+				F39C616C5A98BDB046546184 /* LetterboxdMatcher.swift */,
+				F4ABD7CF583F976CCA50316E /* LetterboxdImportReviewView.swift */,
+				A3AB648782105E118BE086F8 /* LetterboxdImportView.swift */,
+				92B4353EB434BACE445011DA /* LetterboxdImportModel.swift */,
+				68A0FF93F2328EC8D656A0D9 /* ImportReviewEntry.swift */,
 				D1B9724F3015341900B64B10 /* LetterboxdWatchlistImporter.swift */,
 				D1B972503015341900B64B10 /* WatchlistItem.swift */,
 				D1B972873015341900B64B10 /* WatchlistItemEditorView.swift */,
@@ -278,13 +309,16 @@
 		D1B9725C3015341900B64B10 /* Sites */ = {
 			isa = PBXGroup;
 			children = (
+				2779DA82DAB320184F2669D1 /* TMDBResponses.swift */,
+				4864F4CC291E958A50456E1F /* TMDBClient.swift */,
 				D1B972573015341900B64B10 /* SavedSite.swift */,
 				D1B972583015341900B64B10 /* SiteDraft.swift */,
 				D1B972593015341900B64B10 /* SiteEditorView.swift */,
 				D1B9725A3015341900B64B10 /* SiteRow.swift */,
 				D1B9725B3015341900B64B10 /* SiteStore.swift */,
 				D1B973003015341900B64B10 /* StreamingSearchURL.swift */,
-				D1C000013020000000000001 /* TMDB.swift */,
+				D1C000013020000000000001 /* TMDBModels.swift */,
+				A9C036BB01A04FAE823CE002 /* TMDBSearchModel.swift */,
 			);
 			path = Sites;
 			sourceTree = "<group>";
@@ -323,6 +357,7 @@
 		D1B972633015341900B64B10 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				9535F5F2FB2BD52EF81E8460 /* CSVParser.swift */,
 				D1B972613015341900B64B10 /* PageTitleCleaner.swift */,
 				D1B972623015341900B64B10 /* URLNormalizer.swift */,
 			);
@@ -364,6 +399,10 @@
 		D1C100043020000000000104 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				297D70DC28BF39EC09DA4C62 /* LetterboxdImportTests.swift */,
+				46915CEBD3855DE754349E18 /* LetterboxdSearchTests.swift */,
+				1EFF6F7118F05B89732A32C3 /* LetterboxdTestSession.swift */,
+				97A346E0C79A80327AC8AB99 /* LetterboxdMatcherTests.swift */,
 				D1A100043060000000000004 /* AnalyticsClientTests.swift */,
 				D1F100063070000000000006 /* BrowserPresentationTests.swift */,
 				D1F000063040000000000006 /* VideoDiagnosticsTests.swift */,
@@ -491,6 +530,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC45CD0901EDDBABED4E43F6 /* CSVParser.swift in Sources */,
+				2A8A8308E06AA024385EF725 /* TMDBResponses.swift in Sources */,
+				21392BB5A368A104286329C5 /* TMDBClient.swift in Sources */,
+				8D84D79D036A41ED1C43AFFC /* LetterboxdMatcher.swift in Sources */,
+				C6C68C6ACD477659C8AB02C6 /* LetterboxdImportReviewView.swift in Sources */,
+				3B696CC64A0307E645BFBE56 /* LetterboxdImportView.swift in Sources */,
+				EE632D160867851E435ED914 /* LetterboxdImportModel.swift in Sources */,
+				6DFC8E95C2334682FED9F22F /* ImportReviewEntry.swift in Sources */,
 				D1A100013060000000000001 /* AnalyticsClient.swift in Sources */,
 				D1B9726C3015341900B64B10 /* AppModel.swift in Sources */,
 				D1B9726D3015341900B64B10 /* WatchlistItem.swift in Sources */,
@@ -523,7 +570,8 @@
 				D1B972853015341900B64B10 /* SavedSite.swift in Sources */,
 				D1B973023015341900B64B10 /* StreamingSearchURL.swift in Sources */,
 				D1B973033015341900B64B10 /* CommandPaletteView.swift in Sources */,
-				D1C000023020000000000002 /* TMDB.swift in Sources */,
+				D1C000023020000000000002 /* TMDBModels.swift in Sources */,
+				A9C036BB01A04FAE823CE001 /* TMDBSearchModel.swift in Sources */,
 				D1E100013030000000000001 /* CommandPaletteCommand.swift in Sources */,
 				D1E400013030000000000001 /* TMDBAvailabilityView.swift in Sources */,
 				D1E400023030000000000002 /* TMDBMediaViews.swift in Sources */,
@@ -538,6 +586,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B3144AD4AE04689FBCA59B6C /* LetterboxdImportTests.swift in Sources */,
+				55C122BADDDD039B4265DAC8 /* LetterboxdSearchTests.swift in Sources */,
+				E397569E96586D7858595AD4 /* LetterboxdTestSession.swift in Sources */,
+				F5927CBD90A6F2FAC3C7C7DA /* LetterboxdMatcherTests.swift in Sources */,
 				D1A100033060000000000003 /* AnalyticsClientTests.swift in Sources */,
 				D1F000053040000000000005 /* VideoDiagnosticsTests.swift in Sources */,
 				D1E300013030000000000001 /* CommandCatalogTests.swift in Sources */,

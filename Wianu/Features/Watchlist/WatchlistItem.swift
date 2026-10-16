@@ -6,12 +6,14 @@ nonisolated struct WatchlistItem: Identifiable, Codable, Hashable, Sendable {
         case letterboxd
     }
 
+    var tmdbID: Int?
+    var tmdbMetadata: TMDBMediaResult?
     let id: UUID
-    let title: String
-    let year: Int?
-    let url: URL?
+    private(set) var title: String
+    private(set) var year: Int?
+    private(set) var url: URL?
     let addedAt: Date?
-    let sourceOrder: Int
+    private(set) var sourceOrder: Int
     let source: Source
 
     init(
@@ -21,8 +23,12 @@ nonisolated struct WatchlistItem: Identifiable, Codable, Hashable, Sendable {
         url: URL?,
         addedAt: Date?,
         sourceOrder: Int,
-        source: Source
+        source: Source,
+        tmdbID: Int? = nil,
+        tmdbMetadata: TMDBMediaResult? = nil
     ) {
+        self.tmdbID = tmdbID
+        self.tmdbMetadata = tmdbMetadata
         self.id = id
         self.title = title
         self.year = year
@@ -33,27 +39,19 @@ nonisolated struct WatchlistItem: Identifiable, Codable, Hashable, Sendable {
     }
 
     func updating(title: String, year: Int?, url: URL?) -> Self {
-        Self(
-            id: id,
-            title: title,
-            year: year,
-            url: url,
-            addedAt: addedAt,
-            sourceOrder: sourceOrder,
-            source: source
-        )
+        var item = self
+        item.title = title
+        item.year = year
+        item.url = url
+
+        return item
     }
 
     func withSourceOrder(_ sourceOrder: Int) -> Self {
-        Self(
-            id: id,
-            title: title,
-            year: year,
-            url: url,
-            addedAt: addedAt,
-            sourceOrder: sourceOrder,
-            source: source
-        )
+        var item = self
+        item.sourceOrder = sourceOrder
+
+        return item
     }
 
     init(
@@ -76,11 +74,14 @@ nonisolated struct WatchlistItem: Identifiable, Codable, Hashable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
+        case tmdbID, tmdbMetadata
         case id, title, year, url, letterboxdURL, addedAt, sourceOrder, source
     }
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
+        tmdbID = try values.decodeIfPresent(Int.self, forKey: .tmdbID)
+        tmdbMetadata = try values.decodeIfPresent(TMDBMediaResult.self, forKey: .tmdbMetadata)
         id = try values.decode(UUID.self, forKey: .id)
         title = try values.decode(String.self, forKey: .title)
         year = try values.decodeIfPresent(Int.self, forKey: .year)
@@ -94,6 +95,8 @@ nonisolated struct WatchlistItem: Identifiable, Codable, Hashable, Sendable {
 
     func encode(to encoder: Encoder) throws {
         var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encodeIfPresent(tmdbID, forKey: .tmdbID)
+        try values.encodeIfPresent(tmdbMetadata, forKey: .tmdbMetadata)
         try values.encode(id, forKey: .id)
         try values.encode(title, forKey: .title)
         try values.encodeIfPresent(year, forKey: .year)
