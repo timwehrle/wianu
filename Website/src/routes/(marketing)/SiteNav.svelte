@@ -9,6 +9,47 @@
 	let menuTrigger = $state<HTMLButtonElement>();
 	let menu = $state<HTMLElement>();
 
+	function magneticPill(node: HTMLSpanElement) {
+		function reset() {
+			node.style.setProperty('--magnetic-x', '0px');
+			node.style.setProperty('--magnetic-y', '0px');
+		}
+
+		function move(event: PointerEvent) {
+			if (event.pointerType !== 'mouse' || prefersReducedMotion.current) {
+				reset();
+				return;
+			}
+
+			// Measure the stationary wrapper so the moving pill cannot chase itself.
+			const bounds = node.getBoundingClientRect();
+			const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+			const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+			node.style.setProperty(
+				'--magnetic-x',
+				`${Math.max(-4, Math.min(4, x * 8))}px`
+			);
+			node.style.setProperty(
+				'--magnetic-y',
+				`${Math.max(-4, Math.min(4, y * 8))}px`
+			);
+		}
+
+		node.addEventListener('pointermove', move);
+		node.addEventListener('pointerleave', reset);
+		node.addEventListener('pointercancel', reset);
+		node.addEventListener('focusout', reset);
+
+		return {
+			destroy() {
+				node.removeEventListener('pointermove', move);
+				node.removeEventListener('pointerleave', reset);
+				node.removeEventListener('pointercancel', reset);
+				node.removeEventListener('focusout', reset);
+			}
+		};
+	}
+
 	function toggleMenu() {
 		isOpen = !isOpen;
 	}
@@ -81,22 +122,31 @@
 				class="nav-desktop"
 				aria-label="Site navigation"
 			>
-				<a href={resolve('the-app')}>The App</a>
-				<a href={resolve('weekly')}>Weekly</a>
-				<a
-					class="nav-desktop-download"
-					href={resolve('download')}
-					data-sveltekit-reload
-					target="_blank"
-					rel="noopener noreferrer"
+				<span
+					class="nav-pill"
+					use:magneticPill
 				>
-					Download
-					<ArrowDownIcon
-						size="var(--icon-size)"
-						strokeWidth={1.0}
-						aria-hidden="true"
-					/>
-				</a>
+					<a href={resolve('the-app')}>The App</a>
+				</span>
+				<span
+					class="nav-pill"
+					use:magneticPill
+				>
+					<a href={resolve('weekly')}>Weekly</a>
+				</span>
+				<span
+					class="nav-pill"
+					use:magneticPill
+				>
+					<a
+						href={resolve('download')}
+						data-sveltekit-reload
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						Download
+					</a>
+				</span>
 			</nav>
 			<Button
 				bind:element={menuTrigger}
@@ -259,7 +309,7 @@
 		transition: background-color 150ms;
 	}
 
-	.nav-main:has(a:hover),
+	.nav-main:has(.nav-weekly-link:hover),
 	.nav-desktop a:hover,
 	.nav-menu-link:hover,
 	.nav-menu-download:hover {
@@ -326,11 +376,15 @@
 			color: inherit;
 			text-decoration: none;
 			white-space: nowrap;
+			transform: translate(var(--magnetic-x, 0px), var(--magnetic-y, 0px));
+			transition:
+				background-color 150ms,
+				transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
 		}
+	}
 
-		.nav-desktop-download {
-			gap: var(--space-2);
-		}
+	.nav-pill {
+		display: flex;
 	}
 
 	.nav-bar :global(.nav-menu-toggle) {
@@ -340,6 +394,10 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
+		.nav-desktop a {
+			transform: none;
+		}
+
 		.nav-main,
 		.nav-desktop a,
 		.nav-menu-link,

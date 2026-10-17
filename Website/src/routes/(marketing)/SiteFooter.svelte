@@ -19,18 +19,40 @@
 					class="footer-brand"
 					href={resolve('')}>Wianu</a
 				>
-				<p>All your streaming. One home.</p>
+				<p class="footer-signoff">
+					Made by <a
+						href="https://www.timwehrle.de"
+						target="_blank"
+						rel="noopener noreferrer">Tim</a
+					> in Germany.
+				</p>
 			</div>
-			<nav aria-label="Footer navigation">
-				<a href={resolve('the-app')}>The App</a>
-				<a href={resolve('weekly')}>Weekly</a>
-				<a
-					href={resolve('download')}
-					data-sveltekit-reload
-					target="_blank"
-					rel="noopener noreferrer">Download for macOS</a
-				>
-			</nav>
+			<div class="footer-columns">
+				<nav aria-label="Footer navigation">
+					<h2>Wianu</h2>
+					<a href={resolve('the-app')}>The App</a>
+					<a href={resolve('weekly')}>Weekly</a>
+					<a
+						href={resolve('download')}
+						data-sveltekit-reload
+						target="_blank"
+						rel="noopener noreferrer">Download for macOS</a
+					>
+				</nav>
+				<nav aria-label="Elsewhere">
+					<h2>Elsewhere</h2>
+					<a
+						href="https://www.timwehrle.de"
+						target="_blank"
+						rel="noopener noreferrer">Personal website</a
+					>
+					<a
+						href="https://github.com/timwehrle"
+						target="_blank"
+						rel="noopener noreferrer">GitHub</a
+					>
+				</nav>
+			</div>
 		</div>
 		<div class="footer-bottom">
 			<p>© {year} Wianu</p>
@@ -64,7 +86,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-8);
-		padding-bottom: var(--space-12);
+		padding-block: var(--space-12);
+		border-top: var(--border-width) solid var(--border-strong);
 
 		@include at-least(medium) {
 			flex-direction: row;
@@ -79,20 +102,49 @@
 		text-decoration: none;
 	}
 
-	.footer-main p {
+	.footer-signoff {
 		margin-top: var(--space-3);
+		color: var(--muted-foreground);
+	}
+
+	.footer-columns {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-6) var(--space-fluid-lg);
 	}
 
 	.footer-main nav {
 		display: flex;
-		flex-wrap: wrap;
+		flex-direction: column;
 		align-items: start;
-		gap: var(--space-3) var(--space-6);
+		gap: var(--space-3);
+
+		h2 {
+			margin-bottom: var(--space-2);
+			font-family: var(--font-sans);
+			font-size: var(--text-small);
+			font-weight: var(--weight-semibold);
+			line-height: var(--leading-body);
+			letter-spacing: normal;
+		}
 	}
 
 	.footer a {
 		color: inherit;
 		text-underline-offset: 0.2em;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	.footer .footer-brand:hover {
+		text-decoration: none;
+	}
+
+	.footer-signoff a {
+		text-decoration: underline;
 	}
 
 	.footer-bottom {
@@ -103,6 +155,7 @@
 		padding-top: var(--space-5);
 		border-top: var(--border-width) solid var(--border);
 		font-size: var(--text-small);
+		color: var(--muted-foreground);
 	}
 
 	.footer-bottom nav {
@@ -110,5 +163,14 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: var(--space-4) var(--space-6);
+	}
+
+	.footer-bottom :global(.button-link) {
+		text-decoration: none;
+		line-height: inherit;
+
+		&:hover {
+			text-decoration: underline;
+		}
 	}
 </style>

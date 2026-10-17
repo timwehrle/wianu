@@ -51,9 +51,7 @@
 	<div class="film-body">
 		{#if movie.reason}
 			<div class="film-reason">
-				<p class="film-reason-label">
-					{index === 0 ? 'Why this one' : 'My choice'}
-				</p>
+				<p class="film-reason-label">Why this one</p>
 				<p>{movie.reason}</p>
 			</div>
 		{/if}
@@ -72,7 +70,7 @@
 		row-gap: var(--space-fluid-sm);
 		padding: var(--space-20) 0;
 		border-top: var(--border-width) solid var(--border-strong);
-		scroll-margin-top: var(--space-20);
+		scroll-margin-top: calc(var(--space-24) + var(--space-4));
 
 		@include at-least(medium) {
 			grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -80,6 +78,8 @@
 		}
 
 		&-1 {
+			padding-top: var(--space-fluid-md);
+
 			.film-number {
 				z-index: 2;
 				color: var(--accent);
@@ -396,7 +396,7 @@
 
 	.film-overview {
 		max-width: 58ch;
-		margin-top: var(--space-8);
+		margin-top: var(--space-5);
 		color: var(--secondary-foreground);
 		font-size: var(--text-body);
 		line-height: var(--leading-reading);

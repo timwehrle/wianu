@@ -1,31 +1,54 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import type { HTMLButtonAttributes } from 'svelte/elements';
+	import type {
+		HTMLAnchorAttributes,
+		HTMLButtonAttributes
+	} from 'svelte/elements';
+
+	type Props = {
+		children: Snippet;
+		size?: 'default' | 'icon';
+		variant?: 'glass' | 'link';
+	} & (
+		| (HTMLButtonAttributes & { href?: never; element?: HTMLButtonElement })
+		| (HTMLAnchorAttributes & {
+				href: string;
+				element?: HTMLAnchorElement;
+				type?: never;
+		  })
+	);
 
 	let {
 		children,
-		element = $bindable<HTMLButtonElement>(),
+		element = $bindable<HTMLButtonElement | HTMLAnchorElement>(),
+		href,
 		class: className,
 		type = 'button',
 		size = 'default',
 		variant = 'glass',
 		...attributes
-	}: HTMLButtonAttributes & {
-		children: Snippet;
-		element?: HTMLButtonElement;
-		size?: 'default' | 'icon';
-		variant?: 'glass' | 'link';
-	} = $props();
+	}: Props = $props();
 </script>
 
-<button
-	bind:this={element}
-	{...attributes}
-	{type}
-	class={['button', `button-${size}`, `button-${variant}`, className]}
->
-	{@render children()}
-</button>
+{#if href !== undefined}
+	<a
+		bind:this={element}
+		{...attributes as HTMLAnchorAttributes}
+		{href}
+		class={['button', `button-${size}`, `button-${variant}`, className]}
+	>
+		{@render children()}
+	</a>
+{:else}
+	<button
+		bind:this={element}
+		{...attributes as HTMLButtonAttributes}
+		{type}
+		class={['button', `button-${size}`, `button-${variant}`, className]}
+	>
+		{@render children()}
+	</button>
+{/if}
 
 <style lang="scss">
 	@use '../../styles/glass';

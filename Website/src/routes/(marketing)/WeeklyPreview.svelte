@@ -25,6 +25,9 @@
 					>
 				</div>
 				<p class="weekly-deck">Five films worth your time.</p>
+				<p class="weekly-intro">
+					Five films I think are worth watching, picked each week.
+				</p>
 			</header>
 
 			<WeeklyList {movies} />
@@ -89,5 +92,12 @@
 	.weekly-link {
 		padding-top: var(--space-8);
 		border-top: var(--border-width) solid var(--border-strong);
+	}
+
+	.weekly-intro {
+		margin-top: var(--space-4);
+		max-width: var(--measure-copy);
+		color: var(--muted-foreground);
+		font-size: var(--text-body-large);
 	}
 </style>

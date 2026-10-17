@@ -17,7 +17,6 @@
 			<li
 				class="weekly-list-film"
 				class:weekly-list-featured={index === 0}
-				class:has-reason={index === 0 && !!movie.reason}
 			>
 				<span
 					class="weekly-list-number"
@@ -94,44 +93,35 @@
 <style lang="scss">
 	.weekly-list {
 		display: grid;
-		gap: 0 var(--space-fluid-md);
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--space-8) var(--grid-gap);
+		padding-bottom: var(--space-fluid-md);
 		list-style: none;
 
-		@include at-least(medium) {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
+		@include at-least(large) {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
 		}
 	}
 
 	.weekly-list-film {
-		position: relative;
-		display: grid;
-		grid-template-columns: repeat(6, minmax(0, 1fr));
-		column-gap: var(--grid-gap);
-		row-gap: var(--space-6);
-		align-content: start;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
 		min-width: 0;
-		padding-block: var(--space-fluid-md);
-		border-top: var(--border-width) solid var(--border-strong);
+		padding-top: var(--space-5);
+		border-top: var(--border-width) solid var(--border);
 	}
 
 	.weekly-list-number {
-		position: absolute;
-		z-index: 2;
-		top: var(--space-fluid-md);
-		left: 0;
-		color: var(--muted);
-		font-family: var(--font-serif);
-		font-size: var(--text-number-small);
-		line-height: var(--leading-display);
-		pointer-events: none;
+		color: var(--muted-foreground);
+		font-size: var(--text-small);
+		font-variant-numeric: tabular-nums;
 	}
 
 	.weekly-list-art {
-		position: relative;
-		grid-column: 2 / 7;
 		aspect-ratio: 16 / 10;
 		min-width: 0;
-		margin-top: var(--space-4);
+		overflow: hidden;
 		background: var(--image-placeholder);
 
 		img,
@@ -142,20 +132,15 @@
 			object-fit: cover;
 		}
 
-		&.poster-fallback {
-			max-width: 14rem;
-			aspect-ratio: 2 / 3;
+		&.poster-fallback img {
+			object-position: center 25%;
 		}
 	}
 
 	.weekly-list-heading {
-		position: relative;
-		grid-column: 1 / 7;
 		min-width: 0;
-
 		h3 {
-			font-size: var(--text-heading);
-			overflow-wrap: anywhere;
+			font-size: var(--text-title);
 		}
 	}
 
@@ -185,71 +170,59 @@
 	.weekly-list-year {
 		margin-top: var(--space-2);
 		color: var(--muted-foreground);
-		font-family: var(--font-serif);
-		font-size: var(--text-editorial-meta);
-		line-height: var(--leading-heading);
+		font-size: var(--text-small);
 	}
 
 	.weekly-list-reason {
-		grid-column: 2 / 7;
 		min-width: 0;
 	}
-
 	.weekly-list-reason-label {
 		margin-bottom: var(--space-3);
-		font-size: var(--text-body);
+		font-size: var(--text-small);
 		font-weight: var(--weight-semibold);
 	}
-
 	.weekly-list-reason-text {
 		max-width: var(--measure-editorial);
 		font-family: var(--font-serif);
-		font-size: var(--text-editorial);
+		font-size: var(--text-lead);
 		line-height: var(--leading-copy);
-		overflow-wrap: anywhere;
 	}
 
 	.weekly-list-featured {
 		grid-column: 1 / -1;
-		row-gap: var(--space-fluid-md);
-		padding-block: var(--space-fluid-lg);
+		gap: var(--space-5);
+		padding-block: var(--space-6) var(--space-4);
+		border-top-color: var(--border-strong);
 
 		.weekly-list-number {
-			top: var(--space-fluid-lg);
-			color: var(--accent);
-			font-size: var(--text-number);
+			color: var(--accent-text);
 		}
-
-		.weekly-list-art {
-			margin-top: var(--space-6);
-
-			&.poster-fallback {
-				max-width: 26rem;
-			}
-		}
-
 		.weekly-list-heading h3 {
-			font-size: var(--text-heading-display);
+			font-size: var(--text-heading-large);
 		}
 
 		@include at-least(medium) {
+			display: grid;
 			grid-template-columns: repeat(12, minmax(0, 1fr));
+			grid-template-rows: auto auto 1fr;
+			column-gap: var(--space-fluid-md);
+			align-items: start;
 
 			.weekly-list-art {
-				grid-column: 3 / 13;
+				grid-column: 1 / 8;
+				grid-row: 1 / 4;
 			}
-
+			.weekly-list-number {
+				grid-column: 8 / 13;
+				grid-row: 1;
+			}
 			.weekly-list-heading {
-				grid-column: 1 / 13;
+				grid-column: 8 / 13;
+				grid-row: 2;
 			}
-
-			&.has-reason .weekly-list-heading {
-				grid-column: 1 / 7;
-			}
-
 			.weekly-list-reason {
 				grid-column: 8 / 13;
-				align-self: start;
+				grid-row: 3;
 			}
 		}
 	}

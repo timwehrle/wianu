@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import TextLink from '#lib/components/TextLink.svelte';
+	import Button from '#lib/components/Button.svelte';
+	import servicesImage from '#lib/assets/app-services.png';
+	import watchingImage from '#lib/assets/app-continue-watching.png';
+	import watchlistImage from '#lib/assets/app-watchlist.png';
 </script>
 
 <svelte:head>
@@ -20,11 +24,15 @@
 				remember where it lives. Your services, current shows, and watchlist are
 				together in one Mac app.
 			</p>
-			<TextLink
-				href={resolve('download')}
-				target="_blank"
-				rel="noopener noreferrer">Download for macOS</TextLink
-			>
+			<div class="download-action">
+				<Button
+					href={resolve('download')}
+					data-sveltekit-reload
+					target="_blank"
+					rel="noopener noreferrer">Download for macOS</Button
+				>
+				<span>macOS 26 or later</span>
+			</div>
 		</div>
 	</header>
 
@@ -32,6 +40,8 @@
 		<enhanced:img
 			src="#lib/assets/wianu-app.png"
 			alt="Wianu showing streaming sites, Continue Watching, and a watchlist in one window"
+			loading="eager"
+			fetchpriority="high"
 		/>
 	</div>
 
@@ -40,25 +50,73 @@
 		aria-label="What Wianu brings together"
 	>
 		<div class="feature">
-			<h2>Your services,<br /><em>side by side.</em></h2>
-			<p>
-				The sites you already use are in one sidebar. Open one, switch to
-				another, and get back to what you came for.
-			</p>
+			<div class="feature-copy">
+				<h2>Your services,<br /><em>side by side.</em></h2>
+				<p>
+					The sites you already use are in one sidebar. Open one, switch to
+					another, and get back to what you came for.
+				</p>
+			</div>
+			<div class="feature-visual">
+				<div
+					class="feature-detail"
+					style:max-width="232px"
+				>
+					<img
+						src={servicesImage}
+						width="464"
+						height="526"
+						alt="Streaming services together in the Wianu sidebar"
+						loading="lazy"
+					/>
+				</div>
+			</div>
 		</div>
 		<div class="feature">
-			<h2>Remember what<br /><em>you started.</em></h2>
-			<p>
-				The shows and films you're in the middle of have a place of their own,
-				so they're easier to find next time.
-			</p>
+			<div class="feature-copy">
+				<h2>Remember what<br /><em>you started.</em></h2>
+				<p>
+					The shows and films you're in the middle of have a place of their own,
+					so they're easier to find next time.
+				</p>
+			</div>
+			<div class="feature-visual">
+				<div
+					class="feature-detail"
+					style:max-width="229px"
+				>
+					<img
+						src={watchingImage}
+						width="458"
+						height="214"
+						alt="Continue Watching in Wianu, showing saved shows and films"
+						loading="lazy"
+					/>
+				</div>
+			</div>
 		</div>
 		<div class="feature">
-			<h2>Keep the ones<br /><em>for later.</em></h2>
-			<p>
-				When someone mentions a film you want to see, add it to your watchlist.
-				It'll be there when you have time.
-			</p>
+			<div class="feature-copy">
+				<h2>Keep the ones<br /><em>for later.</em></h2>
+				<p>
+					When someone mentions a film you want to see, add it to your
+					watchlist. It'll be there when you have time.
+				</p>
+			</div>
+			<div class="feature-visual">
+				<div
+					class="feature-detail feature-watchlist"
+					style:max-width="227px"
+				>
+					<img
+						src={watchlistImage}
+						width="454"
+						height="596"
+						alt="The Wianu watchlist with films saved for later"
+						loading="lazy"
+					/>
+				</div>
+			</div>
 		</div>
 	</section>
 
@@ -95,19 +153,22 @@
 	>
 		<h2 id="download-title">Give Wianu<br /><em>a try.</em></h2>
 		<div class="download-bottom">
-			<p>Made for macOS 26 or later.</p>
-			<TextLink
-				href={resolve('download')}
-				target="_blank"
-				rel="noopener noreferrer">Download Wianu</TextLink
-			>
+			<p>Your next film is waiting.</p>
+			<div class="download-action">
+				<Button
+					href={resolve('download')}
+					data-sveltekit-reload
+					target="_blank"
+					rel="noopener noreferrer">Download Wianu</Button
+				>
+				<span>macOS 26 or later</span>
+			</div>
 		</div>
 	</section>
 </div>
 
 <style lang="scss">
 	.hero {
-		min-height: 68svh;
 		display: flex;
 		flex-direction: column;
 	}
@@ -118,7 +179,7 @@
 	}
 
 	h1 {
-		margin-block: var(--space-fluid-lg);
+		margin-block: var(--space-fluid-sm) var(--space-fluid-md);
 		font-size: var(--text-display);
 	}
 
@@ -132,7 +193,6 @@
 	}
 
 	.hero-bottom {
-		margin-top: auto;
 		padding-bottom: var(--space-fluid-lg);
 	}
 
@@ -142,9 +202,16 @@
 	}
 
 	.app-image {
+		padding: clamp(var(--space-4), 4vw, var(--space-16));
+		background: color-mix(in srgb, var(--background) 96%, var(--foreground));
+		border-radius: var(--radius-small);
+
 		:global(img) {
+			display: block;
+			width: 100%;
 			border-radius: var(--radius-small);
 			height: auto;
+			box-shadow: 0 18px 45px #00000024;
 		}
 	}
 
@@ -161,6 +228,7 @@
 
 	.feature h2 {
 		font-size: var(--text-heading-large);
+		margin-bottom: var(--space-6);
 	}
 
 	.feature p {
@@ -207,18 +275,63 @@
 	}
 
 	@include at-least(medium) {
-		.app-image {
-			margin-left: var(--space-fluid-lg);
-		}
-
 		.feature,
 		.maker {
 			grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.75fr);
 			align-items: start;
 		}
 
-		.feature p {
-			padding-top: var(--space-2);
+		.feature {
+			grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+			align-items: center;
+			gap: var(--space-fluid-md);
+		}
+
+		.feature:nth-child(2) .feature-copy {
+			grid-column: 2;
+			grid-row: 1;
+		}
+		.feature:nth-child(2) .feature-visual {
+			grid-column: 1;
+			grid-row: 1;
+		}
+	}
+	.feature-visual {
+		display: grid;
+		place-items: center;
+		min-width: 0;
+		min-height: 20rem;
+		padding: var(--space-8);
+		background: color-mix(in srgb, var(--background) 97%, var(--foreground));
+		border-radius: var(--radius-small);
+	}
+
+	.feature-detail {
+		width: 100%;
+		overflow: hidden;
+		border-radius: var(--radius-small);
+		box-shadow: 0 12px 30px #0000001f;
+
+		:global(img) {
+			display: block;
+			width: 100%;
+			height: auto;
+		}
+	}
+
+	.feature-watchlist {
+		max-height: 16.25rem;
+	}
+
+	.download-action {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-3);
+
+		span {
+			color: var(--muted-foreground);
+			font-size: var(--text-small);
 		}
 	}
 </style>

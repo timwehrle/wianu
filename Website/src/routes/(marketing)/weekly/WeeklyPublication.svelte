@@ -22,6 +22,7 @@
 	<WeeklyCover
 		{selection}
 		{archive}
+		{movies}
 	/>
 
 	{#if movies.length === 0}
