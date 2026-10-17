@@ -2,6 +2,9 @@ import Foundation
 
 struct ContinueWatchingItem: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
+    var tmdbID: Int?
+    var tmdbMediaType: TMDBMediaType?
+    var tmdbMetadata: TMDBMediaResult?
     var siteID: SavedSite.ID?
 
     var title: String
