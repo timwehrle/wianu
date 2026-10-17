@@ -2,52 +2,16 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct SidebarView: View {
-    private enum PendingDeletion {
-        case site(SavedSite)
-        case continueWatching(ContinueWatchingItem)
-        case watchlistItem(WatchlistItem)
-
-        var title: String {
-            switch self {
-            case .site:
-                "Delete Site?"
-            case .continueWatching:
-                "Remove from Continue Watching?"
-            case .watchlistItem:
-                "Remove from Watchlist?"
-            }
-        }
-
-        var actionTitle: String {
-            switch self {
-            case .site:
-                "Delete"
-            case .continueWatching, .watchlistItem:
-                "Remove"
-            }
-        }
-
-        var message: String {
-            switch self {
-            case .site:
-                "This removes the site and its Continue Watching entries from Wianu."
-            case let .continueWatching(item):
-                "“\(item.title)” will be removed."
-            case let .watchlistItem(item):
-                "“\(item.title)” will be removed."
-            }
-        }
-    }
-
     @Bindable var model: AppModel
     @Binding var showingAddSite: Bool
 
     @State private var editingSite: SavedSite?
     @State private var renamingItem: ContinueWatchingItem?
-    @State private var pendingDeletion: PendingDeletion?
+    @State private var pendingDeletion: SidebarDeletion?
     @State private var showingWatchlistImporter = false
     @State private var showingAddWatchlistItem = false
     @State private var editingWatchlistItem: WatchlistItem?
+    @State private var identificationTarget: MediaIdentificationTarget?
     @State private var importURL: URL?
     @State private var importMessage: String?
     @State private var sitesExpanded = true
@@ -72,6 +36,7 @@ struct SidebarView: View {
         .sheet(item: $renamingItem) { item in
             RenameContinueWatchingView(item: item) { title in
                 model.continueWatchingStore.rename(id: item.id, to: title)
+                model.mediaIdentification.identifyInBackground(.continueWatching(item.id))
             }
         }
         .sheet(isPresented: $showingAddWatchlistItem) {
@@ -109,6 +74,19 @@ struct SidebarView: View {
                     commit: completeImport,
                     report: { importMessage = $0 }
                 )
+            }
+        }
+        .sheet(item: $identificationTarget) { target in
+            if let query = model.mediaIdentification.query(for: target) {
+                MediaIdentificationView(
+                    query: query,
+                    currentMatch: model.mediaIdentification.metadata(for: target),
+                    hasMatch: model.mediaIdentification.isIdentified(target),
+                    client: model.tmdbClient
+                ) { media in
+                    model.mediaIdentification.associate(media, with: target)
+                }
+                .onAppear { model.mediaIdentification.cancel(target, clearResult: false) }
             }
         }
         .fileImporter(
@@ -184,15 +162,26 @@ struct SidebarView: View {
                 isExpanded: $continueWatchingExpanded
             ) {
                 ForEach(model.continueWatchingStore.sortedItems) { item in
-                    ContinueWatchingRow(item: item, site: site(for: item))
-                        .tag(SidebarSelection.continueWatching(item.id))
-                        .contextMenu {
-                            Button("Rename") { renamingItem = item }
-                            Divider()
-                            Button("Remove", role: .destructive) {
-                                pendingDeletion = .continueWatching(item)
-                            }
+                    ContinueWatchingRow(
+                        item: item,
+                        site: site(for: item),
+                        needsReview: model.mediaIdentification.needsReview(.continueWatching(item.id))
+                    )
+                    .tag(SidebarSelection.continueWatching(item.id))
+                    .contextMenu {
+                        MediaIdentificationMenu(
+                            target: .continueWatching(item.id),
+                            coordinator: model.mediaIdentification
+                        ) {
+                            identificationTarget = .continueWatching(item.id)
                         }
+                        Divider()
+                        Button("Rename") { renamingItem = item }
+                        Divider()
+                        Button("Remove", role: .destructive) {
+                            pendingDeletion = .continueWatching(item)
+                        }
+                    }
                 }
             }
         }
@@ -201,7 +190,7 @@ struct SidebarView: View {
     private var watchlistSection: some View {
         Section("Watchlist", isExpanded: $watchlistExpanded) {
             ForEach(model.watchlistStore.items) { item in
-                WatchlistRow(item: item)
+                WatchlistRow(item: item, needsReview: model.mediaIdentification.needsReview(.watchlist(item.id)))
                     .tag(SidebarSelection.watchlistItem(item.id))
                     .contextMenu { watchlistContextMenu(for: item) }
             }
@@ -229,6 +218,10 @@ struct SidebarView: View {
 
     @ViewBuilder
     private func watchlistContextMenu(for item: WatchlistItem) -> some View {
+        MediaIdentificationMenu(target: .watchlist(item.id), coordinator: model.mediaIdentification) {
+            identificationTarget = .watchlist(item.id)
+        }
+        Divider()
         Button("Find Providers") {
             model.showCommandPalette(query: item.title)
         }
@@ -277,7 +270,7 @@ struct SidebarView: View {
             ?? "Imported \(items.count) films. \(items.filter { $0.tmdbID != nil }.count) matched to TMDB."
     }
 
-    private func delete(_ deletion: PendingDeletion) {
+    private func delete(_ deletion: SidebarDeletion) {
         switch deletion {
         case let .site(site):
             model.deleteSite(site)

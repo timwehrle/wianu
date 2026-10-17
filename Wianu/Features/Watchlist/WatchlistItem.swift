@@ -7,6 +7,7 @@ nonisolated struct WatchlistItem: Identifiable, Codable, Hashable, Sendable {
     }
 
     var tmdbID: Int?
+    var tmdbMediaType: TMDBMediaType?
     var tmdbMetadata: TMDBMediaResult?
     let id: UUID
     private(set) var title: String
@@ -25,9 +26,11 @@ nonisolated struct WatchlistItem: Identifiable, Codable, Hashable, Sendable {
         sourceOrder: Int,
         source: Source,
         tmdbID: Int? = nil,
-        tmdbMetadata: TMDBMediaResult? = nil
+        tmdbMetadata: TMDBMediaResult? = nil,
+        tmdbMediaType: TMDBMediaType? = nil
     ) {
         self.tmdbID = tmdbID
+        self.tmdbMediaType = tmdbMediaType ?? tmdbMetadata?.mediaType ?? (tmdbID == nil ? nil : .movie)
         self.tmdbMetadata = tmdbMetadata
         self.id = id
         self.title = title
@@ -74,7 +77,7 @@ nonisolated struct WatchlistItem: Identifiable, Codable, Hashable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case tmdbID, tmdbMetadata
+        case tmdbID, tmdbMetadata, tmdbMediaType
         case id, title, year, url, letterboxdURL, addedAt, sourceOrder, source
     }
 
@@ -82,6 +85,7 @@ nonisolated struct WatchlistItem: Identifiable, Codable, Hashable, Sendable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         tmdbID = try values.decodeIfPresent(Int.self, forKey: .tmdbID)
         tmdbMetadata = try values.decodeIfPresent(TMDBMediaResult.self, forKey: .tmdbMetadata)
+        tmdbMediaType = try values.decodeIfPresent(TMDBMediaType.self, forKey: .tmdbMediaType)
         id = try values.decode(UUID.self, forKey: .id)
         title = try values.decode(String.self, forKey: .title)
         year = try values.decodeIfPresent(Int.self, forKey: .year)
@@ -95,6 +99,7 @@ nonisolated struct WatchlistItem: Identifiable, Codable, Hashable, Sendable {
 
     func encode(to encoder: Encoder) throws {
         var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encodeIfPresent(tmdbMediaType, forKey: .tmdbMediaType)
         try values.encodeIfPresent(tmdbID, forKey: .tmdbID)
         try values.encodeIfPresent(tmdbMetadata, forKey: .tmdbMetadata)
         try values.encode(id, forKey: .id)

@@ -12,6 +12,7 @@ final class AppModel {
     let siteStore: SiteStore
     let continueWatchingStore: ContinueWatchingStore
     let watchlistStore: WatchlistStore
+    let mediaIdentification: MediaIdentificationCoordinator
     private(set) var tmdbClient: TMDBClient
     private(set) var tmdbSearch: TMDBSearchModel
     private(set) var isCommandPalettePresented = false
@@ -37,6 +38,11 @@ final class AppModel {
         let analytics = AnalyticsClient(userDefaults: userDefaults)
         self.analytics = analytics
         let client = TMDBClient()
+        mediaIdentification = MediaIdentificationCoordinator(
+            watchlist: watchlistStore,
+            continueWatching: continueWatchingStore,
+            client: client
+        )
         tmdbClient = client
         tmdbSearch = TMDBSearchModel(
             client: client,
@@ -60,6 +66,11 @@ final class AppModel {
         self.userDefaults = userDefaults
         let analytics = analytics ?? DisabledAnalyticsTracker()
         self.analytics = analytics
+        mediaIdentification = MediaIdentificationCoordinator(
+            watchlist: watchlistStore,
+            continueWatching: continueWatchingStore,
+            client: tmdbClient
+        )
         self.tmdbClient = tmdbClient
         tmdbSearch = TMDBSearchModel(
             client: tmdbClient,
@@ -197,6 +208,7 @@ extension AppModel {
             }
         }
 
+        mediaIdentification.cancel(.continueWatching(item.id))
         continueWatchingStore.remove(id: item.id)
         analytics.track(.continueWatchingItemRemoved)
     }
@@ -226,7 +238,8 @@ extension AppModel {
     }
 
     func addWatchlistItem(title: String, year: Int?, url: URL?) {
-        watchlistStore.add(title: title, year: year, url: url)
+        let item = watchlistStore.add(title: title, year: year, url: url)
+        mediaIdentification.identifyInBackground(.watchlist(item.id))
         analytics.track(.watchlistItemAdded)
     }
 
@@ -242,12 +255,14 @@ extension AppModel {
             year: year,
             url: url
         )
+        mediaIdentification.identifyInBackground(.watchlist(item.id))
     }
 
     func removeWatchlistItem(_ item: WatchlistItem) {
         if selection == .watchlistItem(item.id) {
             select(nil)
         }
+        mediaIdentification.cancel(.watchlist(item.id))
         watchlistStore.remove(id: item.id)
         analytics.track(.watchlistItemRemoved)
     }
@@ -287,11 +302,12 @@ extension AppModel {
                         : trimmedTitle
                 }
 
-            continueWatchingStore.save(
+            let item = continueWatchingStore.save(
                 siteID: selectedSite?.id,
                 title: savedTitle,
                 url: url
             )
+            mediaIdentification.identifyInBackground(.continueWatching(item.id))
             analytics.track(.continueWatchingItemAdded)
         }
     }
@@ -317,11 +333,12 @@ extension AppModel {
                     : trimmedTitle
             }
 
-        watchlistStore.add(
+        let item = watchlistStore.add(
             title: savedTitle,
             year: nil,
             url: url
         )
+        mediaIdentification.identifyInBackground(.watchlist(item.id))
         analytics.track(.watchlistItemAdded)
     }
 

@@ -16,6 +16,7 @@ struct ImportReviewEntry: Identifiable {
         var result = item
 
         if let media = candidates.first(where: { $0.id == selectedID }) {
+            result.tmdbMediaType = media.mediaType
             result.tmdbID = media.id
             result.tmdbMetadata = media
         }

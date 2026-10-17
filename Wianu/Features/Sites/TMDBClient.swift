@@ -42,16 +42,18 @@ struct TMDBClient: Sendable {
         self.language = language.replacingOccurrences(of: "_", with: "-")
     }
 
-    func search(query: String, page: Int = 1) async throws -> TMDBSearchPage {
-        let response: TMDBSearchResponse = try await request(
-            path: "search/multi",
-            query: [
-                URLQueryItem(name: "query", value: query),
-                URLQueryItem(name: "page", value: String(page)),
-                URLQueryItem(name: "include_adult", value: "false"),
-                URLQueryItem(name: "language", value: language)
-            ]
-        )
+    func search(query: String, page: Int = 1, paced: Bool = false) async throws -> TMDBSearchPage {
+        let parameters = [
+            URLQueryItem(name: "query", value: query),
+            URLQueryItem(name: "page", value: String(page)),
+            URLQueryItem(name: "include_adult", value: "false"),
+            URLQueryItem(name: "language", value: language)
+        ]
+        let response: TMDBSearchResponse = if paced {
+            try await searchRequest(path: "search/multi", query: parameters)
+        } else {
+            try await request(path: "search/multi", query: parameters)
+        }
 
         return TMDBSearchPage(
             page: response.page,
@@ -71,38 +73,33 @@ struct TMDBClient: Sendable {
             parameters.append(URLQueryItem(name: "year", value: String(year)))
         }
 
+        let response: TMDBMovieSearchResponse = try await searchRequest(path: "search/movie", query: parameters)
+        return TMDBSearchPage(
+            page: response.page,
+            totalPages: response.totalPages,
+            results: response.results.map(\.media)
+        )
+    }
+
+    private func searchRequest<Response: Decodable>(path: String, query: [URLQueryItem]) async throws -> Response {
         for attempt in 0 ... 2 {
             try await Task.sleep(for: .milliseconds(300))
-
             do {
-                let response: TMDBMovieSearchResponse = try await request(path: "search/movie", query: parameters)
-
-                return TMDBSearchPage(
-                    page: response.page,
-                    totalPages: response.totalPages,
-                    results: response.results.map(\.media)
-                )
+                return try await request(path: path, query: query)
             } catch let error as TMDBError {
                 guard attempt < 2 else { throw error }
-
                 let delay: TimeInterval
-
                 switch error {
                 case let .rateLimited(retryAfter):
                     delay = max(retryAfter ?? Double(attempt + 1), 1)
-
                     guard delay <= 30 else { throw error }
-
                 case let .server(status, _) where status >= 500:
                     delay = Double(attempt + 1)
-
                 default: throw error
                 }
-
                 try await Task.sleep(for: .seconds(delay))
             }
         }
-
         throw TMDBError.invalidResponse
     }
 

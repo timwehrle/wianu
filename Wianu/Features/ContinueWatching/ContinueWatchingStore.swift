@@ -86,6 +86,14 @@ final class ContinueWatchingStore {
         return item
     }
 
+    func associate(id: ContinueWatchingItem.ID, with media: TMDBMediaResult?) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        items[index].tmdbID = media?.id
+        items[index].tmdbMediaType = media?.mediaType
+        items[index].tmdbMetadata = media
+        persist()
+    }
+
     func markOpened(id: ContinueWatchingItem.ID) {
         guard let index = items.firstIndex(where: { $0.id == id }) else {
             return

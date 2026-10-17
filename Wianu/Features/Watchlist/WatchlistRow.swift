@@ -2,6 +2,7 @@ import SwiftUI
 
 struct WatchlistRow: View {
     let item: WatchlistItem
+    var needsReview = false
 
     var body: some View {
         Label {
@@ -9,6 +10,9 @@ struct WatchlistRow: View {
                 Text(item.title)
                     .lineLimit(1)
 
+                if needsReview {
+                    Text("Needs identification").font(.caption).foregroundStyle(.secondary)
+                }
                 if let year = item.year {
                     Text(year.formatted(.number.grouping(.never)))
                         .font(.caption)
@@ -16,7 +20,7 @@ struct WatchlistRow: View {
                 }
             }
         } icon: {
-            Image(systemName: "film")
+            Image(systemName: item.tmdbMediaType == .tv ? "tv" : "film")
                 .foregroundStyle(.secondary)
         }
         .help(item.title)

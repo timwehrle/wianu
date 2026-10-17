@@ -3,6 +3,7 @@ import SwiftUI
 struct ContinueWatchingRow: View {
     let item: ContinueWatchingItem
     let site: SavedSite?
+    var needsReview = false
 
     var body: some View {
         Label {
@@ -10,6 +11,9 @@ struct ContinueWatchingRow: View {
                 Text(item.title)
                     .lineLimit(1)
 
+                if needsReview {
+                    Text("Needs identification").font(.caption).foregroundStyle(.secondary)
+                }
                 if let site {
                     Text(site.name)
                         .font(.caption)

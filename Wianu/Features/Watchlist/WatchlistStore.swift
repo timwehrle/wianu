@@ -58,7 +58,8 @@ final class WatchlistStore {
                 sourceOrder: index,
                 source: .letterboxd,
                 tmdbID: item.tmdbID ?? existing?.tmdbID,
-                tmdbMetadata: item.tmdbMetadata ?? existing?.tmdbMetadata
+                tmdbMetadata: item.tmdbMetadata ?? existing?.tmdbMetadata,
+                tmdbMediaType: item.tmdbMediaType ?? existing?.tmdbMediaType
             )
         }
 
@@ -86,17 +87,26 @@ final class WatchlistStore {
         persist()
     }
 
-    func add(title: String, year: Int?, url: URL?) {
-        items.append(
-            WatchlistItem(
-                title: title,
-                year: year,
-                url: url,
-                addedAt: Date(),
-                sourceOrder: items.count,
-                source: .custom
-            )
+    @discardableResult
+    func add(title: String, year: Int?, url: URL?) -> WatchlistItem {
+        let item = WatchlistItem(
+            title: title,
+            year: year,
+            url: url,
+            addedAt: Date(),
+            sourceOrder: items.count,
+            source: .custom
         )
+        items.append(item)
+        persist()
+        return item
+    }
+
+    func associate(id: WatchlistItem.ID, with media: TMDBMediaResult?) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        items[index].tmdbID = media?.id
+        items[index].tmdbMediaType = media?.mediaType
+        items[index].tmdbMetadata = media
         persist()
     }
 
