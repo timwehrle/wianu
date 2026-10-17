@@ -51,6 +51,11 @@
 						target="_blank"
 						rel="noopener noreferrer">GitHub</a
 					>
+					<a
+						href="https://ko-fi.com/timwehrle"
+						target="_blank"
+						rel="noopener noreferrer">Support my work</a
+					>
 				</nav>
 			</div>
 		</div>

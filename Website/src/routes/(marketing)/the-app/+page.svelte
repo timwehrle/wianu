@@ -143,6 +143,12 @@
 					target="_blank"
 					rel="noopener noreferrer">Personal website</TextLink
 				>
+				<a
+					class="support-link"
+					href="https://ko-fi.com/timwehrle"
+					target="_blank"
+					rel="noopener noreferrer">Support my work</a
+				>
 			</div>
 		</div>
 	</section>
@@ -258,6 +264,17 @@
 		flex-wrap: wrap;
 		gap: var(--space-4) var(--space-6);
 		margin-top: var(--space-6);
+		align-items: center;
+	}
+
+	.support-link {
+		color: var(--foreground);
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+
+		&:hover {
+			color: var(--accent-text);
+		}
 	}
 
 	.download {
