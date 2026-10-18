@@ -64,7 +64,7 @@ struct AboutView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Link(destination: URL(string: "https://kofi.com/timwehrle")!) {
+            Link(destination: URL(string: "https://ko-fi.com/timwehrle")!) {
                 Label("Support My Work", systemImage: "heart")
             }
             .buttonStyle(.bordered)
