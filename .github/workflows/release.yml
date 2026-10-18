@@ -68,8 +68,8 @@ jobs:
           set -euo pipefail
 
           for destination in "$APPCAST_DEPLOY_PATH" "$DEPLOY_PATH"; do
-            if [[ ! "$destination" =~ ^/[a-zA-Z0-9_/-]+$ || "$destination" == / ]]; then
-              echo "Configure DEPLOY_PATH and APPCAST_DEPLOY_PATH as absolute directories without spaces."
+            if [[ ! "$destination" =~ ^/[a-zA-Z0-9_./-]+$ || "$destination" == / || "$destination" =~ (^|/)\.{1,2}(/|$) ]]; then
+              echo "Configure DEPLOY_PATH and APPCAST_DEPLOY_PATH as absolute directories without spaces or dot path segments."
               exit 1
             fi
           done
@@ -423,8 +423,8 @@ jobs:
           set -euo pipefail
 
           for destination in "$APPCAST_DEPLOY_PATH" "$DEPLOY_PATH"; do
-            if [[ ! "$destination" =~ ^/[a-zA-Z0-9_/-]+$ || "$destination" == / ]]; then
-              echo "Appcast deployment paths must be absolute directories without spaces."
+            if [[ ! "$destination" =~ ^/[a-zA-Z0-9_./-]+$ || "$destination" == / || "$destination" =~ (^|/)\.{1,2}(/|$) ]]; then
+              echo "Appcast deployment paths must be absolute directories without spaces or dot path segments."
               exit 1
             fi
           done
