@@ -56,9 +56,41 @@ struct AnalyticsClientTests {
         #expect(payload["website"] as? String == "website-id")
         #expect(payload["name"] as? String == "search-opened")
         #expect(payload["url"] as? String == "/app")
+        let id = try #require(payload["id"] as? String)
+        #expect(UUID(uuidString: id) != nil)
+        #expect(defaults.string(forKey: AnalyticsPreference.distinctIDKey) == id)
         #expect(data == ["app_version": "1.5.0", "build": "16"])
         let bodyString = try #require(String(bytes: body, encoding: .utf8))
         #expect(!bodyString.contains("query"))
+    }
+
+    @Test func `distinct ID persists across clients and differs between installations`() async throws {
+        let suiteName = "AnalyticsClientTests.identity.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        let otherDefaults = try #require(UserDefaults(
+            suiteName: "AnalyticsClientTests.other.\(UUID().uuidString)"
+        ))
+        var ids: [String] = []
+        for store in try [defaults, #require(UserDefaults(suiteName: suiteName)), otherDefaults] {
+            let session = AnalyticsFixtureSession()
+            let client = AnalyticsClient(
+                session: session,
+                endpoint: URL(string: "https://analytics.example/api/send"),
+                websiteID: "website-id",
+                userDefaults: store,
+                appVersion: "1",
+                build: "1"
+            )
+            client.track(.appLaunched)
+            try await waitForRequest(in: session)
+            let request = try #require(await session.capturedRequests().first)
+            let body = try #require(request.httpBody)
+            let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: Any])
+            let payload = try #require(json["payload"] as? [String: Any])
+            try ids.append(#require(payload["id"] as? String))
+        }
+        #expect(ids[0] == ids[1])
+        #expect(ids[0] != ids[2])
     }
 
     @Test func `opt out and missing configuration send nothing`() async throws {
@@ -80,6 +112,7 @@ struct AnalyticsClientTests {
         client.track(.appLaunched)
         try await Task.sleep(for: .milliseconds(50))
         #expect(await session.capturedRequests().isEmpty)
+        #expect(defaults.object(forKey: AnalyticsPreference.distinctIDKey) == nil)
 
         defaults.set(true, forKey: AnalyticsPreference.enabledKey)
         let unconfigured = AnalyticsClient(
@@ -93,6 +126,7 @@ struct AnalyticsClientTests {
         unconfigured.track(.appLaunched)
         try await Task.sleep(for: .milliseconds(50))
         #expect(await session.capturedRequests().isEmpty)
+        #expect(defaults.object(forKey: AnalyticsPreference.distinctIDKey) == nil)
     }
 
     private func waitForRequest(

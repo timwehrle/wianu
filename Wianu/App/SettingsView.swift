@@ -4,17 +4,11 @@ struct SettingsView: View {
     @Bindable var model: AppModel
 
     var body: some View {
-        TabView {
-            GeneralSettingsView()
-                .tabItem { Label("General", systemImage: "gearshape") }
-
-            CreditsView()
-                .tabItem { Label("Credits", systemImage: "info.circle") }
-        }
-        .frame(width: 560, height: 420)
-        .onAppear {
-            model.settingsOpened()
-        }
+        GeneralSettingsView()
+            .frame(width: 560, height: 240)
+            .onAppear {
+                model.settingsOpened()
+            }
     }
 }
 
@@ -31,6 +25,7 @@ private struct GeneralSettingsView: View {
 
             Text(
                 "Share basic feature usage and the Wianu version. "
+                    + "A random installation ID links repeat visits. "
                     + "Searches, titles, URLs, providers, and personal "
                     + "identifiers are never included."
             )
@@ -42,29 +37,57 @@ private struct GeneralSettingsView: View {
     }
 }
 
-private struct CreditsView: View {
+struct AboutView: View {
+    private var version: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
+    }
+
+    private var build: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"
+    }
+
     var body: some View {
-        VStack(spacing: 16) {
-            Text("Wianu").font(.largeTitle.weight(.semibold))
-            Text("Credits")
-                .font(.headline)
-            Text("Movie and TV discovery")
-                .foregroundStyle(.secondary)
+        VStack(spacing: 20) {
+            VStack(spacing: 8) {
+                Image(nsImage: NSApplication.shared.applicationIconImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 80, height: 80)
 
-            Image("TMDBLogo")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 150, height: 42)
-            Text(
-                "This product uses the TMDB API but is not endorsed or "
-                    + "certified by TMDB."
-            )
+                Text("Wianu")
+                    .font(.title.weight(.semibold))
+                Text("Version \(version) (\(build))")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                Text("Made by Tim Wehrle")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+
+            Link(destination: URL(string: "https://kofi.com/timwehrle")!) {
+                Label("Support My Work", systemImage: "heart")
+            }
+            .buttonStyle(.bordered)
+
+            Divider()
+
+            VStack(spacing: 10) {
+                Image("TMDBLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100, height: 28)
+                Text(
+                    "This product uses the TMDB API but is not endorsed or "
+                        + "certified by TMDB."
+                )
+
+                Text("Watch-provider availability data by JustWatch.")
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
             .multilineTextAlignment(.center)
-
-            Text("Watch-provider availability data by JustWatch.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
         }
         .padding(32)
+        .frame(width: 360)
     }
 }

@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct WianuApp: App {
+    @Environment(\.openWindow) private var openWindow
     @StateObject private var updateService = UpdateService()
     @State private var model = AppModel()
 
@@ -13,6 +14,12 @@ struct WianuApp: App {
         .defaultSize(width: 1200, height: 800)
         .commands {
             VideoInformationCommands()
+
+            CommandGroup(replacing: .appInfo) {
+                Button("About Wianu") {
+                    openWindow(id: "about")
+                }
+            }
 
             CommandGroup(after: .appInfo) {
                 Button {
@@ -39,6 +46,13 @@ struct WianuApp: App {
         Settings {
             SettingsView(model: model)
         }
+
+        Window("About Wianu", id: "about") {
+            AboutView()
+        }
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
+        .windowStyle(.hiddenTitleBar)
     }
 }
 
