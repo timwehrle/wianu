@@ -18,6 +18,7 @@ enum AnalyticsEvent: String, Sendable {
 
 enum AnalyticsPreference {
     static let enabledKey = "anonymousUsageAnalyticsEnabled"
+    static let distinctIDKey = "anonymousUsageAnalyticsDistinctID"
 }
 
 @MainActor
@@ -100,6 +101,7 @@ final class AnalyticsClient: AnalyticsTracking {
         guard isEnabled, let endpoint, !websiteID.isEmpty else { return }
         let payload = RequestBody(
             payload: Payload(
+                id: distinctID,
                 hostname: "wianu.com",
                 url: "/app",
                 website: websiteID,
@@ -139,6 +141,17 @@ final class AnalyticsClient: AnalyticsTracking {
         }
     }
 
+    private var distinctID: String {
+        if let existing = userDefaults.string(forKey: AnalyticsPreference.distinctIDKey),
+           UUID(uuidString: existing) != nil
+        {
+            return existing
+        }
+        let id = UUID().uuidString
+        userDefaults.set(id, forKey: AnalyticsPreference.distinctIDKey)
+        return id
+    }
+
     private static func validConfigurationValue(_ value: String) -> String? {
         let value = value.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !value.isEmpty, !value.contains("$(") else { return nil }
@@ -151,6 +164,7 @@ final class AnalyticsClient: AnalyticsTracking {
     }
 
     private struct Payload: Encodable {
+        let id: String
         let hostname: String
         let url: String
         let website: String
