@@ -292,15 +292,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          STAGING_PATH="$RUNNER_TEMP/dmg-staging"
-          mkdir -p "$STAGING_PATH" "$DISTRIBUTION_PATH"
-          ditto "$EXPORT_PATH/$APP_NAME.app" "$STAGING_PATH/$APP_NAME.app"
-          ln -s /Applications "$STAGING_PATH/Applications"
-
-          hdiutil create \
-            -volname "$APP_NAME" \
-            -srcfolder "$STAGING_PATH" \
-            -format UDZO \
+          bash Scripts/create-dmg.sh \
+            "$EXPORT_PATH/$APP_NAME.app" \
             "$DISTRIBUTION_PATH/$DMG_NAME"
 
           codesign --sign "Developer ID Application" --timestamp "$DISTRIBUTION_PATH/$DMG_NAME"
