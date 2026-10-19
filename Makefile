@@ -8,7 +8,7 @@ XCODEBUILD := xcodebuild -project $(PROJECT) -scheme $(SCHEME)
 
 .DEFAULT_GOAL := help
 
-.PHONY: help build test check format format-check lint resolve clean open
+.PHONY: help build test check format format-check lint resolve clean open web dmg
 
 help: ## Show the available commands
 	@awk 'BEGIN {FS = ":.*## "; printf "Usage: make <target>\n\nTargets:\n"} /^[a-zA-Z0-9_-]+:.*## / {printf "  %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -52,3 +52,8 @@ open: ## Open the project in Xcode
 
 web: ## Start the SvelteKit development server
 	cd Website && pnpm run dev --host
+DMG_APP ?= $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)/Wianu.app
+DMG_OUTPUT ?= /tmp/Wianu-preview.dmg
+
+dmg: ## Package an existing app with the DMG layout
+	bash Scripts/create-dmg.sh "$(DMG_APP)" "$(DMG_OUTPUT)"
