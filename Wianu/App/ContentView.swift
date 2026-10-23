@@ -17,7 +17,7 @@ struct ContentView: View {
                     .accessibilityHidden(model.isCommandPalettePresented)
 
                 if model.isCommandPalettePresented {
-                    Color.black.opacity(0.22)
+                    Color.black.opacity(0.08)
                         .ignoresSafeArea()
                         .contentShape(Rectangle())
                         .onTapGesture {
@@ -29,28 +29,7 @@ struct ContentView: View {
                         onAction: perform,
                         onDismiss: model.dismissCommandPalette
                     )
-                    .frame(maxWidth: 760, maxHeight: 640)
-                    .background(
-                        .regularMaterial,
-                        in: RoundedRectangle(
-                            cornerRadius: 18,
-                            style: .continuous
-                        )
-                    )
-                    .clipShape(
-                        RoundedRectangle(
-                            cornerRadius: 18,
-                            style: .continuous
-                        )
-                    )
-                    .overlay {
-                        RoundedRectangle(
-                            cornerRadius: 18,
-                            style: .continuous
-                        )
-                        .stroke(.separator.opacity(0.7), lineWidth: 1)
-                    }
-                    .shadow(color: .black.opacity(0.28), radius: 30, y: 12)
+                    .frame(maxWidth: 640, maxHeight: 500)
                     .padding(32)
                 }
             }
@@ -61,18 +40,6 @@ struct ContentView: View {
                 model: model,
                 mode: .add
             )
-        }
-        .toolbar {
-            if model.isCommandPalettePresented {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        model.dismissCommandPalette()
-                    } label: {
-                        Label("Close Command Palette", systemImage: "xmark")
-                    }
-                    .help("Return to Stream")
-                }
-            }
         }
     }
 

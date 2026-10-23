@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct CommandPaletteView: View {
@@ -44,7 +45,6 @@ struct CommandPaletteView: View {
         VStack(spacing: 0) {
             searchBar
             Divider()
-
             if let selected = search.selectedMedia {
                 TMDBAvailabilityView(model: model, media: selected) {
                     search.clearSelection()
@@ -54,6 +54,7 @@ struct CommandPaletteView: View {
                 resultsView
             }
         }
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22))
         .onAppear {
             searchFieldIsFocused = true
             selectedResult = visibleResultIDs.first
@@ -91,16 +92,17 @@ struct CommandPaletteView: View {
     }
 
     private var searchBar: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 14) {
             Image(systemName: "magnifyingglass")
+                .font(.system(size: 23, weight: .regular))
                 .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
             TextField(
-                "Search actions, sites, movies, and TV shows",
+                "Search Wianu",
                 text: Bindable(search).query
             )
             .textFieldStyle(.plain)
-            .font(.title3)
+            .font(.system(size: 25, weight: .regular))
             .focused($searchFieldIsFocused)
             .onChange(of: search.query) { search.queryChanged() }
             if !search.query.isEmpty {
@@ -115,7 +117,8 @@ struct CommandPaletteView: View {
                 .help("Clear Search")
             }
         }
-        .padding(16)
+        .padding(.horizontal, 22)
+        .padding(.vertical, 19)
     }
 
     private var resultsView: some View {
@@ -133,8 +136,7 @@ struct CommandPaletteView: View {
                 searchResultsSection
             }
             .scrollTargetLayout()
-            .frame(maxWidth: 760)
-            .padding(12)
+            .padding(8)
             .frame(maxWidth: .infinity)
         }
         .scrollPosition(id: $scrollTarget, anchor: .center)
@@ -185,17 +187,15 @@ struct CommandPaletteView: View {
             Button {
                 search.select(item)
             } label: {
-                MediaResultRow(
+                paletteMediaRow(
                     item: item,
                     posterURL: search.imageConfiguration?
                         .posterURL(path: item.posterPath)
                 )
-                .padding(.horizontal, 12)
+                .foregroundStyle(rowForeground(selectedResult == .media(item.id)))
                 .background(
-                    selectedResult == .media(item.id)
-                        ? Color.accentColor.opacity(0.16)
-                        : Color.clear,
-                    in: RoundedRectangle(cornerRadius: 8)
+                    rowBackground(selectedResult == .media(item.id)),
+                    in: RoundedRectangle(cornerRadius: 10)
                 )
                 .id(ResultID.media(item.id))
             }
@@ -220,40 +220,47 @@ struct CommandPaletteView: View {
 
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(.caption.weight(.semibold))
+            .font(.system(size: 11, weight: .semibold))
             .foregroundStyle(.secondary)
-            .padding(.horizontal, 12)
-            .padding(.top, 12)
+            .padding(.horizontal, 10)
+            .padding(.top, 10)
             .padding(.bottom, 6)
     }
 
     private func commandRow(_ command: CommandPaletteCommand) -> some View {
-        Button {
+        let isSelected = selectedResult == .command(command.action)
+        return Button {
             onAction(command.action)
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: command.systemImage)
-                    .frame(width: 24)
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 24))
+                    .frame(width: 40, height: 40)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(command.title)
+                        .font(.system(size: 15, weight: .semibold))
+                        .lineLimit(1)
                     if let subtitle = command.subtitle {
                         Text(subtitle)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .font(.system(size: 12))
+                            .opacity(0.7)
+                            .lineLimit(1)
                     }
                 }
                 Spacer()
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 9)
+            .foregroundStyle(rowForeground(isSelected))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 10)
             .contentShape(Rectangle())
             .background(
-                selectedResult == .command(command.action)
-                    ? Color.accentColor.opacity(0.16)
-                    : Color.clear,
-                in: RoundedRectangle(cornerRadius: 8)
+                rowBackground(isSelected),
+                in: RoundedRectangle(cornerRadius: 10)
             )
+            .overlay {
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(isSelected ? Color.accentColor.opacity(0.8) : .clear)
+            }
         }
         .buttonStyle(.plain)
         .onHover { hovering in
@@ -304,5 +311,46 @@ struct CommandPaletteView: View {
         case nil:
             break
         }
+    }
+}
+
+private extension CommandPaletteView {
+    private func rowBackground(_ isSelected: Bool) -> Color {
+        isSelected ? Color.accentColor.opacity(0.35) : .clear
+    }
+
+    private func rowForeground(_ isSelected: Bool) -> Color {
+        Color(nsColor: .labelColor)
+    }
+
+    private func paletteMediaRow(item: TMDBMediaResult, posterURL: URL?) -> some View {
+        HStack(spacing: 12) {
+            AsyncImage(url: posterURL) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                Image(systemName: "film")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(.quaternary)
+            }
+            .frame(width: 30, height: 42)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .lineLimit(1)
+                Text([item.mediaType == .movie ? "Movie" : "TV Show", item.year]
+                    .compactMap(\.self).joined(separator: " · "))
+                    .font(.system(size: 12))
+                    .opacity(0.7)
+            }
+            Spacer(minLength: 8)
+            Image(systemName: "chevron.right")
+                .font(.system(size: 10, weight: .semibold))
+                .opacity(0.5)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .contentShape(Rectangle())
     }
 }
