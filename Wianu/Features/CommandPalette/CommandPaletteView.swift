@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 
 struct CommandPaletteView: View {
@@ -69,16 +68,19 @@ struct CommandPaletteView: View {
             }
         }
         .onKeyPress(.downArrow) {
+            guard search.selectedMedia == nil else { return .ignored }
             moveSelection(by: 1)
             return .handled
         }
         .onKeyPress(.upArrow) {
+            guard search.selectedMedia == nil else { return .ignored }
             moveSelection(by: -1)
             return .handled
         }
         .onKeyPress(.return) {
+            guard search.selectedMedia == nil, selectedResult != nil else { return .ignored }
             activateSelection()
-            return selectedResult == nil ? .ignored : .handled
+            return .handled
         }
         .onKeyPress(.escape) {
             if search.selectedMedia != nil {
@@ -128,9 +130,7 @@ struct CommandPaletteView: View {
                     sectionHeader("Actions")
 
                     ForEach(commands) { command in
-                        commandRow(command).id(
-                            ResultID.command(command.action)
-                        )
+                        commandRow(command)
                     }
                 }
                 searchResultsSection
@@ -184,27 +184,12 @@ struct CommandPaletteView: View {
     @ViewBuilder
     private var mediaResultRows: some View {
         ForEach(search.results) { item in
-            Button {
-                search.select(item)
-            } label: {
+            resultButton(id: .media(item.id), action: { search.select(item) }, content: {
                 paletteMediaRow(
                     item: item,
-                    posterURL: search.imageConfiguration?
-                        .posterURL(path: item.posterPath)
+                    posterURL: search.imageConfiguration?.posterURL(path: item.posterPath)
                 )
-                .foregroundStyle(rowForeground(selectedResult == .media(item.id)))
-                .background(
-                    rowBackground(selectedResult == .media(item.id)),
-                    in: RoundedRectangle(cornerRadius: 10)
-                )
-                .id(ResultID.media(item.id))
-            }
-            .buttonStyle(.plain)
-            .onHover { hovering in
-                if hovering {
-                    selectedResult = .media(item.id)
-                }
-            }
+            })
             .onAppear {
                 search.loadMoreIfNeeded(after: item)
             }
@@ -228,10 +213,7 @@ struct CommandPaletteView: View {
     }
 
     private func commandRow(_ command: CommandPaletteCommand) -> some View {
-        let isSelected = selectedResult == .command(command.action)
-        return Button {
-            onAction(command.action)
-        } label: {
+        resultButton(id: .command(command.action), action: { onAction(command.action) }, content: {
             HStack(spacing: 12) {
                 Image(systemName: command.systemImage)
                     .font(.system(size: 24))
@@ -249,25 +231,9 @@ struct CommandPaletteView: View {
                 }
                 Spacer()
             }
-            .foregroundStyle(rowForeground(isSelected))
             .padding(.horizontal, 10)
             .padding(.vertical, 10)
-            .contentShape(Rectangle())
-            .background(
-                rowBackground(isSelected),
-                in: RoundedRectangle(cornerRadius: 10)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(isSelected ? Color.accentColor.opacity(0.8) : .clear)
-            }
-        }
-        .buttonStyle(.plain)
-        .onHover { hovering in
-            if hovering {
-                selectedResult = .command(command.action)
-            }
-        }
+        })
     }
 
     private func compactMessage(
@@ -315,12 +281,32 @@ struct CommandPaletteView: View {
 }
 
 private extension CommandPaletteView {
-    private func rowBackground(_ isSelected: Bool) -> Color {
-        isSelected ? Color.accentColor.opacity(0.35) : .clear
-    }
-
-    private func rowForeground(_ isSelected: Bool) -> Color {
-        Color(nsColor: .labelColor)
+    private func resultButton(
+        id: ResultID,
+        action: @escaping () -> Void,
+        @ViewBuilder content: () -> some View
+    ) -> some View {
+        let isSelected = selectedResult == id
+        return Button(action: action) {
+            content()
+                .foregroundStyle(.primary)
+                .contentShape(Rectangle())
+                .background(
+                    isSelected ? Color.accentColor.opacity(0.35) : .clear,
+                    in: RoundedRectangle(cornerRadius: 10)
+                )
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10)
+                        .strokeBorder(isSelected ? Color.accentColor.opacity(0.8) : .clear)
+                }
+        }
+        .buttonStyle(.plain)
+        .id(id)
+        .onHover { hovering in
+            if hovering {
+                selectedResult = id
+            }
+        }
     }
 
     private func paletteMediaRow(item: TMDBMediaResult, posterURL: URL?) -> some View {

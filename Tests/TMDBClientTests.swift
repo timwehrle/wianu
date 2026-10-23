@@ -59,6 +59,28 @@ struct TMDBClientTests {
         #expect(!model.isSearching)
     }
 
+    @Test func `search is loading during debounce and stops when cleared`() throws {
+        let defaults = try #require(UserDefaults(
+            suiteName: "TMDBClientTests.debounce.\(UUID().uuidString)"
+        ))
+        let model = TMDBSearchModel(
+            client: TMDBClient(session: CancelledSession()),
+            userDefaults: defaults
+        )
+
+        model.query = "Dune"
+        model.queryChanged()
+        #expect(model.isSearching)
+        #expect(model.results.isEmpty)
+        #expect(model.errorMessage == nil)
+
+        model.query = ""
+        model.queryChanged()
+        #expect(!model.isSearching)
+        #expect(!model.isLoadingMore)
+        #expect(model.results.isEmpty)
+    }
+
     @Test func `Letterboxd links are available only for movies`() {
         let movie = TMDBMediaResult(
             id: 550,
