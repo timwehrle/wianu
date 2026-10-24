@@ -42,6 +42,25 @@ struct TMDBClient: Sendable {
         self.language = language.replacingOccurrences(of: "_", with: "-")
     }
 
+    func weeklyMovies() async throws -> [TMDBMediaResult] {
+        let archive: WeeklyArchiveResponse = try await request(path: "weekly")
+        var movies: [TMDBMediaResult] = []
+        for id in archive.weeks.first?.movieIds ?? [] {
+            try Task.checkCancellation()
+            let movie: WeeklyMovieResponse = try await request(path: "movie/\(id)")
+            movies.append(TMDBMediaResult(
+                id: movie.id,
+                mediaType: .movie,
+                title: movie.title,
+                overview: movie.overview,
+                posterPath: movie.posterPath,
+                releaseDate: movie.releaseDate,
+                backdropPath: movie.backdropPath
+            ))
+        }
+        return movies
+    }
+
     func search(query: String, page: Int = 1, paced: Bool = false) async throws -> TMDBSearchPage {
         let parameters = [
             URLQueryItem(name: "query", value: query),

@@ -82,3 +82,20 @@ struct TMDBErrorResponse: Decodable {
 
     let error: APIError
 }
+
+struct WeeklyArchiveResponse: Decodable {
+    struct Entry: Decodable {
+        let movieIds: [Int]
+    }
+
+    let weeks: [Entry]
+}
+
+struct WeeklyMovieResponse: Decodable {
+    let id: Int
+    let title: String
+    let overview: String
+    let backdropPath: String?
+    let posterPath: String?
+    let releaseDate: String?
+}

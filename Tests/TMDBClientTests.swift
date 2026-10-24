@@ -42,6 +42,52 @@ private actor CancelledSession: TMDBSession {
 
 @Suite("TMDB client")
 struct TMDBClientTests {
+    @Test func `empty weekly archive has no movies`() async throws {
+        let session = FixtureSession(#"{"weeks":[]}"#)
+        let movies = try await TMDBClient(session: session).weeklyMovies()
+        #expect(movies.isEmpty)
+        let request = await session.capturedRequest()
+        #expect(request?.url?.path == "/v1/weekly")
+    }
+
+    @Test func `weekly movie details decode camel case API fields`() throws {
+        let data = Data(
+            #"{"id":42,"title":"Film","overview":"Story","posterPath":"/poster.jpg","releaseDate":"2026-01-01"}"#
+                .utf8
+        )
+        let movie = try JSONDecoder().decode(WeeklyMovieResponse.self, from: data)
+        #expect(movie.posterPath == "/poster.jpg")
+        #expect(movie.backdropPath == nil)
+        #expect(movie.releaseDate == "2026-01-01")
+    }
+
+    @Test func `backdrop artwork survives metadata persistence`() throws {
+        let data = Data(
+            #"{"id":42,"media_type":"movie","title":"Film","backdrop_path":"/scene.jpg"}"#.utf8
+        )
+        let media = try JSONDecoder().decode(TMDBMediaResult.self, from: data)
+        #expect(media.backdropPath == "/scene.jpg")
+        let restored = try JSONDecoder().decode(TMDBMediaResult.self, from: JSONEncoder().encode(media))
+        #expect(restored == media)
+
+        let legacy = Data(#"{"id":42,"media_type":"movie","title":"Film"}"#.utf8)
+        #expect(try JSONDecoder().decode(TMDBMediaResult.self, from: legacy).backdropPath == nil)
+    }
+
+    @Test func `weekly movie details include landscape artwork when available`() throws {
+        let data = Data(#"{"id":42,"title":"Film","overview":"Story","backdropPath":"/scene.jpg"}"#.utf8)
+        let movie = try JSONDecoder().decode(WeeklyMovieResponse.self, from: data)
+        #expect(movie.backdropPath == "/scene.jpg")
+    }
+
+    @Test func `backdrops use a landscape image size`() throws {
+        let baseURL = try #require(URL(string: "https://image.tmdb.org/t/p/"))
+        let configuration = TMDBImageConfiguration(secureBaseURL: baseURL, posterSize: "w342", logoSize: "w92")
+        #expect(configuration.backdropURL(path: "/scene.jpg")?.absoluteString
+            == "https://image.tmdb.org/t/p/w1280/scene.jpg")
+        #expect(configuration.backdropURL(path: nil) == nil)
+    }
+
     @Test func `cancelled URL requests are not shown as search errors`() async throws {
         let defaults = try #require(UserDefaults(
             suiteName: "TMDBClientTests.cancelled.\(UUID().uuidString)"

@@ -12,6 +12,7 @@ nonisolated struct TMDBMediaResult: Identifiable, Codable, Hashable, Sendable {
     let originalTitle: String?
     let overview: String
     let posterPath: String?
+    let backdropPath: String?
     let releaseDate: String?
 
     var year: String? {
@@ -31,8 +32,10 @@ nonisolated struct TMDBMediaResult: Identifiable, Codable, Hashable, Sendable {
         overview: String,
         posterPath: String?,
         releaseDate: String?,
-        originalTitle: String? = nil
+        originalTitle: String? = nil,
+        backdropPath: String? = nil
     ) {
+        self.backdropPath = backdropPath
         self.originalTitle = originalTitle
         self.id = id
         self.mediaType = mediaType
@@ -49,6 +52,7 @@ nonisolated struct TMDBMediaResult: Identifiable, Codable, Hashable, Sendable {
         case mediaType = "media_type"
         case movieTitle = "title"
         case tvTitle = "name"
+        case backdropPath = "backdrop_path"
         case posterPath = "poster_path"
         case movieDate = "release_date"
         case tvDate = "first_air_date"
@@ -62,6 +66,7 @@ nonisolated struct TMDBMediaResult: Identifiable, Codable, Hashable, Sendable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         originalTitle = try values.decodeIfPresent(String.self, forKey: .originalTitle)
             ?? values.decodeIfPresent(String.self, forKey: .originalName)
+        backdropPath = try values.decodeIfPresent(String.self, forKey: .backdropPath)
         id = try values.decode(Int.self, forKey: .id)
 
         if let knownType {
@@ -91,6 +96,7 @@ nonisolated struct TMDBMediaResult: Identifiable, Codable, Hashable, Sendable {
         try values.encode(mediaType, forKey: .mediaType)
         try values.encode(overview, forKey: .overview)
         try values.encodeIfPresent(posterPath, forKey: .posterPath)
+        try values.encodeIfPresent(backdropPath, forKey: .backdropPath)
 
         if mediaType == .movie {
             try values.encode(title, forKey: .movieTitle)
@@ -167,6 +173,10 @@ struct TMDBImageConfiguration: Sendable {
 
     func posterURL(path: String?) -> URL? {
         imageURL(path: path, size: posterSize)
+    }
+
+    func backdropURL(path: String?) -> URL? {
+        imageURL(path: path, size: "w1280")
     }
 
     func logoURL(path: String?) -> URL? {
