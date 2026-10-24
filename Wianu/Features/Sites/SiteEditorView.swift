@@ -182,9 +182,9 @@ struct SiteEditorView: View {
 
     private func applySuggestedSearchTemplate() {
         guard draft.searchURLTemplate.trimmingCharacters(
-            in: .whitespacesAndNewlines
-        ).isEmpty,
-            let suggestion = draft.suggestedSearchURLTemplate
+                  in: .whitespacesAndNewlines
+              ).isEmpty,
+              let suggestion = draft.suggestedSearchURLTemplate
         else { return }
 
         draft.searchURLTemplate = suggestion
