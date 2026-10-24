@@ -74,16 +74,18 @@ final class TMDBSearchModel {
         let generation = searchGeneration
         selectedMedia = nil
         availability = nil
+        isLoadingMore = false
+        errorMessage = nil
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmed.isEmpty else {
             results = []
-            errorMessage = nil
             isSearching = false
 
             return
         }
 
+        isSearching = true
         results = []
         currentPage = 0
         totalPages = 0

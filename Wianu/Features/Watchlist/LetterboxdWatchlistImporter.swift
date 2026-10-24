@@ -87,12 +87,7 @@ nonisolated enum LetterboxdWatchlistImporter {
                 from: row,
                 columns: columns,
                 sourceOrder: items.count
-            ) else {
-                skippedRowCount += 1
-                continue
-            }
-
-            guard seenURLs.insert(parsedItem.comparisonKey).inserted else {
+            ), seenURLs.insert(parsedItem.comparisonKey).inserted else {
                 skippedRowCount += 1
                 continue
             }
@@ -193,18 +188,14 @@ nonisolated enum LetterboxdWatchlistImporter {
     private static func secureLetterboxdURL(_ url: URL) -> URL? {
         guard let scheme = url.scheme?.lowercased(),
               ["http", "https"].contains(scheme),
-              let host = url.host()?.lowercased()
-        else { return nil }
-
-        guard host == "letterboxd.com"
-            || host.hasSuffix(".letterboxd.com")
-            || host == "boxd.it"
-        else { return nil }
-
-        guard var components = URLComponents(
-            url: url,
-            resolvingAgainstBaseURL: false
-        ) else { return nil }
+              let host = url.host()?.lowercased(),
+              host == "letterboxd.com"
+              || host.hasSuffix(".letterboxd.com")
+              || host == "boxd.it",
+              var components = URLComponents(
+                  url: url,
+                  resolvingAgainstBaseURL: false
+              ) else { return nil }
 
         components.scheme = "https"
         components.user = nil

@@ -41,12 +41,9 @@ struct SiteDraft {
             in: .whitespacesAndNewlines
         )
 
-        guard !trimmedName.isEmpty, !trimmedAddress.isEmpty else { return nil }
-
-        guard let url = validatedSiteURL else { return nil }
-
-        guard trimmedSearchTemplate.isEmpty
-            || StreamingSearchURL.isValidTemplate(trimmedSearchTemplate)
+        guard !trimmedName.isEmpty, !trimmedAddress.isEmpty, let url = validatedSiteURL,
+              trimmedSearchTemplate.isEmpty
+              || StreamingSearchURL.isValidTemplate(trimmedSearchTemplate)
         else { return nil }
 
         return ValidatedSiteDraft(
