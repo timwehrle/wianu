@@ -32,7 +32,7 @@ struct HomeView: View {
                         count: weekly.count,
                         previous: { changeFeature(by: -1) },
                         next: { changeFeature(by: 1) },
-                        action: { showProviders(for: featured) }
+                        action: { model.openWeeklyPick(featured) }
                     )
                 }
                 continueWatchingShelf
@@ -71,7 +71,7 @@ struct HomeView: View {
             } else {
                 HomeShelf(title: "Wianu Weekly") {
                     ForEach(movies) { media in
-                        card(media, actionLabel: "Find Providers") { showProviders(for: media) }
+                        card(media, actionLabel: "Find Providers") { model.openWeeklyPick(media) }
                     }
                 }
             }

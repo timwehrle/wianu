@@ -4,6 +4,10 @@ import OSLog
 enum AnalyticsEvent: String, Sendable {
     case appLaunched = "app-launched"
     case searchOpened = "search-opened"
+    case homeOpened = "home-opened"
+    case weeklyPickOpened = "weekly-pick-opened"
+    case continueWatchingOpened = "continue-watching-opened"
+    case providerSelected = "provider-selected"
     case letterboxdImportSucceeded = "letterboxd-import-succeeded"
     case watchlistItemAdded = "watchlist-item-added"
     case watchlistItemRemoved = "watchlist-item-removed"

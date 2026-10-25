@@ -150,12 +150,19 @@ extension AppModel {
         isCommandPalettePresented = false
     }
 
+    func openWeeklyPick(_ media: TMDBMediaResult) {
+        analytics.track(.weeklyPickOpened)
+        showCommandPalette(query: media.title)
+        tmdbSearch.select(media)
+    }
+
     func openProvider(_ provider: TMDBProvider, for media: TMDBMediaResult) {
         guard let site = siteStore.sites.first(where: {
             $0.tmdbProvider?.matches(provider) == true
                 && $0.isTMDBProviderActionable
-        })
+        }), site.searchURL(for: media.title) != nil
         else { return }
+        analytics.track(.providerSelected)
         search(media.title, in: site)
     }
 
@@ -170,8 +177,15 @@ extension AppModel {
         selection = newSelection
         navigate(to: destination(for: newSelection))
 
-        if case .site = newSelection, navigationRequest != nil {
+        switch newSelection {
+        case .home:
+            analytics.track(.homeOpened)
+        case .site where navigationRequest != nil:
             analytics.track(.siteOpened)
+        case .continueWatching where navigationRequest != nil:
+            analytics.track(.continueWatchingOpened)
+        default:
+            break
         }
 
         if case let .continueWatching(itemID) = newSelection {

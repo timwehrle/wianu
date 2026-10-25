@@ -25,7 +25,14 @@ private actor AnalyticsFixtureSession: AnalyticsSession {
 
 @Suite("Analytics client")
 struct AnalyticsClientTests {
-    @Test(arguments: [AnalyticsEvent.searchOpened, .siteOpened])
+    @Test(arguments: [
+        AnalyticsEvent.searchOpened,
+        .siteOpened,
+        .homeOpened,
+        .weeklyPickOpened,
+        .continueWatchingOpened,
+        .providerSelected
+    ])
     func `sends privacy minimal Umami event`(event: AnalyticsEvent) async throws {
         let defaults = try #require(UserDefaults(
             suiteName: "AnalyticsClientTests.send.\(UUID().uuidString)"
@@ -96,7 +103,14 @@ struct AnalyticsClientTests {
         #expect(ids[0] != ids[2])
     }
 
-    @Test func `opt out and missing configuration send nothing`() async throws {
+    @Test(arguments: [
+        AnalyticsEvent.siteOpened,
+        .homeOpened,
+        .weeklyPickOpened,
+        .continueWatchingOpened,
+        .providerSelected
+    ])
+    func `opt out and missing configuration send nothing`(event: AnalyticsEvent) async throws {
         let defaults = try #require(UserDefaults(
             suiteName: "AnalyticsClientTests.disabled.\(UUID().uuidString)"
         ))
@@ -112,7 +126,7 @@ struct AnalyticsClientTests {
 
         #expect(client.isEnabled)
         defaults.set(false, forKey: AnalyticsPreference.enabledKey)
-        client.track(.siteOpened)
+        client.track(event)
         try await Task.sleep(for: .milliseconds(50))
         #expect(await session.capturedRequests().isEmpty)
         #expect(defaults.object(forKey: AnalyticsPreference.distinctIDKey) == nil)
@@ -126,7 +140,7 @@ struct AnalyticsClientTests {
             appVersion: "1",
             build: "1"
         )
-        unconfigured.track(.siteOpened)
+        unconfigured.track(event)
         try await Task.sleep(for: .milliseconds(50))
         #expect(await session.capturedRequests().isEmpty)
         #expect(defaults.object(forKey: AnalyticsPreference.distinctIDKey) == nil)
@@ -185,7 +199,7 @@ struct SiteOpeningAnalyticsTests {
             releaseDate: nil
         )
         fixture.model.openProvider(TMDBProvider(id: 1, name: "Private Provider", logoPath: nil), for: media)
-        #expect(fixture.tracker.events == [.appLaunched, .siteOpened, .siteOpened])
+        #expect(fixture.tracker.events == [.appLaunched, .siteOpened, .providerSelected, .siteOpened])
     }
 
     @Test func `home missing sites and automatic URL matching do not record site opens`() throws {
@@ -195,6 +209,59 @@ struct SiteOpeningAnalyticsTests {
         fixture.model.select(nil)
         fixture.model.select(.site(UUID()))
         fixture.model.activateSite(matching: fixture.site.url)
+        #expect(fixture.tracker.events == [.appLaunched, .homeOpened])
+    }
+
+    @Test func `home selections count once per action`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+        fixture.model.select(.home)
+        fixture.model.select(.site(fixture.site.id))
+        fixture.model.select(.home)
+        #expect(fixture.tracker.events == [.appLaunched, .homeOpened, .siteOpened, .homeOpened])
+    }
+
+    @Test func `only valid saved Continue Watching pages record opens`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+        let url = try #require(URL(string: "https://private.example/private-title"))
+        let item = fixture.model.continueWatchingStore.save(siteID: fixture.site.id, title: "Private Title", url: url)
+        fixture.model.select(.continueWatching(item.id))
+        #expect(fixture.model.destinationURL == url)
+        #expect(fixture.tracker.events == [.appLaunched, .continueWatchingOpened])
+        fixture.model.select(.continueWatching(UUID()))
+        #expect(fixture.tracker.events == [.appLaunched, .continueWatchingOpened])
+    }
+
+    @Test func `weekly picks record opening details without recording a site open`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+        let media = TMDBMediaResult(
+            id: 42,
+            mediaType: .movie,
+            title: "Private Title",
+            overview: "",
+            posterPath: nil,
+            releaseDate: nil
+        )
+        fixture.model.openWeeklyPick(media)
+        #expect(fixture.tracker.events == [.appLaunched, .weeklyPickOpened, .searchOpened])
+        #expect(fixture.model.isCommandPalettePresented)
+        #expect(fixture.model.tmdbSearch.selectedMedia == media)
+    }
+
+    @Test func `unavailable providers do not record selections or site opens`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+        let media = TMDBMediaResult(
+            id: 42,
+            mediaType: .movie,
+            title: "Private Title",
+            overview: "",
+            posterPath: nil,
+            releaseDate: nil
+        )
+        fixture.model.openProvider(TMDBProvider(id: 999, name: "Unconfigured Provider", logoPath: nil), for: media)
         #expect(fixture.tracker.events == [.appLaunched])
     }
 }
