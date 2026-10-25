@@ -10,6 +10,7 @@ enum AnalyticsEvent: String, Sendable {
     case continueWatchingItemAdded = "continue-watching-item-added"
     case continueWatchingItemRemoved = "continue-watching-item-removed"
     case siteAdded = "site-added"
+    case siteOpened = "site-opened"
     case siteEdited = "site-edited"
     case siteDeleted = "site-deleted"
     case settingsOpened = "settings-opened"

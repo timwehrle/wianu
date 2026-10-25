@@ -170,6 +170,10 @@ extension AppModel {
         selection = newSelection
         navigate(to: destination(for: newSelection))
 
+        if case .site = newSelection, navigationRequest != nil {
+            analytics.track(.siteOpened)
+        }
+
         if case let .continueWatching(itemID) = newSelection {
             continueWatchingStore.markOpened(id: itemID)
         }
