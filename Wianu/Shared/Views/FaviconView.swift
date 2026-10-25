@@ -110,7 +110,8 @@ private actor FaviconLoader {
                 )
                 guard let response = response as? HTTPURLResponse,
                       (200 ..< 300).contains(response.statusCode),
-                      response.mimeType?.lowercased().hasPrefix("image/") == true,
+                      let mimeType = response.mimeType?.lowercased(),
+                      mimeType.hasPrefix("image/") || mimeType == "application/octet-stream",
                       response.expectedContentLength <= maximumResponseBytes
                 else {
                     throw FaviconError.invalidResponse
