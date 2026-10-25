@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AB0000010000000000000001 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0000010000000000000002 /* HomeView.swift */; };
 		21392BB5A368A104286329C5 /* TMDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4864F4CC291E958A50456E1F /* TMDBClient.swift */; };
 		2A8A8308E06AA024385EF725 /* TMDBResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2779DA82DAB320184F2669D1 /* TMDBResponses.swift */; };
 		3B696CC64A0307E645BFBE56 /* LetterboxdImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AB648782105E118BE086F8 /* LetterboxdImportView.swift */; };
@@ -95,6 +96,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		AB0000010000000000000002 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		1EFF6F7118F05B89732A32C3 /* LetterboxdTestSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdTestSession.swift; sourceTree = "<group>"; };
 		2779DA82DAB320184F2669D1 /* TMDBResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBResponses.swift; sourceTree = "<group>"; };
 		297D70DC28BF39EC09DA4C62 /* LetterboxdImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportTests.swift; sourceTree = "<group>"; };
@@ -290,6 +292,7 @@
 			children = (
 				D1B972413015341900B64B10 /* AppModel.swift */,
 				D1B972423015341900B64B10 /* ContentView.swift */,
+				AB0000010000000000000002 /* HomeView.swift */,
 				D1D000023020000000000002 /* SettingsView.swift */,
 				D1B972433015341900B64B10 /* WianuApp.swift */,
 			);
@@ -600,6 +603,7 @@
 				D1B9726D3015341900B64B10 /* WatchlistItem.swift in Sources */,
 				D1B9726E3015341900B64B10 /* BrowserPaneView.swift in Sources */,
 				D1B9726F3015341900B64B10 /* ContentView.swift in Sources */,
+				AB0000010000000000000001 /* HomeView.swift in Sources */,
 				D1D000013020000000000001 /* SettingsView.swift in Sources */,
 				D1B972703015341900B64B10 /* SiteEditorView.swift in Sources */,
 				D1B972713015341900B64B10 /* WianuApp.swift in Sources */,

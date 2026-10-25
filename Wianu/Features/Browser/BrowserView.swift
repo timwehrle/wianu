@@ -26,7 +26,7 @@ struct BrowserView: View {
             }
             .task(id: pageInteractionID) {
                 await session.setPageInteractionBlocked(
-                    model.isCommandPalettePresented
+                    model.isCommandPalettePresented || model.selection == .home
                 )
             }
             .onChange(of: session.page.url) { _, url in
@@ -43,7 +43,7 @@ struct BrowserView: View {
                 await updateLoadingIndicator()
             }
             .toolbar {
-                if !model.isCommandPalettePresented {
+                if !model.isCommandPalettePresented, model.selection != .home {
                     BrowserToolbar(
                         model: model,
                         session: session,
@@ -65,7 +65,9 @@ struct BrowserView: View {
 private extension BrowserView {
     @ViewBuilder
     var browserContent: some View {
-        if model.navigationRequest != nil {
+        if model.selection == .home {
+            HomeView(model: model)
+        } else if model.navigationRequest != nil {
             BrowserPaneView(page: session.page)
         } else {
             ContentUnavailableView(
@@ -78,7 +80,7 @@ private extension BrowserView {
 
     var pageInteractionID: PageInteractionID {
         PageInteractionID(
-            isBlocked: model.isCommandPalettePresented,
+            isBlocked: model.isCommandPalettePresented || model.selection == .home,
             url: session.page.url
         )
     }

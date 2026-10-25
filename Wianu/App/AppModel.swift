@@ -100,7 +100,7 @@ extension AppModel {
             continueWatchingStore.item(id: itemID)?.url
         case let .watchlistItem(itemID):
             watchlistStore.item(id: itemID)?.url
-        case nil:
+        case .home, nil:
             nil
         }
     }
@@ -150,12 +150,19 @@ extension AppModel {
         isCommandPalettePresented = false
     }
 
+    func openWeeklyPick(_ media: TMDBMediaResult) {
+        analytics.track(.weeklyPickOpened)
+        showCommandPalette(query: media.title)
+        tmdbSearch.select(media)
+    }
+
     func openProvider(_ provider: TMDBProvider, for media: TMDBMediaResult) {
         guard let site = siteStore.sites.first(where: {
             $0.tmdbProvider?.matches(provider) == true
                 && $0.isTMDBProviderActionable
-        })
+        }), site.searchURL(for: media.title) != nil
         else { return }
+        analytics.track(.providerSelected)
         search(media.title, in: site)
     }
 
@@ -169,6 +176,17 @@ extension AppModel {
         isCommandPalettePresented = false
         selection = newSelection
         navigate(to: destination(for: newSelection))
+
+        switch newSelection {
+        case .home:
+            analytics.track(.homeOpened)
+        case .site where navigationRequest != nil:
+            analytics.track(.siteOpened)
+        case .continueWatching where navigationRequest != nil:
+            analytics.track(.continueWatchingOpened)
+        default:
+            break
+        }
 
         if case let .continueWatching(itemID) = newSelection {
             continueWatchingStore.markOpened(id: itemID)
@@ -268,7 +286,8 @@ extension AppModel {
     }
 
     func activateSite(matching url: URL?) {
-        guard let url,
+        guard selection != .home,
+              let url,
               let host = normalizedHost(for: url),
               let site = siteStore.sites.first(where: {
                   normalizedHost(for: $0.url) == host
@@ -350,7 +369,7 @@ extension AppModel {
             continueWatchingStore.item(id: itemID)?.siteID
         case .watchlistItem:
             nil
-        case nil:
+        case .home, nil:
             nil
         }
     }

@@ -33,3 +33,27 @@ struct BrowserPresentationTests {
         }
     }
 }
+
+@MainActor
+@Suite("Home shelf scrolling")
+struct HomeShelfScrollingTests {
+    @Test func `short shelves cannot scroll past their content`() {
+        let metrics = HomeShelfScrollMetrics(offset: 0, viewportWidth: 1000, contentWidth: 464)
+        #expect(metrics.maximumOffset == 0)
+        #expect(metrics.destination(direction: 1) == 0)
+        #expect(metrics.destination(direction: -1) == 0)
+    }
+
+    @Test func `paging reaches both ends without overshooting`() {
+        let nearEnd = HomeShelfScrollMetrics(offset: 1900, viewportWidth: 800, contentWidth: 3000)
+        #expect(nearEnd.destination(direction: 1) == nearEnd.maximumOffset)
+        let nearStart = HomeShelfScrollMetrics(offset: 100, viewportWidth: 800, contentWidth: 3000)
+        #expect(nearStart.destination(direction: -1) == 0)
+    }
+
+    @Test func `resizing the window keeps paging inside the new bounds`() {
+        let resized = HomeShelfScrollMetrics(offset: 2200, viewportWidth: 1400, contentWidth: 3000)
+        #expect(resized.destination(direction: 1) <= resized.maximumOffset)
+        #expect(resized.destination(direction: -1) >= 0)
+    }
+}
