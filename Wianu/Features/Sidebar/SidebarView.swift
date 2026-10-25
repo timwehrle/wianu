@@ -21,6 +21,8 @@ struct SidebarView: View {
     var body: some View {
         List(selection: selectionBinding) {
             searchButton
+            Label("Home", systemImage: "house")
+                .tag(SidebarSelection.home)
             sitesSection
             continueWatchingSection
             watchlistSection

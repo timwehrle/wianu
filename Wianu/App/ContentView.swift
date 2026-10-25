@@ -34,7 +34,7 @@ struct ContentView: View {
                 }
             }
         }
-        .navigationTitle("Wianu")
+        .navigationTitle(model.selection == .home ? "Home" : "Wianu")
         .sheet(isPresented: $showingAddSite) {
             SiteEditorView(
                 model: model,

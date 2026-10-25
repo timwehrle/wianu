@@ -100,7 +100,7 @@ extension AppModel {
             continueWatchingStore.item(id: itemID)?.url
         case let .watchlistItem(itemID):
             watchlistStore.item(id: itemID)?.url
-        case nil:
+        case .home, nil:
             nil
         }
     }
@@ -268,7 +268,8 @@ extension AppModel {
     }
 
     func activateSite(matching url: URL?) {
-        guard let url,
+        guard selection != .home,
+              let url,
               let host = normalizedHost(for: url),
               let site = siteStore.sites.first(where: {
                   normalizedHost(for: $0.url) == host
@@ -350,7 +351,7 @@ extension AppModel {
             continueWatchingStore.item(id: itemID)?.siteID
         case .watchlistItem:
             nil
-        case nil:
+        case .home, nil:
             nil
         }
     }
