@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AB0000010000000000000001 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0000010000000000000002 /* HomeView.swift */; };
 		21392BB5A368A104286329C5 /* TMDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4864F4CC291E958A50456E1F /* TMDBClient.swift */; };
 		2A8A8308E06AA024385EF725 /* TMDBResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2779DA82DAB320184F2669D1 /* TMDBResponses.swift */; };
 		3B696CC64A0307E645BFBE56 /* LetterboxdImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AB648782105E118BE086F8 /* LetterboxdImportView.swift */; };
@@ -26,6 +25,7 @@
 		9F7B9262E1006687B0D87591 /* MediaIdentificationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D96A377CC9548C46D1AD9057 /* MediaIdentificationCoordinatorTests.swift */; };
 		A6D1B39D20134D9DA7123A50 /* MediaMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F22FFC23CF024EE97DC8594E /* MediaMatcher.swift */; };
 		A9C036BB01A04FAE823CE001 /* TMDBSearchModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9C036BB01A04FAE823CE002 /* TMDBSearchModel.swift */; };
+		AB0000010000000000000001 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0000010000000000000002 /* HomeView.swift */; };
 		AC45CD0901EDDBABED4E43F6 /* CSVParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9535F5F2FB2BD52EF81E8460 /* CSVParser.swift */; };
 		B3144AD4AE04689FBCA59B6C /* LetterboxdImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 297D70DC28BF39EC09DA4C62 /* LetterboxdImportTests.swift */; };
 		B6E977AF17CF1F94670B47F5 /* MediaIdentificationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC6560216855488BDE8FDC70 /* MediaIdentificationModel.swift */; };
@@ -96,7 +96,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		AB0000010000000000000002 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		1EFF6F7118F05B89732A32C3 /* LetterboxdTestSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdTestSession.swift; sourceTree = "<group>"; };
 		2779DA82DAB320184F2669D1 /* TMDBResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBResponses.swift; sourceTree = "<group>"; };
 		297D70DC28BF39EC09DA4C62 /* LetterboxdImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportTests.swift; sourceTree = "<group>"; };
@@ -115,6 +114,7 @@
 		A3AB648782105E118BE086F8 /* LetterboxdImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportView.swift; sourceTree = "<group>"; };
 		A9C036BB01A04FAE823CE002 /* TMDBSearchModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBSearchModel.swift; sourceTree = "<group>"; };
 		AAA1D1A3EE5FB7EC05C5C573 /* MediaIdentificationMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaIdentificationMenu.swift; sourceTree = "<group>"; };
+		AB0000010000000000000002 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		AC6560216855488BDE8FDC70 /* MediaIdentificationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaIdentificationModel.swift; sourceTree = "<group>"; };
 		AEBC4A22E3A2D121C56B76B7 /* MediaIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaIdentity.swift; sourceTree = "<group>"; };
 		CB3602DB02F2AD0B93EB0FC1 /* MediaIdentificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaIdentificationService.swift; sourceTree = "<group>"; };
@@ -802,7 +802,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = 9C2C8XK2UW;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
@@ -827,7 +827,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.6.4;
+				MARKETING_VERSION = 1.7.0;
 				PRODUCT_BUNDLE_IDENTIFIER = timwehrle.Wianu;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -852,7 +852,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = 9C2C8XK2UW;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
@@ -877,7 +877,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.6.4;
+				MARKETING_VERSION = 1.7.0;
 				PRODUCT_BUNDLE_IDENTIFIER = timwehrle.Wianu;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
