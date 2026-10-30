@@ -4,16 +4,19 @@ import Foundation
 actor LetterboxdTestSession: TMDBSession {
     private let pages: [Data]
     private let fallback: [Data]
+    private let movie: Data?
     private let statuses: [Int]
     private(set) var requests: [URLRequest] = []
 
-    init(pages: [Data], fallback: [Data] = [], statuses: [Int] = [200]) {
+    init(pages: [Data], fallback: [Data] = [], statuses: [Int] = [200], movie: Data? = nil) {
+        self.movie = movie
         self.pages = pages
         self.fallback = fallback
         self.statuses = statuses
     }
 
-    // Required to be async by TMDBSession.
+    // TMDBSession requires an asynchronous method, even though this test response
+    // is generated synchronously.
     // swiftlint:disable:next async_without_await
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         let status = statuses[min(requests.count, statuses.count - 1)]
@@ -27,6 +30,10 @@ actor LetterboxdTestSession: TMDBSession {
                   headerFields: ["Retry-After": "1"]
               )
         else { throw URLError(.badURL) }
+
+        if url.path.hasPrefix("/v1/movie/"), let movie {
+            return (movie, response)
+        }
 
         let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
         let page = query.first { $0.name == "page" }?.value.flatMap(Int.init) ?? 1

@@ -39,13 +39,19 @@ final class WatchlistStore {
     func replaceImportedItems(with newItems: [WatchlistItem]) {
         let existingIDs = items.reduce(into: [String: WatchlistItem.ID]()) {
             ids, item in
-            guard item.source == .letterboxd, let url = item.url else { return }
+            guard item.source == .letterboxd, let url = item.url else {
+                return
+            }
 
             ids[URLNormalizer.comparisonKey(for: url)] = item.id
         }
 
         let importedItems = newItems.enumerated().map { index, item in
             let existing = item.url.flatMap { self.item(matching: $0) }
+
+            // Saved data does not distinguish automatic matches from user-confirmed matches,
+            // so every existing association is preserved.
+            let association = existing?.tmdbID != nil ? existing : item
 
             return WatchlistItem(
                 id: item.url.flatMap {
@@ -57,9 +63,9 @@ final class WatchlistStore {
                 addedAt: item.addedAt,
                 sourceOrder: index,
                 source: .letterboxd,
-                tmdbID: item.tmdbID ?? existing?.tmdbID,
-                tmdbMetadata: item.tmdbMetadata ?? existing?.tmdbMetadata,
-                tmdbMediaType: item.tmdbMediaType ?? existing?.tmdbMediaType
+                tmdbID: association?.tmdbID,
+                tmdbMetadata: association?.tmdbMetadata,
+                tmdbMediaType: association?.tmdbMediaType
             )
         }
 
@@ -74,17 +80,30 @@ final class WatchlistStore {
         persist()
     }
 
-    func mergeImportedItems(_ newItems: [WatchlistItem]) {
+    @discardableResult
+    func mergeImportedItems(_ newItems: [WatchlistItem]) -> Bool {
+        var mergedItems = items
         var keys = Set(items.compactMap { $0.url.map(URLNormalizer.comparisonKey(for:)) })
 
         for item in newItems {
             guard let url = item.url,
                   keys.insert(URLNormalizer.comparisonKey(for: url)).inserted else { continue }
 
-            items.append(item.withSourceOrder(items.count))
+            mergedItems.append(item.withSourceOrder(mergedItems.count))
         }
 
-        persist()
+        do {
+            // Publish the imported items only after they have been saved successfully.
+            try fileStore.save(mergedItems)
+            items = mergedItems
+            persistenceError = nil
+
+            return true
+        } catch {
+            persistenceError = error.localizedDescription
+
+            return false
+        }
     }
 
     @discardableResult
@@ -99,11 +118,15 @@ final class WatchlistStore {
         )
         items.append(item)
         persist()
+
         return item
     }
 
     func associate(id: WatchlistItem.ID, with media: TMDBMediaResult?) {
-        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        guard let index = items.firstIndex(where: { $0.id == id }) else {
+            return
+        }
+
         items[index].tmdbID = media?.id
         items[index].tmdbMediaType = media?.mediaType
         items[index].tmdbMetadata = media

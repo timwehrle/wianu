@@ -9,12 +9,14 @@ enum TMDBError: LocalizedError, Equatable {
         switch self {
         case .invalidResponse:
             "The movie service returned an unreadable response."
+
         case let .rateLimited(retryAfter):
             if let retryAfter {
                 "TMDB is busy. Try again in \(Int(retryAfter)) seconds."
             } else {
                 "TMDB is busy. Please try again shortly."
             }
+
         case let .server(_, message):
             message ?? "The movie service could not complete the request."
         }
@@ -45,6 +47,7 @@ struct TMDBClient: Sendable {
     func weeklyMovies() async throws -> [TMDBMediaResult] {
         let archive: WeeklyArchiveResponse = try await request(path: "weekly")
         var movies: [TMDBMediaResult] = []
+
         for id in archive.weeks.first?.movieIds ?? [] {
             try Task.checkCancellation()
             let movie: WeeklyMovieResponse = try await request(path: "movie/\(id)")
@@ -58,7 +61,26 @@ struct TMDBClient: Sendable {
                 backdropPath: movie.backdropPath
             ))
         }
+
         return movies
+    }
+
+    func movie(id: Int) async throws -> TMDBMediaResult {
+        guard id > 0 else { throw TMDBError.invalidResponse }
+        // The backend returns movie details with camel-case keys, unlike search responses.
+        let movie: WeeklyMovieResponse = try await searchRequest(path: "movie/\(id)", query: [])
+
+        guard movie.id == id else { throw TMDBError.invalidResponse }
+
+        return TMDBMediaResult(
+            id: movie.id,
+            mediaType: .movie,
+            title: movie.title,
+            overview: movie.overview,
+            posterPath: movie.posterPath,
+            releaseDate: movie.releaseDate,
+            backdropPath: movie.backdropPath
+        )
     }
 
     func search(query: String, page: Int = 1, paced: Bool = false) async throws -> TMDBSearchPage {
@@ -93,6 +115,7 @@ struct TMDBClient: Sendable {
         }
 
         let response: TMDBMovieSearchResponse = try await searchRequest(path: "search/movie", query: parameters)
+
         return TMDBSearchPage(
             page: response.page,
             totalPages: response.totalPages,
@@ -103,22 +126,27 @@ struct TMDBClient: Sendable {
     private func searchRequest<Response: Decodable>(path: String, query: [URLQueryItem]) async throws -> Response {
         for attempt in 0 ... 2 {
             try await Task.sleep(for: .milliseconds(300))
+
             do {
                 return try await request(path: path, query: query)
             } catch let error as TMDBError {
                 guard attempt < 2 else { throw error }
                 let delay: TimeInterval
+
                 switch error {
                 case let .rateLimited(retryAfter):
                     delay = max(retryAfter ?? Double(attempt + 1), 1)
+
                     guard delay <= 30 else { throw error }
                 case let .server(status, _) where status >= 500:
                     delay = Double(attempt + 1)
                 default: throw error
                 }
+
                 try await Task.sleep(for: .seconds(delay))
             }
         }
+
         throw TMDBError.invalidResponse
     }
 

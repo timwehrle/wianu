@@ -26,11 +26,19 @@ final class MediaIdentificationCoordinator {
     func query(for target: MediaIdentificationTarget) -> MediaIdentificationQuery? {
         switch target {
         case let .watchlist(id):
-            guard let item = watchlist.item(id: id) else { return nil }
-            return .savedTitle(item.title, year: item.year, mediaType: item.source == .letterboxd ? .movie : nil)
+            guard let item = watchlist.item(id: id) else {
+                return nil
+            }
+
+            return .savedTitle(
+                item.title, year: item.year, mediaType: item.source == .letterboxd ? .movie : nil, url: item.url
+            )
         case let .continueWatching(id):
-            guard let item = continueWatching.item(id: id) else { return nil }
-            return .savedTitle(item.title)
+            guard let item = continueWatching.item(id: id) else {
+                return nil
+            }
+
+            return .savedTitle(item.title, url: item.url)
         }
     }
 
@@ -54,11 +62,16 @@ final class MediaIdentificationCoordinator {
 
     func identifyInBackground(_ target: MediaIdentificationTarget) {
         cancel(target)
-        guard !isIdentified(target), let query = query(for: target), !query.title.isEmpty else { return }
+
+        guard !isIdentified(target), let query = query(for: target), !query.title.isEmpty else {
+            return
+        }
+
         if let shared = sharedMetadata(for: target), query.mediaType == nil || shared.mediaType == query.mediaType {
             associate(shared, with: target)
             return
         }
+
         let token = UUID()
         let task = Task {
             defer {
@@ -66,26 +79,37 @@ final class MediaIdentificationCoordinator {
                     tasks[target] = nil
                 }
             }
+
             do {
                 let result = try await service.search(query)
                 try Task.checkCancellation()
                 // Saved entries may be edited, removed, or confirmed while a request is in flight.
                 guard tasks[target]?.id == token, self.query(for: target) == query,
-                      !isIdentified(target) else { return }
+                      !isIdentified(target)
+                else {
+                    return
+                }
+
                 results[target] = result
+
                 if let match = result.match {
                     associate(match, with: target)
                 }
             } catch {
-                guard !Task.isCancelled, tasks[target]?.id == token, self.query(for: target) == query else { return }
+                guard !Task.isCancelled, tasks[target]?.id == token, self.query(for: target) == query else {
+                    return
+                }
+
                 errors[target] = error.localizedDescription
             }
         }
+
         tasks[target] = PendingTask(id: token, task: task)
     }
 
     func associate(_ media: TMDBMediaResult?, with target: MediaIdentificationTarget) {
         cancel(target)
+
         switch target {
         case let .watchlist(id): watchlist.associate(id: id, with: media)
         case let .continueWatching(id): continueWatching.associate(id: id, with: media)
@@ -94,6 +118,7 @@ final class MediaIdentificationCoordinator {
 
     func cancel(_ target: MediaIdentificationTarget, clearResult: Bool = true) {
         tasks.removeValue(forKey: target)?.task.cancel()
+
         if clearResult {
             results[target] = nil
             errors[target] = nil
@@ -103,10 +128,16 @@ final class MediaIdentificationCoordinator {
     private func sharedMetadata(for target: MediaIdentificationTarget) -> TMDBMediaResult? {
         switch target {
         case let .watchlist(id):
-            guard let url = watchlist.item(id: id)?.url else { return nil }
+            guard let url = watchlist.item(id: id)?.url else {
+                return nil
+            }
+
             return continueWatching.item(matching: url)?.tmdbMetadata
         case let .continueWatching(id):
-            guard let url = continueWatching.item(id: id)?.url else { return nil }
+            guard let url = continueWatching.item(id: id)?.url else {
+                return nil
+            }
+
             return watchlist.item(matching: url)?.tmdbMetadata
         }
     }

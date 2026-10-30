@@ -12,8 +12,10 @@ struct MediaIdentificationCoordinatorTests {
         let coordinator = stores.coordinator(session: session)
         let item = stores.watchlist.add(title: "Severance", year: 2022, url: stores.url)
         coordinator.identifyInBackground(.watchlist(item.id))
+
         #expect(stores.watchlist.item(id: item.id)?.tmdbID == nil)
         try await waitUntil { stores.watchlist.item(id: item.id)?.tmdbID != nil }
+
         #expect(stores.watchlist.item(id: item.id)?.tmdbMediaType == .tv)
     }
 
@@ -30,8 +32,10 @@ struct MediaIdentificationCoordinatorTests {
         let target = MediaIdentificationTarget.continueWatching(item.id)
         coordinator.identifyInBackground(target)
         try await waitUntil { coordinator.needsReview(target) }
+
         #expect(stores.continueWatching.item(id: item.id)?.tmdbID == nil)
         coordinator.associate(IdentificationFixtures.media(), with: target)
+
         #expect(!coordinator.needsReview(target) && coordinator.isIdentified(target))
     }
 
@@ -44,7 +48,9 @@ struct MediaIdentificationCoordinatorTests {
         stores.continueWatching.associate(id: playing.id, with: IdentificationFixtures.media())
         let saved = stores.watchlist.add(title: "Severance", year: nil, url: stores.url)
         coordinator.identifyInBackground(.watchlist(saved.id))
+
         #expect(stores.watchlist.item(id: saved.id)?.tmdbMediaType == .tv)
+
         #expect(await session.requests.isEmpty)
     }
 
@@ -58,6 +64,7 @@ struct MediaIdentificationCoordinatorTests {
         coordinator.identifyInBackground(target)
         coordinator.associate(IdentificationFixtures.media(id: 99), with: target)
         try await Task.sleep(for: .milliseconds(450))
+
         #expect(stores.watchlist.item(id: item.id)?.tmdbID == 99)
     }
 
@@ -73,7 +80,9 @@ struct MediaIdentificationCoordinatorTests {
         stores.watchlist.update(id: edited.id, title: "Another title", year: nil, url: nil)
         stores.watchlist.remove(id: deleted.id)
         try await Task.sleep(for: .milliseconds(500))
+
         #expect(stores.watchlist.item(id: edited.id)?.tmdbID == nil)
+
         #expect(stores.watchlist.item(id: deleted.id) == nil)
     }
 
@@ -86,8 +95,42 @@ struct MediaIdentificationCoordinatorTests {
         let target = MediaIdentificationTarget.watchlist(item.id)
         coordinator.identifyInBackground(target)
         try await waitUntil { coordinator.errors[target] != nil }
+
         #expect(stores.watchlist.item(id: item.id)?.title == "Severance")
+
         #expect(coordinator.needsReview(target))
+    }
+
+    @Test func `replacement import preserves an existing association`() {
+        let stores = IdentificationStores()
+        defer { stores.cleanup() }
+        let original = LetterboxdTestFixtures.item()
+        stores.watchlist.mergeImportedItems([original])
+        stores.watchlist.associate(id: original.id, with: IdentificationFixtures.media(type: .movie, id: 99))
+        var incoming = LetterboxdTestFixtures.item()
+        incoming.tmdbID = 42
+        incoming.tmdbMetadata = IdentificationFixtures.media(type: .movie)
+        stores.watchlist.replaceImportedItems(with: [incoming])
+
+        #expect(stores.watchlist.item(id: original.id)?.tmdbID == 99)
+
+        #expect(stores.watchlist.item(id: original.id)?.tmdbMetadata?.id == 99)
+    }
+
+    @Test func `legacy association without metadata is preserved as a whole`() {
+        let stores = IdentificationStores()
+        defer { stores.cleanup() }
+        var original = LetterboxdTestFixtures.item()
+        original.tmdbID = 99
+        stores.watchlist.mergeImportedItems([original])
+        var incoming = LetterboxdTestFixtures.item()
+        incoming.tmdbID = 42
+        incoming.tmdbMetadata = IdentificationFixtures.media(type: .movie)
+        stores.watchlist.replaceImportedItems(with: [incoming])
+
+        #expect(stores.watchlist.item(id: original.id)?.tmdbID == 99)
+
+        #expect(stores.watchlist.item(id: original.id)?.tmdbMetadata == nil)
     }
 
     private func waitUntil(_ condition: () -> Bool) async throws {
@@ -95,8 +138,10 @@ struct MediaIdentificationCoordinatorTests {
             if condition() {
                 return
             }
+
             try await Task.sleep(for: .milliseconds(20))
         }
+
         Issue.record("Identification did not complete in time")
     }
 }
