@@ -11,6 +11,28 @@ enum BrowserNavigationLog {
 }
 
 enum BrowserURLPolicy {
+    static func upgradingToHTTPS(_ request: URLRequest) -> URLRequest? {
+        guard let url = request.url,
+              url.scheme?.lowercased() == "http",
+              request.httpMethod == "GET" || request.httpMethod == "HEAD",
+              var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        else { return nil }
+
+        components.scheme = "https"
+        if components.port == 80 {
+            components.port = nil
+        }
+        
+        guard let secureURL = components.url,
+              allowsExternalNavigation(to: secureURL)
+        else { return nil }
+
+        var secureRequest = request
+        secureRequest.url = secureURL
+        
+        return secureRequest
+    }
+
     static func allowsExternalNavigation(to url: URL?) -> Bool {
         guard let url,
               url.scheme?.lowercased() == "https",
@@ -49,6 +71,7 @@ final class BrowserNavigationRouter {
     private(set) var blockedNavigationMessage: String?
     private var protectedDestinationRequestID: Request.ID?
     private var activeLoadRequestID: Request.ID?
+    private var upgradedNavigationURLs: Set<URL> = []
 
     @discardableResult
     func openDestination(_ url: URL) -> Bool {
@@ -57,6 +80,7 @@ final class BrowserNavigationRouter {
             return false
         }
         BrowserNavigationLog.logger.notice("Queued app destination")
+        upgradedNavigationURLs.removeAll()
         let request = Request(
             action: .load(
                 URLRequest(url: url),
@@ -95,11 +119,24 @@ final class BrowserNavigationRouter {
         blockedNavigationMessage = nil
     }
 
+    func upgradeInsecureNavigation(_ request: URLRequest) -> Bool {
+        guard let secureRequest = BrowserURLPolicy.upgradingToHTTPS(request),
+              let url = secureRequest.url,
+              upgradedNavigationURLs.count < 10,
+              upgradedNavigationURLs.insert(url).inserted
+        else { return false }
+
+        // Retry each destination once per load chain to prevent downgrade loops.
+        return openInCurrentPage(secureRequest)
+    }
+
     func openHistoryItem(_ item: WebPage.BackForwardList.Item) {
+        upgradedNavigationURLs.removeAll()
         request = Request(action: .history(item))
     }
 
     func reload() {
+        upgradedNavigationURLs.removeAll()
         request = Request(action: .reload)
     }
 
@@ -112,6 +149,9 @@ final class BrowserNavigationRouter {
         guard activeLoadRequestID == requestID else { return }
         BrowserNavigationLog.logger.notice("Programmatic load ended")
         activeLoadRequestID = nil
+        if request?.id == requestID {
+            upgradedNavigationURLs.removeAll()
+        }
     }
 
     var isPerformingLoad: Bool {
@@ -145,6 +185,11 @@ struct BrowserNavigationDecider: WebPage.NavigationDeciding {
         // user-visible origin, so leave their handling to WebKit.
         if let target = action.target, !target.isMainFrame {
             return .allow
+        }
+
+        if router.upgradeInsecureNavigation(action.request) {
+            BrowserNavigationLog.logger.notice("Upgraded HTTP navigation to HTTPS")
+            return .cancel
         }
 
         guard BrowserURLPolicy.allowsExternalNavigation(to: url) else {
