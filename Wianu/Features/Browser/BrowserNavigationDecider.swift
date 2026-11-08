@@ -22,14 +22,14 @@ enum BrowserURLPolicy {
         if components.port == 80 {
             components.port = nil
         }
-        
+
         guard let secureURL = components.url,
               allowsExternalNavigation(to: secureURL)
         else { return nil }
 
         var secureRequest = request
         secureRequest.url = secureURL
-        
+
         return secureRequest
     }
 
