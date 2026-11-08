@@ -57,3 +57,28 @@ struct HomeShelfScrollingTests {
         #expect(resized.destination(direction: -1) >= 0)
     }
 }
+
+@MainActor
+@Suite("Welcome service presets")
+struct WelcomeServicePresetTests {
+    @Test func `provider associations survive saving and reopening sites`() throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileStore = JSONFileStore<[SavedSite]>(
+            fileName: "sites.json", folderName: "Tests", baseDirectory: directory
+        )
+        let store = SiteStore(fileStore: fileStore)
+        for service in WelcomeView.services {
+            store.addSite(service)
+        }
+
+        let restored = SiteStore(fileStore: fileStore)
+        #expect(restored.sites.count == 4)
+        for site in restored.sites {
+            let provider = try #require(site.tmdbProviders.first)
+            let expectedID: Int? = ["Netflix": 8, "Disney+": 337, "Prime Video": 9, "Apple TV": 350][site.name]
+            #expect(provider.id == expectedID)
+            #expect(SiteDraft(site: site).tmdbProviders == [provider])
+        }
+    }
+}

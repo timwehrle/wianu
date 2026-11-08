@@ -171,6 +171,27 @@ private final class RecordingAnalyticsTracker: AnalyticsTracking {
 @MainActor
 @Suite("Site opening analytics")
 struct SiteOpeningAnalyticsTests {
+    @Test(arguments: [false, true])
+    func `startup selects Home without sites even with a stale saved selection`(hasSavedSelection: Bool) throws {
+        let fixture = try AnalyticsAppFixture(hasSites: false, hasSavedSelection: hasSavedSelection)
+        defer { fixture.cleanup() }
+
+        #expect(fixture.model.selection == .home)
+        #expect(fixture.model.navigationRequest == nil)
+        #expect(fixture.tracker.events == [.appLaunched])
+    }
+
+    @Test func `additional selected provider routes through the saved site`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+        var draft = SiteDraft(site: fixture.site)
+        draft.tmdbProviders.append(TMDBProviderReference(id: 9999, name: "Another Provider"))
+        fixture.model.updateSite(fixture.site, with: draft)
+        let provider = TMDBProvider(id: 9999, name: "Another Provider", logoPath: nil)
+        #expect(fixture.model.site(for: provider)?.id == fixture.site.id)
+        #expect(fixture.model.site(for: TMDBProvider(id: 9998, name: "Unrelated", logoPath: nil)) == nil)
+    }
+
     @Test func `explicit opens count once each while startup restoration does not`() throws {
         let fixture = try AnalyticsAppFixture()
         defer { fixture.cleanup() }
@@ -275,7 +296,7 @@ private struct AnalyticsAppFixture {
     let tracker: RecordingAnalyticsTracker
     let model: AppModel
 
-    init() throws {
+    init(hasSites: Bool = true, hasSavedSelection: Bool = false) throws {
         directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         suiteName = "SiteOpeningAnalyticsTests.\(UUID().uuidString)"
         defaults = try #require(UserDefaults(suiteName: suiteName))
@@ -283,10 +304,13 @@ private struct AnalyticsAppFixture {
             name: "Private Service",
             urlString: "https://private.example",
             searchURLTemplate: "https://private.example/search?q={query}",
-            tmdbProvider: TMDBProviderReference(id: 1, name: "Private Provider")
+            tmdbProviders: [TMDBProviderReference(id: 1, name: "Private Provider")]
         )
         let sites = JSONFileStore<[SavedSite]>(fileName: "sites.json", folderName: "Tests", baseDirectory: directory)
-        try sites.save([site])
+        try sites.save(hasSites ? [site] : [])
+        if hasSavedSelection {
+            defaults.set(site.id.uuidString, forKey: "lastSelectedSiteID")
+        }
         tracker = RecordingAnalyticsTracker()
         model = AppModel(
             siteStore: SiteStore(fileStore: sites),

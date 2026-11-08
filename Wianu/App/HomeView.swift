@@ -11,6 +11,12 @@ struct HomeView: View {
     @State private var weeklyState: WeeklyState = .loading
     @State private var loadRequest = 0
     @State private var featuredID: Int?
+    @AppStorage("hasDismissedWelcome") private var hasDismissedWelcome = false
+    @State private var showingGettingStarted = false
+
+    private var showsWelcome: Bool {
+        showingGettingStarted || (!hasDismissedWelcome && model.siteStore.sites.isEmpty)
+    }
 
     private var weekly: [TMDBMediaResult] {
         guard case let .loaded(movies) = weeklyState else { return [] }
@@ -24,26 +30,26 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
-                if let featured {
-                    HomeFeature(
-                        media: featured,
-                        artworkURL: model.tmdbSearch.imageConfiguration?.backdropURL(path: featured.backdropPath),
-                        position: (weekly.firstIndex(of: featured) ?? 0) + 1,
-                        count: weekly.count,
-                        previous: { changeFeature(by: -1) },
-                        next: { changeFeature(by: 1) },
-                        action: { model.openWeeklyPick(featured) }
-                    )
+                if showsWelcome {
+                    WelcomeView(model: model) {
+                        hasDismissedWelcome = true
+                        showingGettingStarted = false
+                    }
+                } else {
+                    homeContent
                 }
-                continueWatchingShelf
-                weeklyShelf
-                watchlistShelf
             }
-            .padding(.bottom, 32)
-            .padding(.top, featured == nil ? 24 : 0)
+            .padding(.bottom, showsWelcome ? 0 : 32)
+            .padding(.top, !showsWelcome && featured == nil ? 24 : 0)
         }
         .background(Color(nsColor: .windowBackgroundColor))
         .toolbar {
+            ToolbarItem {
+                Button("Getting Started", systemImage: "questionmark.circle") {
+                    showingGettingStarted = true
+                }
+                .disabled(showsWelcome)
+            }
             ToolbarItem {
                 Button { model.showCommandPalette() } label: {
                     Label("Search", systemImage: "magnifyingglass")
@@ -52,6 +58,25 @@ struct HomeView: View {
             }
         }
         .task(id: loadRequest) { await loadWeekly() }
+    }
+
+    private var homeContent: some View {
+        VStack(alignment: .leading, spacing: 28) {
+            if let featured {
+                HomeFeature(
+                    media: featured,
+                    artworkURL: model.tmdbSearch.imageConfiguration?.backdropURL(path: featured.backdropPath),
+                    position: (weekly.firstIndex(of: featured) ?? 0) + 1,
+                    count: weekly.count,
+                    previous: { changeFeature(by: -1) },
+                    next: { changeFeature(by: 1) },
+                    action: { model.openWeeklyPick(featured) }
+                )
+            }
+            continueWatchingShelf
+            weeklyShelf
+            watchlistShelf
+        }
     }
 
     @ViewBuilder
@@ -84,7 +109,17 @@ struct HomeView: View {
         }
         return Group {
             if items.isEmpty {
-                information("Identify a saved title from the sidebar to see it in Continue Watching.")
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("Pick up where you left off", systemImage: "play.circle")
+                        .font(.title2.bold())
+                    Text("Open a show’s detail page, then save it with the Continue Watching toolbar button.")
+                        .foregroundStyle(.secondary)
+                    Text("Wianu saves the page. Your streaming service handles playback progress.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    Button("Choose Services") { showingGettingStarted = true }
+                }
+                .padding(.horizontal, 32)
             } else {
                 HomeShelf(title: "Continue Watching") {
                     ForEach(items, id: \.id) { item in
@@ -103,7 +138,14 @@ struct HomeView: View {
         }
         return Group {
             if items.isEmpty {
-                information("Add or import titles, then identify them from the sidebar to see them in Watchlist.")
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("Save something for later", systemImage: "bookmark")
+                        .font(.title2.bold())
+                    Text("Find a movie to add to your watchlist, or import a Letterboxd CSV from the sidebar.")
+                        .foregroundStyle(.secondary)
+                    Button("Find a Movie") { model.showCommandPalette() }
+                }
+                .padding(.horizontal, 32)
             } else {
                 HomeShelf(title: "Watchlist") {
                     ForEach(items, id: \.id) { item in

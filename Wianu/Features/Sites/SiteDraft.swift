@@ -4,32 +4,32 @@ struct ValidatedSiteDraft {
     let name: String
     let url: URL
     let searchURLTemplate: String
-    let tmdbProvider: TMDBProviderReference?
+    let tmdbProviders: [TMDBProviderReference]
 }
 
 struct SiteDraft {
     var name: String
     var address: String
     var searchURLTemplate: String
-    var tmdbProvider: TMDBProviderReference?
+    var tmdbProviders: [TMDBProviderReference]
 
     init(
         name: String = "",
         address: String = "",
         searchURLTemplate: String = "",
-        tmdbProvider: TMDBProviderReference? = nil
+        tmdbProviders: [TMDBProviderReference] = []
     ) {
         self.name = name
         self.address = address
         self.searchURLTemplate = searchURLTemplate
-        self.tmdbProvider = tmdbProvider
+        self.tmdbProviders = tmdbProviders
     }
 
     init(site: SavedSite) {
         name = site.name
         address = site.urlString
         searchURLTemplate = site.resolvedSearchURLTemplate ?? ""
-        tmdbProvider = site.tmdbProvider
+        tmdbProviders = site.tmdbProviders
     }
 
     var validatedValues: ValidatedSiteDraft? {
@@ -50,7 +50,7 @@ struct SiteDraft {
             name: trimmedName,
             url: url,
             searchURLTemplate: trimmedSearchTemplate,
-            tmdbProvider: tmdbProvider
+            tmdbProviders: tmdbProviders
         )
     }
 

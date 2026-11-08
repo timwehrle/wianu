@@ -225,20 +225,63 @@ struct TMDBClientTests {
           "urlString":"https://netflix.com","createdAt":0}]
         """
         let decoded = try JSONDecoder().decode([SavedSite].self, from: Data(legacy.utf8))
-        #expect(decoded.first?.tmdbProvider == nil)
+        #expect(decoded.first?.tmdbProviders.isEmpty == true)
 
         let site = SavedSite(
             name: "Netflix",
             urlString: "https://netflix.com",
             searchURLTemplate: "https://netflix.com/search?q={query}",
-            tmdbProvider: .init(id: 8, name: "Netflix")
+            tmdbProviders: [.init(id: 8, name: "Netflix")]
         )
         let roundTrip = try JSONDecoder().decode(
             SavedSite.self,
             from: JSONEncoder().encode(site)
         )
-        #expect(roundTrip.tmdbProvider == site.tmdbProvider)
+        #expect(roundTrip.tmdbProviders == site.tmdbProviders)
         #expect(site.searchURL(for: "A & B")?.absoluteString.contains("A%20%26%20B") == true)
+    }
+
+    @Test func `single provider saves migrate and multiple selections round trip`() throws {
+        let legacy = """
+        {"id":"C1A4E17B-9B32-443F-BEA8-AC1C70B31A22","name":"Streaming",
+        "urlString":"https://example.com","createdAt":0,
+        "tmdbProvider":{"id":337,"name":"Disney Plus"}}
+        """
+        var site = try JSONDecoder().decode(SavedSite.self, from: Data(legacy.utf8))
+        #expect(site.tmdbProviders == [TMDBProviderReference(id: 337, name: "Disney Plus")])
+        site.tmdbProviders.append(TMDBProviderReference(id: 122, name: "Disney+"))
+        var draft = SiteDraft(site: site)
+        #expect(draft.validatedValues?.tmdbProviders == site.tmdbProviders)
+        let restored = try JSONDecoder().decode(SavedSite.self, from: JSONEncoder().encode(site))
+        #expect(restored.tmdbProviders == site.tmdbProviders)
+
+        site.tmdbProviders = []
+        let cleared = try JSONDecoder().decode(SavedSite.self, from: JSONEncoder().encode(site))
+        #expect(cleared.tmdbProviders.isEmpty)
+        draft.tmdbProviders = []
+        #expect(draft.validatedValues?.tmdbProviders.isEmpty == true)
+    }
+
+    @Test(arguments: ["Disney Plus", "Disney+", "Disney +"])
+    func `Disney naming variants match in both directions`(name: String) {
+        let reference = TMDBProviderReference(id: 337, name: "Disney Plus")
+        let alternate = TMDBProvider(id: 9999, name: name, logoPath: nil)
+        #expect(reference.matches(alternate))
+        #expect(TMDBProviderReference(id: 9999, name: name).matches(
+            TMDBProvider(id: 337, name: "Disney Plus", logoPath: nil)
+        ))
+        #expect(!reference.matches(TMDBProvider(id: 508, name: "DisneyNOW", logoPath: nil)))
+    }
+
+    @Test(arguments: [[337, 122], [8, 175], [8, 1796], [9, 119], [9, 2100]])
+    func `alternative provider IDs match independently of display names`(ids: [Int]) {
+        let reference = TMDBProviderReference(id: ids[0], name: "Original")
+        let alternate = TMDBProvider(id: ids[1], name: "Alternate", logoPath: nil)
+        #expect(reference.matches(alternate))
+        #expect(TMDBProviderReference(id: ids[1], name: "Alternate").matches(
+            TMDBProvider(id: ids[0], name: "Original", logoPath: nil)
+        ))
+        #expect(!reference.matches(TMDBProvider(id: 350, name: "Apple TV", logoPath: nil)))
     }
 
     @Test func `prime video provider tiers match the configured site`() {

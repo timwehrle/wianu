@@ -158,7 +158,7 @@ extension AppModel {
 
     func openProvider(_ provider: TMDBProvider, for media: TMDBMediaResult) {
         guard let site = siteStore.sites.first(where: {
-            $0.tmdbProvider?.matches(provider) == true
+            $0.tmdbProviders.contains(where: { $0.matches(provider) })
                 && $0.isTMDBProviderActionable
         }), site.searchURL(for: media.title) != nil
         else { return }
@@ -168,7 +168,7 @@ extension AppModel {
 
     func site(for provider: TMDBProvider) -> SavedSite? {
         siteStore.sites.first {
-            $0.tmdbProvider?.matches(provider) == true
+            $0.tmdbProviders.contains(where: { $0.matches(provider) })
         }
     }
 
@@ -384,6 +384,8 @@ extension AppModel {
             selection = .site(savedID)
         } else if let firstSite = siteStore.sites.first {
             selection = .site(firstSite.id)
+        } else {
+            selection = .home
         }
 
         navigate(to: destination(for: selection))

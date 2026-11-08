@@ -27,7 +27,7 @@ final class SiteStore {
                 name: values.name,
                 urlString: values.url.absoluteString,
                 searchURLTemplate: values.searchURLTemplate,
-                tmdbProvider: values.tmdbProvider
+                tmdbProviders: values.tmdbProviders
             )
         )
         persist()
@@ -41,7 +41,7 @@ final class SiteStore {
         sites[index].name = values.name
         sites[index].urlString = values.url.absoluteString
         sites[index].searchURLTemplate = values.searchURLTemplate
-        sites[index].tmdbProvider = values.tmdbProvider
+        sites[index].tmdbProviders = values.tmdbProviders
         persist()
     }
 
