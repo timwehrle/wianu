@@ -5,6 +5,45 @@ import Testing
 @MainActor
 @Suite("Browser navigation router")
 struct BrowserNavigationRouterTests {
+    @Test func `HTTP navigation is retried securely and downgrade loops are blocked`() throws {
+        let router = BrowserNavigationRouter()
+        let url = try #require(URL(string: "http://example.com:80/home?q=movie#section"))
+        let request = URLRequest(url: url)
+        try router.openDestination(#require(URL(string: "https://example.com")))
+        let original = try #require(router.request)
+        router.loadDidBegin(original.id)
+        #expect(router.upgradeInsecureNavigation(request))
+        let queued = try #require(router.request)
+        guard case let .load(secureRequest, _) = queued.action else {
+            Issue.record("Expected an HTTPS load")
+            return
+        }
+        #expect(secureRequest.url?.absoluteString == "https://example.com/home?q=movie#section")
+        router.loadDidEnd(original.id)
+        #expect(!router.upgradeInsecureNavigation(request))
+        router.loadDidBegin(queued.id)
+        #expect(!router.upgradeInsecureNavigation(request))
+        #expect(router.request?.id == queued.id)
+        router.loadDidEnd(queued.id)
+        #expect(router.upgradeInsecureNavigation(request))
+    }
+
+    @Test func `HTTPS upgrades preserve HEAD requests and reject credentials and POST`() throws {
+        var request = try URLRequest(url: #require(URL(string: "http://example.com:8080/path")))
+        request.httpMethod = "HEAD"
+        request.setValue("value", forHTTPHeaderField: "X-Test")
+        let upgraded = try #require(BrowserURLPolicy.upgradingToHTTPS(request))
+        #expect(upgraded.httpMethod == "HEAD")
+        #expect(upgraded.value(forHTTPHeaderField: "X-Test") == "value")
+        #expect(upgraded.url?.port == 8080)
+        request.httpMethod = "POST"
+        #expect(BrowserURLPolicy.upgradingToHTTPS(request) == nil)
+        request = try URLRequest(url: #require(URL(string: "http://user:password@example.com")))
+        #expect(BrowserURLPolicy.upgradingToHTTPS(request) == nil)
+        request = try URLRequest(url: #require(URL(string: "https://example.com")))
+        #expect(BrowserURLPolicy.upgradingToHTTPS(request) == nil)
+    }
+
     @Test func `tracks a programmatic load through its policy phase`() throws {
         let router = BrowserNavigationRouter()
         try router.openDestination(#require(URL(string: "https://example.com")))
