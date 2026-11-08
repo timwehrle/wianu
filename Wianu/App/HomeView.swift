@@ -13,9 +13,17 @@ struct HomeView: View {
     @State private var featuredID: Int?
     @AppStorage("hasDismissedWelcome") private var hasDismissedWelcome = false
     @State private var showingGettingStarted = false
+    @State private var showingInitialWelcome: Bool
+
+    init(model: AppModel) {
+        self.model = model
+        _showingInitialWelcome = State(initialValue:
+            !UserDefaults.standard.bool(forKey: "hasDismissedWelcome") && model.siteStore.sites.isEmpty
+        )
+    }
 
     private var showsWelcome: Bool {
-        showingGettingStarted || (!hasDismissedWelcome && model.siteStore.sites.isEmpty)
+        showingGettingStarted || showingInitialWelcome
     }
 
     private var weekly: [TMDBMediaResult] {
@@ -31,8 +39,12 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
                 if showsWelcome {
-                    WelcomeView(model: model) {
+                    WelcomeView(
+                        model: model,
+                        source: showingGettingStarted ? .gettingStarted : .firstLaunch
+                    ) {
                         hasDismissedWelcome = true
+                        showingInitialWelcome = false
                         showingGettingStarted = false
                     }
                 } else {

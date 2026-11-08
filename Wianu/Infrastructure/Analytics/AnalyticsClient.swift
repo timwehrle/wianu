@@ -2,6 +2,10 @@ import Foundation
 import OSLog
 
 enum AnalyticsEvent: String, Sendable {
+    case onboardingStarted = "onboarding-started"
+    case onboardingServicesOpened = "onboarding-services-opened"
+    case onboardingCompleted = "onboarding-completed"
+    case onboardingSkipped = "onboarding-skipped"
     case appLaunched = "app-launched"
     case searchOpened = "search-opened"
     case homeOpened = "home-opened"
@@ -28,7 +32,23 @@ enum AnalyticsPreference {
 
 @MainActor
 protocol AnalyticsTracking {
-    func track(_ event: AnalyticsEvent)
+    func track(_ event: AnalyticsEvent, properties: [String: String])
+}
+
+extension AnalyticsTracking {
+    func track(_ event: AnalyticsEvent) {
+        track(event, properties: [:])
+    }
+}
+
+enum OnboardingSource: String {
+    case firstLaunch = "first-launch"
+    case gettingStarted = "getting-started"
+}
+
+enum OnboardingStep: String {
+    case welcome
+    case services
 }
 
 nonisolated protocol AnalyticsSession: Sendable {
@@ -102,7 +122,7 @@ final class AnalyticsClient: AnalyticsTracking {
         self.build = build
     }
 
-    func track(_ event: AnalyticsEvent) {
+    func track(_ event: AnalyticsEvent, properties: [String: String]) {
         guard isEnabled, let endpoint, !websiteID.isEmpty else { return }
         let payload = RequestBody(
             payload: Payload(
@@ -111,10 +131,10 @@ final class AnalyticsClient: AnalyticsTracking {
                 url: "/app",
                 website: websiteID,
                 name: event.rawValue,
-                data: [
+                data: properties.merging([
                     "app_version": appVersion,
                     "build": build
-                ]
+                ]) { _, value in value }
             )
         )
         guard let data = try? JSONEncoder().encode(payload) else { return }
@@ -180,5 +200,5 @@ final class AnalyticsClient: AnalyticsTracking {
 
 @MainActor
 struct DisabledAnalyticsTracker: AnalyticsTracking {
-    func track(_ event: AnalyticsEvent) {}
+    func track(_ event: AnalyticsEvent, properties: [String: String]) {}
 }

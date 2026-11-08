@@ -31,7 +31,11 @@ struct AnalyticsClientTests {
         .homeOpened,
         .weeklyPickOpened,
         .continueWatchingOpened,
-        .providerSelected
+        .providerSelected,
+        .onboardingStarted,
+        .onboardingServicesOpened,
+        .onboardingCompleted,
+        .onboardingSkipped
     ])
     func `sends privacy minimal Umami event`(event: AnalyticsEvent) async throws {
         let defaults = try #require(UserDefaults(
@@ -47,29 +51,40 @@ struct AnalyticsClientTests {
             build: "16"
         )
 
-        client.track(event)
+        let properties = ["source": "first-launch", "onboarding_version": "1"]
+        client.track(event, properties: properties)
         try await waitForRequest(in: session)
 
         let request = try #require(await session.capturedRequests().first)
         #expect(request.httpMethod == "POST")
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
         #expect(request.value(forHTTPHeaderField: "User-Agent") == "Wianu/1.5.0 (macOS)")
+        
         let body = try #require(request.httpBody)
         let json = try #require(
             JSONSerialization.jsonObject(with: body) as? [String: Any]
         )
+        
         let payload = try #require(json["payload"] as? [String: Any])
         let data = try #require(payload["data"] as? [String: String])
+        
         #expect(json["type"] as? String == "event")
         #expect(payload["website"] as? String == "website-id")
         #expect(payload["name"] as? String == event.rawValue)
         #expect(payload["url"] as? String == "/app")
         #expect(payload["hostname"] as? String == "wianu.com")
         #expect(Set(payload.keys) == ["id", "hostname", "url", "website", "name", "data"])
+        
         let id = try #require(payload["id"] as? String)
         #expect(UUID(uuidString: id) != nil)
         #expect(defaults.string(forKey: AnalyticsPreference.distinctIDKey) == id)
-        #expect(data == ["app_version": "1.5.0", "build": "16"])
+        #expect(data == [
+            "app_version": "1.5.0",
+            "build": "16",
+            "source": "first-launch",
+            "onboarding_version": "1"
+        ])
+        
         let bodyString = try #require(String(bytes: body, encoding: .utf8))
         #expect(!bodyString.contains("query"))
     }
@@ -108,7 +123,11 @@ struct AnalyticsClientTests {
         .homeOpened,
         .weeklyPickOpened,
         .continueWatchingOpened,
-        .providerSelected
+        .providerSelected,
+        .onboardingStarted,
+        .onboardingServicesOpened,
+        .onboardingCompleted,
+        .onboardingSkipped
     ])
     func `opt out and missing configuration send nothing`(event: AnalyticsEvent) async throws {
         let defaults = try #require(UserDefaults(
@@ -126,7 +145,7 @@ struct AnalyticsClientTests {
 
         #expect(client.isEnabled)
         defaults.set(false, forKey: AnalyticsPreference.enabledKey)
-        client.track(event)
+        client.track(event, properties: ["source": "first-launch"])
         try await Task.sleep(for: .milliseconds(50))
         #expect(await session.capturedRequests().isEmpty)
         #expect(defaults.object(forKey: AnalyticsPreference.distinctIDKey) == nil)
@@ -162,15 +181,62 @@ struct AnalyticsClientTests {
 @MainActor
 private final class RecordingAnalyticsTracker: AnalyticsTracking {
     private(set) var events: [AnalyticsEvent] = []
+    private(set) var properties: [[String: String]] = []
 
-    func track(_ event: AnalyticsEvent) {
+    func track(_ event: AnalyticsEvent, properties: [String: String]) {
         events.append(event)
+        self.properties.append(properties)
     }
 }
 
 @MainActor
 @Suite("Site opening analytics")
 struct SiteOpeningAnalyticsTests {
+    @Test func `onboarding records steps and deduplicates the first launch start`() throws {
+        let fixture = try AnalyticsAppFixture(hasSites: false)
+        defer { fixture.cleanup() }
+
+        fixture.model.onboardingStarted(source: .firstLaunch)
+        fixture.model.onboardingStarted(source: .firstLaunch)
+        fixture.model.onboardingServicesOpened(source: .firstLaunch)
+        fixture.model.onboardingCompleted(source: .firstLaunch, servicesAddedCount: 0)
+        fixture.model.addSite(SiteDraft(name: "Private", address: "https://private.example"))
+        fixture.model.onboardingCompleted(source: .firstLaunch, servicesAddedCount: 1)
+
+        #expect(fixture.tracker.events == [
+            .appLaunched,
+            .onboardingStarted,
+            .onboardingServicesOpened,
+            .siteAdded,
+            .onboardingCompleted
+        ])
+        #expect(fixture.tracker.properties[1] == [
+            "source": "first-launch",
+            "onboarding_version": "1"
+        ])
+        #expect(fixture.tracker.properties.last == [
+            "source": "first-launch",
+            "onboarding_version": "1",
+            "services_added_count": "1"
+        ])
+    }
+
+    @Test(arguments: [OnboardingStep.welcome, .services])
+    func `manual onboarding records its source and explicit skip step`(step: OnboardingStep) throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        fixture.model.onboardingStarted(source: .gettingStarted)
+        fixture.model.onboardingSkipped(source: .gettingStarted, step: step)
+
+        #expect(fixture.tracker.events == [.appLaunched, .onboardingStarted, .onboardingSkipped])
+        #expect(fixture.tracker.properties.last == [
+            "source": "getting-started",
+            "onboarding_version": "1",
+            "step": step.rawValue
+        ])
+    }
+
     @Test(arguments: [false, true])
     func `startup selects Home without sites even with a stale saved selection`(hasSavedSelection: Bool) throws {
         let fixture = try AnalyticsAppFixture(hasSites: false, hasSavedSelection: hasSavedSelection)

@@ -126,6 +126,46 @@ extension AppModel {
         analytics.track(.searchOpened)
     }
 
+    func onboardingStarted(source: OnboardingSource) {
+        if source == .firstLaunch {
+            let key = "hasTrackedOnboardingStart"
+            guard !userDefaults.bool(forKey: key) else { return }
+
+            userDefaults.set(true, forKey: key)
+        }
+
+        trackOnboarding(.onboardingStarted, source: source)
+    }
+
+    func onboardingServicesOpened(source: OnboardingSource) {
+        trackOnboarding(.onboardingServicesOpened, source: source)
+    }
+
+    func onboardingSkipped(source: OnboardingSource, step: OnboardingStep) {
+        trackOnboarding(.onboardingSkipped, source: source, properties: ["step": step.rawValue])
+    }
+
+    func onboardingCompleted(source: OnboardingSource, servicesAddedCount: Int) {
+        guard servicesAddedCount > 0, siteStore.persistenceError == nil else { return }
+
+        trackOnboarding(
+            .onboardingCompleted,
+            source: source,
+            properties: ["services_added_count": String(servicesAddedCount)]
+        )
+    }
+
+    private func trackOnboarding(
+        _ event: AnalyticsEvent,
+        source: OnboardingSource,
+        properties: [String: String] = [:]
+    ) {
+        analytics.track(event, properties: properties.merging([
+            "source": source.rawValue,
+            "onboarding_version": "1"
+        ]) { _, value in value })
+    }
+
     func settingsOpened() {
         analytics.track(.settingsOpened)
     }

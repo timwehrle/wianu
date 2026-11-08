@@ -2,11 +2,15 @@ import SwiftUI
 
 struct WelcomeView: View {
     let model: AppModel
+    let source: OnboardingSource
     let onFinish: () -> Void
 
     @State private var selectedAddresses: Set<String> = []
     @State private var showingAddSite = false
     @State private var choosingServices = false
+    @State private var hasStarted = false
+    @State private var hasFinished = false
+    @State private var initialSiteIDs: Set<UUID> = []
 
     static let services: [SiteDraft] = [
         SiteDraft(
@@ -55,6 +59,7 @@ struct WelcomeView: View {
                         addServices()
                     } else {
                         choosingServices = true
+                        model.onboardingServicesOpened(source: source)
                     }
                 }
                 .buttonStyle(.borderedProminent)
@@ -62,15 +67,28 @@ struct WelcomeView: View {
                 .keyboardShortcut(.defaultAction)
                 .disabled(choosingServices && selectedAddresses.isEmpty)
 
-                Button("Set Up Later", action: onFinish)
-                    .buttonStyle(.borderless)
+                Button("Set Up Later") {
+                    guard !hasFinished else { return }
+
+                    hasFinished = true
+                    model.onboardingSkipped(source: source, step: choosingServices ? .services : .welcome)
+                    onFinish()
+                }
+                .buttonStyle(.borderless)
             }
         }
         .frame(maxWidth: 420)
         .padding(.horizontal, 40)
         .padding(.vertical, 48)
         .frame(maxWidth: .infinity, minHeight: 620)
-        .sheet(isPresented: $showingAddSite) {
+        .onAppear {
+            guard !hasStarted else { return }
+
+            hasStarted = true
+            initialSiteIDs = Set(model.siteStore.sites.map(\.id))
+            model.onboardingStarted(source: source)
+        }
+        .sheet(isPresented: $showingAddSite, onDismiss: finishAfterCustomSite) {
             SiteEditorView(model: model, mode: .add)
         }
     }
@@ -188,6 +206,23 @@ struct WelcomeView: View {
             guard model.siteStore.persistenceError == nil else { return }
         }
 
+        complete()
+    }
+
+    private func finishAfterCustomSite() {
+        guard model.siteStore.sites.contains(where: { !initialSiteIDs.contains($0.id) }),
+              model.siteStore.persistenceError == nil
+        else { return }
+
+        complete()
+    }
+
+    private func complete() {
+        guard !hasFinished else { return }
+
+        hasFinished = true
+        let addedCount = model.siteStore.sites.filter { !initialSiteIDs.contains($0.id) }.count
+        model.onboardingCompleted(source: source, servicesAddedCount: addedCount)
         onFinish()
     }
 }
