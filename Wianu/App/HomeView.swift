@@ -53,6 +53,8 @@ struct HomeView: View {
             }
             .padding(.bottom, showsWelcome ? 0 : 32)
             .padding(.top, !showsWelcome && featured == nil ? 24 : 0)
+            .frame(maxWidth: 1280)
+            .frame(maxWidth: .infinity)
         }
         .background(Color(nsColor: .windowBackgroundColor))
         .toolbar {
@@ -84,6 +86,9 @@ struct HomeView: View {
                     next: { changeFeature(by: 1) },
                     action: { model.openWeeklyPick(featured) }
                 )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal, 32)
+                .padding(.top, 24)
             }
             continueWatchingShelf
             weeklyShelf
@@ -311,13 +316,32 @@ private struct HomeFeature: View {
 
     var body: some View {
         Color.black
-            .frame(height: 360)
+            .frame(height: 460)
             .overlay {
-                HomeArtwork(url: artworkURL, contentMode: .fill, placeholderTitle: nil)
+                HomeArtwork(
+                    url: artworkURL,
+                    contentMode: .fill,
+                    placeholderTitle: nil,
+                    alignment: .top,
+                    backgroundColor: .black
+                )
             }
             .overlay {
-                LinearGradient(colors: [.black.opacity(0.8), .clear], startPoint: .leading, endPoint: .trailing)
-                LinearGradient(colors: [.clear, .black.opacity(0.8)], startPoint: .center, endPoint: .bottom)
+                LinearGradient(
+                    stops: [
+                        .init(color: .black.opacity(0.95), location: 0),
+                        .init(color: .black.opacity(0.7), location: 0.3),
+                        .init(color: .clear, location: 0.7)
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.65)],
+                    startPoint: .center,
+                    endPoint: .bottom
+                )
             }
             .overlay(alignment: .bottomLeading) {
                 VStack(alignment: .leading, spacing: 12) {
@@ -330,7 +354,7 @@ private struct HomeFeature: View {
                         .buttonStyle(.bordered)
                         .controlSize(.large)
                 }
-                .frame(maxWidth: 600, alignment: .leading)
+                .frame(maxWidth: 420, alignment: .leading)
                 .padding(32)
             }
             .overlay(alignment: .topTrailing) {
@@ -403,10 +427,17 @@ private struct HomeArtwork: View {
     let url: URL?
     let contentMode: ContentMode
     let placeholderTitle: String?
+    var alignment: Alignment = .center
+    var backgroundColor: Color?
 
     var body: some View {
         Rectangle()
             .fill(.quaternary)
+            .overlay {
+                if let backgroundColor {
+                    backgroundColor
+                }
+            }
             .overlay {
                 GeometryReader { geometry in
                     AsyncImage(url: url) { image in
@@ -421,7 +452,11 @@ private struct HomeArtwork: View {
                         .padding(16)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
-                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .frame(
+                        width: geometry.size.width,
+                        height: geometry.size.height,
+                        alignment: alignment
+                    )
                     .clipped()
                 }
             }
