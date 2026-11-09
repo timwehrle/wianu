@@ -299,6 +299,16 @@ extension AppModel {
         analytics.track(.letterboxdImportSucceeded)
     }
 
+    @discardableResult
+    func addWatchlistItem(_ media: TMDBMediaResult) -> Bool {
+        guard media.mediaType == .movie else { return false }
+        guard !watchlistStore.contains(media) else { return true }
+        guard watchlistStore.add(media) else { return false }
+
+        analytics.track(.watchlistItemAdded)
+        return true
+    }
+
     func addWatchlistItem(title: String, year: Int?, url: URL?) {
         let item = watchlistStore.add(title: title, year: year, url: url)
         mediaIdentification.identifyInBackground(.watchlist(item.id))

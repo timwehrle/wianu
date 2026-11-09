@@ -240,6 +240,76 @@ struct SiteOpeningAnalyticsTests {
         #expect(restored.sites.map(\.tmdbProviders) == model.siteStore.sites.map(\.tmdbProviders))
     }
 
+    @Test func `movie results save metadata immediately and avoid duplicate additions`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        let media = watchlistMedia()
+        #expect(fixture.model.addWatchlistItem(media))
+        #expect(fixture.model.addWatchlistItem(media))
+        #expect(fixture.model.watchlistStore.items.count == 1)
+        #expect(fixture.tracker.events == [.appLaunched, .watchlistItemAdded])
+
+        let reopened = WatchlistStore(fileStore: JSONFileStore(
+            fileName: "watchlist.json",
+            folderName: "Tests",
+            baseDirectory: fixture.directory
+        ))
+        let item = try #require(reopened.items.first)
+        #expect(item.title == media.title)
+        #expect(item.year == 2024)
+        #expect(item.url == media.letterboxdURL)
+        #expect(item.tmdbID == media.id)
+        #expect(item.tmdbMediaType == .movie)
+        #expect(item.tmdbMetadata == media)
+        #expect(reopened.contains(media))
+    }
+
+    @Test func `movie result matching respects media type and existing associations`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        let store = fixture.model.watchlistStore
+        let existing = store.add(title: "Existing", year: nil, url: nil)
+        store.associate(id: existing.id, with: watchlistMedia(mediaType: .tv))
+        #expect(!store.contains(watchlistMedia()))
+        #expect(!fixture.model.addWatchlistItem(watchlistMedia(mediaType: .tv)))
+        #expect(fixture.model.addWatchlistItem(watchlistMedia()))
+        #expect(store.items.count == 2)
+        #expect(fixture.tracker.events == [.appLaunched, .watchlistItemAdded])
+    }
+
+    @Test func `failed movie result saves can be retried without success analytics`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        let destination = fixture.directory.appending(path: "Tests/watchlist.json")
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: false)
+
+        #expect(!fixture.model.addWatchlistItem(watchlistMedia()))
+        #expect(fixture.model.watchlistStore.items.isEmpty)
+        #expect(fixture.model.watchlistStore.persistenceError != nil)
+        #expect(fixture.tracker.events == [.appLaunched])
+
+        try FileManager.default.removeItem(at: destination)
+
+        #expect(fixture.model.addWatchlistItem(watchlistMedia()))
+        #expect(fixture.model.watchlistStore.items.count == 1)
+        #expect(fixture.model.watchlistStore.persistenceError == nil)
+        #expect(fixture.tracker.events == [.appLaunched, .watchlistItemAdded])
+    }
+
+    private func watchlistMedia(mediaType: TMDBMediaType = .movie) -> TMDBMediaResult {
+        TMDBMediaResult(
+            id: 42,
+            mediaType: mediaType,
+            title: "Selected Movie",
+            overview: "A movie selected from search.",
+            posterPath: "/poster.jpg",
+            releaseDate: "2024-03-15"
+        )
+    }
+
     @Test func `onboarding records steps and deduplicates the first launch start`() throws {
         let fixture = try AnalyticsAppFixture(hasSites: false)
         defer { fixture.cleanup() }
