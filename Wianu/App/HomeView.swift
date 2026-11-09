@@ -153,7 +153,7 @@ struct HomeView: View {
     }
 
     private var watchlistShelf: some View {
-        let items = model.watchlistStore.items.compactMap { item in
+        let items = model.watchlistStore.newestItems.compactMap { item in
             item.tmdbMetadata.map { (id: item.id, media: $0) }
         }
         return Group {

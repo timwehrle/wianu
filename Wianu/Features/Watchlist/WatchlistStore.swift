@@ -20,6 +20,19 @@ final class WatchlistStore {
         load()
     }
 
+    var newestItems: [WatchlistItem] {
+        items.sorted { first, second in
+            let firstDate = first.addedAt ?? .distantPast
+            let secondDate = second.addedAt ?? .distantPast
+
+            if firstDate != secondDate {
+                return firstDate > secondDate
+            }
+
+            return first.sourceOrder < second.sourceOrder
+        }
+    }
+
     func item(id: WatchlistItem.ID) -> WatchlistItem? {
         items.first { $0.id == id }
     }

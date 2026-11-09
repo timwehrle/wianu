@@ -82,3 +82,41 @@ struct WelcomeServicePresetTests {
         }
     }
 }
+
+@MainActor
+@Suite("Home watchlist ordering")
+struct HomeWatchlistOrderingTests {
+    @Test func `newest titles come first with stable ordering for equal or missing dates`() throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let fileStore = JSONFileStore<[WatchlistItem]>(
+            fileName: "watchlist.json",
+            folderName: "Tests",
+            baseDirectory: directory
+        )
+        let dates: [Date?] = [
+            nil,
+            Date(timeIntervalSince1970: 100),
+            Date(timeIntervalSince1970: 200),
+            Date(timeIntervalSince1970: 200),
+            nil
+        ]
+        let items = dates.enumerated().map { index, date in
+            WatchlistItem(
+                title: "Movie \(index)",
+                year: nil,
+                url: nil,
+                addedAt: date,
+                sourceOrder: index,
+                source: index == 2 ? .custom : .letterboxd
+            )
+        }
+        try fileStore.save(items)
+
+        let store = WatchlistStore(fileStore: fileStore)
+
+        #expect(store.newestItems.map(\.title) == ["Movie 2", "Movie 3", "Movie 1", "Movie 0", "Movie 4"])
+        #expect(store.items.map(\.id) == items.map(\.id))
+    }
+}
