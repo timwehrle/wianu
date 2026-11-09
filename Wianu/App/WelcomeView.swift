@@ -35,6 +35,16 @@ struct WelcomeView: View {
         )
     ]
 
+    private var addedSiteCount: Int {
+        model.siteStore.sites.count { !initialSiteIDs.contains($0.id) }
+    }
+
+    private var primaryActionTitle: String {
+        guard choosingServices else { return "Continue" }
+
+        return selectedAddresses.isEmpty && addedSiteCount > 0 ? "Done" : "Add Services"
+    }
+
     var body: some View {
         VStack(spacing: 32) {
             Image(nsImage: NSApplication.shared.applicationIconImage)
@@ -54,7 +64,7 @@ struct WelcomeView: View {
             }
 
             VStack(spacing: 12) {
-                Button(choosingServices ? "Add Services" : "Continue") {
+                Button(primaryActionTitle) {
                     if choosingServices {
                         addServices()
                     } else {
@@ -65,7 +75,7 @@ struct WelcomeView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .keyboardShortcut(.defaultAction)
-                .disabled(choosingServices && selectedAddresses.isEmpty)
+                .disabled(choosingServices && selectedAddresses.isEmpty && addedSiteCount == 0)
 
                 Button("Set Up Later") {
                     guard !hasFinished else { return }
@@ -88,7 +98,7 @@ struct WelcomeView: View {
             initialSiteIDs = Set(model.siteStore.sites.map(\.id))
             model.onboardingStarted(source: source)
         }
-        .sheet(isPresented: $showingAddSite, onDismiss: finishAfterCustomSite) {
+        .sheet(isPresented: $showingAddSite) {
             SiteEditorView(model: model, mode: .add)
         }
     }
@@ -208,20 +218,11 @@ struct WelcomeView: View {
         complete()
     }
 
-    private func finishAfterCustomSite() {
-        guard model.siteStore.sites.contains(where: { !initialSiteIDs.contains($0.id) }),
-              model.siteStore.persistenceError == nil
-        else { return }
-
-        complete()
-    }
-
     private func complete() {
         guard !hasFinished else { return }
 
         hasFinished = true
-        let addedCount = model.siteStore.sites.filter { !initialSiteIDs.contains($0.id) }.count
-        model.onboardingCompleted(source: source, servicesAddedCount: addedCount)
+        model.onboardingCompleted(source: source, servicesAddedCount: addedSiteCount)
         onFinish()
     }
 }
