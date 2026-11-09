@@ -175,6 +175,7 @@
 		D1C100023020000000000102 /* TMDBClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBClientTests.swift; sourceTree = "<group>"; };
 		D1C100033020000000000103 /* WianuTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WianuTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1C1000C302000000000010C /* BrowserNavigationRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserNavigationRouterTests.swift; sourceTree = "<group>"; };
+		D1C5DAB330A272BB00D7633D /* create-dmg.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "create-dmg.sh"; sourceTree = "<group>"; };
 		D1D000023020000000000002 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D1E100023030000000000002 /* CommandPaletteCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandPaletteCommand.swift; sourceTree = "<group>"; };
 		D1E300033030000000000003 /* CommandCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandCatalogTests.swift; sourceTree = "<group>"; };
@@ -226,6 +227,7 @@
 		D11E823D3017921C0092ECC8 /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
+				D1C5DAB330A272BB00D7633D /* create-dmg.sh */,
 				D11E823C3017921C0092ECC8 /* ExportOptions.plist */,
 			);
 			path = Scripts;

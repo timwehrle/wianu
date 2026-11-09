@@ -30,5 +30,6 @@ on run argv
         set bounds of container window of mountedFolder to {100, 100, 820, 460}
         update mountedFolder without registering applications
         delay 3
+        close container window of mountedFolder
     end tell
 end run
