@@ -57,3 +57,66 @@ struct HomeShelfScrollingTests {
         #expect(resized.destination(direction: -1) >= 0)
     }
 }
+
+@MainActor
+@Suite("Welcome service presets")
+struct WelcomeServicePresetTests {
+    @Test func `provider associations survive saving and reopening sites`() throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fileStore = JSONFileStore<[SavedSite]>(
+            fileName: "sites.json", folderName: "Tests", baseDirectory: directory
+        )
+        let store = SiteStore(fileStore: fileStore)
+        for service in WelcomeView.services {
+            store.addSite(service)
+        }
+
+        let restored = SiteStore(fileStore: fileStore)
+        #expect(restored.sites.count == 4)
+        for site in restored.sites {
+            let provider = try #require(site.tmdbProviders.first)
+            let expectedID: Int? = ["Netflix": 8, "Disney+": 337, "Prime Video": 9, "Apple TV": 350][site.name]
+            #expect(provider.id == expectedID)
+            #expect(SiteDraft(site: site).tmdbProviders == [provider])
+        }
+    }
+}
+
+@MainActor
+@Suite("Home watchlist ordering")
+struct HomeWatchlistOrderingTests {
+    @Test func `newest titles come first with stable ordering for equal or missing dates`() throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let fileStore = JSONFileStore<[WatchlistItem]>(
+            fileName: "watchlist.json",
+            folderName: "Tests",
+            baseDirectory: directory
+        )
+        let dates: [Date?] = [
+            nil,
+            Date(timeIntervalSince1970: 100),
+            Date(timeIntervalSince1970: 200),
+            Date(timeIntervalSince1970: 200),
+            nil
+        ]
+        let items = dates.enumerated().map { index, date in
+            WatchlistItem(
+                title: "Movie \(index)",
+                year: nil,
+                url: nil,
+                addedAt: date,
+                sourceOrder: index,
+                source: index == 2 ? .custom : .letterboxd
+            )
+        }
+        try fileStore.save(items)
+
+        let store = WatchlistStore(fileStore: fileStore)
+
+        #expect(store.newestItems.map(\.title) == ["Movie 2", "Movie 3", "Movie 1", "Movie 0", "Movie 4"])
+        #expect(store.items.map(\.id) == items.map(\.id))
+    }
+}

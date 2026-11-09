@@ -20,6 +20,19 @@ final class WatchlistStore {
         load()
     }
 
+    var newestItems: [WatchlistItem] {
+        items.sorted { first, second in
+            let firstDate = first.addedAt ?? .distantPast
+            let secondDate = second.addedAt ?? .distantPast
+
+            if firstDate != secondDate {
+                return firstDate > secondDate
+            }
+
+            return first.sourceOrder < second.sourceOrder
+        }
+    }
+
     func item(id: WatchlistItem.ID) -> WatchlistItem? {
         items.first { $0.id == id }
     }
@@ -34,6 +47,34 @@ final class WatchlistStore {
 
     func contains(url: URL) -> Bool {
         item(matching: url) != nil
+    }
+
+    func contains(_ media: TMDBMediaResult) -> Bool {
+        items.contains { item in
+            let mediaType = item.tmdbMediaType ?? item.tmdbMetadata?.mediaType ?? .movie
+            return (item.tmdbID == media.id && mediaType == media.mediaType)
+                || (media.letterboxdURL != nil && item.url == media.letterboxdURL)
+        }
+    }
+
+    @discardableResult
+    func add(_ media: TMDBMediaResult) -> Bool {
+        guard media.mediaType == .movie else { return false }
+        guard !contains(media) else { return true }
+
+        let item = WatchlistItem(
+            title: media.title,
+            year: media.year.flatMap(Int.init),
+            url: media.letterboxdURL,
+            addedAt: .now,
+            sourceOrder: items.count,
+            source: .custom,
+            tmdbID: media.id,
+            tmdbMetadata: media,
+            tmdbMediaType: media.mediaType
+        )
+
+        return persist(items + [item])
     }
 
     func replaceImportedItems(with newItems: [WatchlistItem]) {
@@ -145,11 +186,18 @@ final class WatchlistStore {
     }
 
     private func persist() {
+        _ = persist(items)
+    }
+
+    private func persist(_ updatedItems: [WatchlistItem]) -> Bool {
         do {
-            try fileStore.save(items)
+            try fileStore.save(updatedItems)
+            items = updatedItems
             persistenceError = nil
+            return true
         } catch {
             persistenceError = error.localizedDescription
+            return false
         }
     }
 }

@@ -2,27 +2,6 @@ import Foundation
 import Testing
 @testable import Wianu
 
-private actor AnalyticsFixtureSession: AnalyticsSession {
-    private(set) var requests: [URLRequest] = []
-
-    // Required to be async by AnalyticsSession.
-    // swiftlint:disable:next async_without_await
-    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
-        requests.append(request)
-        let response = HTTPURLResponse(
-            url: request.url!,
-            statusCode: 204,
-            httpVersion: nil,
-            headerFields: nil
-        )!
-        return (Data(), response)
-    }
-
-    func capturedRequests() -> [URLRequest] {
-        requests
-    }
-}
-
 @Suite("Analytics client")
 struct AnalyticsClientTests {
     @Test(arguments: [
@@ -31,7 +10,11 @@ struct AnalyticsClientTests {
         .homeOpened,
         .weeklyPickOpened,
         .continueWatchingOpened,
-        .providerSelected
+        .providerSelected,
+        .onboardingStarted,
+        .onboardingServicesOpened,
+        .onboardingCompleted,
+        .onboardingSkipped
     ])
     func `sends privacy minimal Umami event`(event: AnalyticsEvent) async throws {
         let defaults = try #require(UserDefaults(
@@ -47,29 +30,40 @@ struct AnalyticsClientTests {
             build: "16"
         )
 
-        client.track(event)
+        let properties = ["source": "getting-started", "onboarding_version": "1"]
+        client.track(event, properties: properties)
         try await waitForRequest(in: session)
 
         let request = try #require(await session.capturedRequests().first)
         #expect(request.httpMethod == "POST")
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
         #expect(request.value(forHTTPHeaderField: "User-Agent") == "Wianu/1.5.0 (macOS)")
+
         let body = try #require(request.httpBody)
         let json = try #require(
             JSONSerialization.jsonObject(with: body) as? [String: Any]
         )
+
         let payload = try #require(json["payload"] as? [String: Any])
         let data = try #require(payload["data"] as? [String: String])
+
         #expect(json["type"] as? String == "event")
         #expect(payload["website"] as? String == "website-id")
         #expect(payload["name"] as? String == event.rawValue)
         #expect(payload["url"] as? String == "/app")
         #expect(payload["hostname"] as? String == "wianu.com")
         #expect(Set(payload.keys) == ["id", "hostname", "url", "website", "name", "data"])
+
         let id = try #require(payload["id"] as? String)
         #expect(UUID(uuidString: id) != nil)
         #expect(defaults.string(forKey: AnalyticsPreference.distinctIDKey) == id)
-        #expect(data == ["app_version": "1.5.0", "build": "16"])
+        #expect(data == [
+            "app_version": "1.5.0",
+            "build": "16",
+            "source": "getting-started",
+            "onboarding_version": "1"
+        ])
+
         let bodyString = try #require(String(bytes: body, encoding: .utf8))
         #expect(!bodyString.contains("query"))
     }
@@ -108,7 +102,11 @@ struct AnalyticsClientTests {
         .homeOpened,
         .weeklyPickOpened,
         .continueWatchingOpened,
-        .providerSelected
+        .providerSelected,
+        .onboardingStarted,
+        .onboardingServicesOpened,
+        .onboardingCompleted,
+        .onboardingSkipped
     ])
     func `opt out and missing configuration send nothing`(event: AnalyticsEvent) async throws {
         let defaults = try #require(UserDefaults(
@@ -126,7 +124,7 @@ struct AnalyticsClientTests {
 
         #expect(client.isEnabled)
         defaults.set(false, forKey: AnalyticsPreference.enabledKey)
-        client.track(event)
+        client.track(event, properties: ["source": "first-launch"])
         try await Task.sleep(for: .milliseconds(50))
         #expect(await session.capturedRequests().isEmpty)
         #expect(defaults.object(forKey: AnalyticsPreference.distinctIDKey) == nil)
@@ -162,15 +160,200 @@ struct AnalyticsClientTests {
 @MainActor
 private final class RecordingAnalyticsTracker: AnalyticsTracking {
     private(set) var events: [AnalyticsEvent] = []
+    private(set) var properties: [[String: String]] = []
 
-    func track(_ event: AnalyticsEvent) {
+    func track(_ event: AnalyticsEvent, properties: [String: String]) {
         events.append(event)
+        self.properties.append(properties)
     }
 }
 
 @MainActor
 @Suite("Site opening analytics")
 struct SiteOpeningAnalyticsTests {
+    @Test(arguments: [false, true])
+    func `failed site writes preserve saved state and can be retried`(isEditing: Bool) throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        let model = fixture.model
+        let originalSites = model.siteStore.sites
+        let fileURL = fixture.directory.appending(path: "Tests/sites.json")
+        let savedData = try Data(contentsOf: fileURL)
+
+        try FileManager.default.removeItem(at: fileURL)
+        try FileManager.default.createDirectory(at: fileURL, withIntermediateDirectories: false)
+
+        var draft = SiteDraft(site: fixture.site)
+        draft.name = "Updated Service"
+        let didSave = isEditing
+            ? model.updateSite(fixture.site, with: draft)
+            : model.addSite(draft)
+
+        #expect(!didSave)
+        #expect(model.siteStore.sites == originalSites)
+        #expect(model.siteStore.persistenceError != nil)
+        model.onboardingCompleted(source: .firstLaunch, servicesAddedCount: 1)
+        #expect(fixture.tracker.events == [.appLaunched])
+
+        try FileManager.default.removeItem(at: fileURL)
+        try savedData.write(to: fileURL)
+
+        let didRetry = isEditing
+            ? model.updateSite(fixture.site, with: draft)
+            : model.addSite(draft)
+
+        #expect(didRetry)
+        #expect(model.siteStore.persistenceError == nil)
+        #expect(model.siteStore.sites.count == (isEditing ? 1 : 2))
+        #expect(model.siteStore.sites.last?.name == "Updated Service")
+        #expect(fixture.tracker.events == [.appLaunched, isEditing ? .siteEdited : .siteAdded])
+
+        let restored = SiteStore(fileStore: JSONFileStore(
+            fileName: "sites.json",
+            folderName: "Tests",
+            baseDirectory: fixture.directory
+        ))
+        #expect(restored.sites.map(\.id) == model.siteStore.sites.map(\.id))
+        #expect(restored.sites.map(\.name) == model.siteStore.sites.map(\.name))
+        #expect(restored.sites.map(\.tmdbProviders) == model.siteStore.sites.map(\.tmdbProviders))
+    }
+
+    @Test func `movie results save metadata immediately and avoid duplicate additions`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        let media = watchlistMedia()
+        #expect(fixture.model.addWatchlistItem(media))
+        #expect(fixture.model.addWatchlistItem(media))
+        #expect(fixture.model.watchlistStore.items.count == 1)
+        #expect(fixture.tracker.events == [.appLaunched, .watchlistItemAdded])
+
+        let reopened = WatchlistStore(fileStore: JSONFileStore(
+            fileName: "watchlist.json",
+            folderName: "Tests",
+            baseDirectory: fixture.directory
+        ))
+        let item = try #require(reopened.items.first)
+        #expect(item.title == media.title)
+        #expect(item.year == 2024)
+        #expect(item.url == media.letterboxdURL)
+        #expect(item.tmdbID == media.id)
+        #expect(item.tmdbMediaType == .movie)
+        #expect(item.tmdbMetadata == media)
+        #expect(reopened.contains(media))
+    }
+
+    @Test func `movie result matching respects media type and existing associations`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        let store = fixture.model.watchlistStore
+        let existing = store.add(title: "Existing", year: nil, url: nil)
+        store.associate(id: existing.id, with: watchlistMedia(mediaType: .tv))
+        #expect(!store.contains(watchlistMedia()))
+        #expect(!fixture.model.addWatchlistItem(watchlistMedia(mediaType: .tv)))
+        #expect(fixture.model.addWatchlistItem(watchlistMedia()))
+        #expect(store.items.count == 2)
+        #expect(fixture.tracker.events == [.appLaunched, .watchlistItemAdded])
+    }
+
+    @Test func `failed movie result saves can be retried without success analytics`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        let destination = fixture.directory.appending(path: "Tests/watchlist.json")
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: false)
+
+        #expect(!fixture.model.addWatchlistItem(watchlistMedia()))
+        #expect(fixture.model.watchlistStore.items.isEmpty)
+        #expect(fixture.model.watchlistStore.persistenceError != nil)
+        #expect(fixture.tracker.events == [.appLaunched])
+
+        try FileManager.default.removeItem(at: destination)
+
+        #expect(fixture.model.addWatchlistItem(watchlistMedia()))
+        #expect(fixture.model.watchlistStore.items.count == 1)
+        #expect(fixture.model.watchlistStore.persistenceError == nil)
+        #expect(fixture.tracker.events == [.appLaunched, .watchlistItemAdded])
+    }
+
+    private func watchlistMedia(mediaType: TMDBMediaType = .movie) -> TMDBMediaResult {
+        TMDBMediaResult(
+            id: 42,
+            mediaType: mediaType,
+            title: "Selected Movie",
+            overview: "A movie selected from search.",
+            posterPath: "/poster.jpg",
+            releaseDate: "2024-03-15"
+        )
+    }
+
+    @Test func `onboarding records steps with completion properties`() throws {
+        let fixture = try AnalyticsAppFixture(hasSites: false)
+        defer { fixture.cleanup() }
+
+        fixture.model.onboardingStarted(source: .firstLaunch)
+        fixture.model.onboardingServicesOpened(source: .firstLaunch)
+        fixture.model.onboardingCompleted(source: .firstLaunch, servicesAddedCount: 0)
+        fixture.model.addSite(SiteDraft(name: "Private", address: "https://private.example"))
+        fixture.model.onboardingCompleted(source: .firstLaunch, servicesAddedCount: 1)
+
+        #expect(fixture.tracker.events == [
+            .appLaunched,
+            .onboardingStarted,
+            .onboardingServicesOpened,
+            .siteAdded,
+            .onboardingCompleted
+        ])
+        #expect(fixture.tracker.properties[1] == [
+            "source": "first-launch",
+            "onboarding_version": "1"
+        ])
+        #expect(fixture.tracker.properties.last == [
+            "source": "first-launch",
+            "onboarding_version": "1",
+            "services_added_count": "1"
+        ])
+    }
+
+    @Test(arguments: [OnboardingStep.welcome, .services])
+    func `manual onboarding records its source and explicit skip step`(step: OnboardingStep) throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        fixture.model.onboardingStarted(source: .gettingStarted)
+        fixture.model.onboardingSkipped(source: .gettingStarted, step: step)
+
+        #expect(fixture.tracker.events == [.appLaunched, .onboardingStarted, .onboardingSkipped])
+        #expect(fixture.tracker.properties.last == [
+            "source": "getting-started",
+            "onboarding_version": "1",
+            "step": step.rawValue
+        ])
+    }
+
+    @Test(arguments: [false, true])
+    func `startup selects Home without sites even with a stale saved selection`(hasSavedSelection: Bool) throws {
+        let fixture = try AnalyticsAppFixture(hasSites: false, hasSavedSelection: hasSavedSelection)
+        defer { fixture.cleanup() }
+
+        #expect(fixture.model.selection == .home)
+        #expect(fixture.model.navigationRequest == nil)
+        #expect(fixture.tracker.events == [.appLaunched])
+    }
+
+    @Test func `additional selected provider routes through the saved site`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+        var draft = SiteDraft(site: fixture.site)
+        draft.tmdbProviders.append(TMDBProviderReference(id: 9999, name: "Another Provider"))
+        fixture.model.updateSite(fixture.site, with: draft)
+        let provider = TMDBProvider(id: 9999, name: "Another Provider", logoPath: nil)
+        #expect(fixture.model.site(for: provider)?.id == fixture.site.id)
+        #expect(fixture.model.site(for: TMDBProvider(id: 9998, name: "Unrelated", logoPath: nil)) == nil)
+    }
+
     @Test func `explicit opens count once each while startup restoration does not`() throws {
         let fixture = try AnalyticsAppFixture()
         defer { fixture.cleanup() }
@@ -275,7 +458,7 @@ private struct AnalyticsAppFixture {
     let tracker: RecordingAnalyticsTracker
     let model: AppModel
 
-    init() throws {
+    init(hasSites: Bool = true, hasSavedSelection: Bool = false) throws {
         directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         suiteName = "SiteOpeningAnalyticsTests.\(UUID().uuidString)"
         defaults = try #require(UserDefaults(suiteName: suiteName))
@@ -283,10 +466,13 @@ private struct AnalyticsAppFixture {
             name: "Private Service",
             urlString: "https://private.example",
             searchURLTemplate: "https://private.example/search?q={query}",
-            tmdbProvider: TMDBProviderReference(id: 1, name: "Private Provider")
+            tmdbProviders: [TMDBProviderReference(id: 1, name: "Private Provider")]
         )
         let sites = JSONFileStore<[SavedSite]>(fileName: "sites.json", folderName: "Tests", baseDirectory: directory)
-        try sites.save([site])
+        try sites.save(hasSites ? [site] : [])
+        if hasSavedSelection {
+            defaults.set(site.id.uuidString, forKey: "lastSelectedSiteID")
+        }
         tracker = RecordingAnalyticsTracker()
         model = AppModel(
             siteStore: SiteStore(fileStore: sites),

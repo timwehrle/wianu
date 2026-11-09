@@ -126,6 +126,39 @@ extension AppModel {
         analytics.track(.searchOpened)
     }
 
+    func onboardingStarted(source: OnboardingSource) {
+        trackOnboarding(.onboardingStarted, source: source)
+    }
+
+    func onboardingServicesOpened(source: OnboardingSource) {
+        trackOnboarding(.onboardingServicesOpened, source: source)
+    }
+
+    func onboardingSkipped(source: OnboardingSource, step: OnboardingStep) {
+        trackOnboarding(.onboardingSkipped, source: source, properties: ["step": step.rawValue])
+    }
+
+    func onboardingCompleted(source: OnboardingSource, servicesAddedCount: Int) {
+        guard servicesAddedCount > 0, siteStore.persistenceError == nil else { return }
+
+        trackOnboarding(
+            .onboardingCompleted,
+            source: source,
+            properties: ["services_added_count": String(servicesAddedCount)]
+        )
+    }
+
+    private func trackOnboarding(
+        _ event: AnalyticsEvent,
+        source: OnboardingSource,
+        properties: [String: String] = [:]
+    ) {
+        analytics.track(event, properties: properties.merging([
+            "source": source.rawValue,
+            "onboarding_version": "1"
+        ]) { _, value in value })
+    }
+
     func settingsOpened() {
         analytics.track(.settingsOpened)
     }
@@ -134,16 +167,20 @@ extension AppModel {
         analytics.track(.updateCheckStarted)
     }
 
-    func addSite(_ draft: SiteDraft) {
-        guard draft.validatedValues != nil else { return }
-        siteStore.addSite(draft)
+    @discardableResult
+    func addSite(_ draft: SiteDraft) -> Bool {
+        guard siteStore.addSite(draft) else { return false }
+
         analytics.track(.siteAdded)
+        return true
     }
 
-    func updateSite(_ site: SavedSite, with draft: SiteDraft) {
-        guard draft.validatedValues != nil else { return }
-        siteStore.updateSite(id: site.id, with: draft)
+    @discardableResult
+    func updateSite(_ site: SavedSite, with draft: SiteDraft) -> Bool {
+        guard siteStore.updateSite(id: site.id, with: draft) else { return false }
+
         analytics.track(.siteEdited)
+        return true
     }
 
     func dismissCommandPalette() {
@@ -158,7 +195,7 @@ extension AppModel {
 
     func openProvider(_ provider: TMDBProvider, for media: TMDBMediaResult) {
         guard let site = siteStore.sites.first(where: {
-            $0.tmdbProvider?.matches(provider) == true
+            $0.tmdbProviders.contains(where: { $0.matches(provider) })
                 && $0.isTMDBProviderActionable
         }), site.searchURL(for: media.title) != nil
         else { return }
@@ -168,7 +205,7 @@ extension AppModel {
 
     func site(for provider: TMDBProvider) -> SavedSite? {
         siteStore.sites.first {
-            $0.tmdbProvider?.matches(provider) == true
+            $0.tmdbProviders.contains(where: { $0.matches(provider) })
         }
     }
 
@@ -253,6 +290,16 @@ extension AppModel {
 
     func letterboxdImportSucceeded() {
         analytics.track(.letterboxdImportSucceeded)
+    }
+
+    @discardableResult
+    func addWatchlistItem(_ media: TMDBMediaResult) -> Bool {
+        guard media.mediaType == .movie else { return false }
+        guard !watchlistStore.contains(media) else { return true }
+        guard watchlistStore.add(media) else { return false }
+
+        analytics.track(.watchlistItemAdded)
+        return true
     }
 
     func addWatchlistItem(title: String, year: Int?, url: URL?) {
@@ -384,6 +431,8 @@ extension AppModel {
             selection = .site(savedID)
         } else if let firstSite = siteStore.sites.first {
             selection = .site(firstSite.id)
+        } else {
+            selection = .home
         }
 
         navigate(to: destination(for: selection))

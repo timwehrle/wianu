@@ -38,15 +38,9 @@ struct SiteEditorView: View {
         case let .edit(site):
             _draft = State(initialValue: SiteDraft(site: site))
             _providers = State(
-                initialValue: site.tmdbProvider.map {
-                    [
-                        TMDBProvider(
-                            id: $0.id,
-                            name: $0.name,
-                            logoPath: nil
-                        )
-                    ]
-                } ?? []
+                initialValue: site.tmdbProviders.map {
+                    TMDBProvider(id: $0.id, name: $0.name, logoPath: nil)
+                }
             )
         }
     }
@@ -78,6 +72,13 @@ struct SiteEditorView: View {
         VStack(alignment: .leading, spacing: 20) {
             editorHeader
             siteFields
+
+            if let error = model.siteStore.persistenceError {
+                Text("Couldn't save this site. \(error)")
+                    .foregroundStyle(.red)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
             Spacer()
         }
     }
@@ -103,7 +104,7 @@ struct SiteEditorView: View {
     @ViewBuilder
     private var identityFields: some View {
         field("Name") {
-            TextField("Example: OpenAI", text: $draft.name)
+            TextField("Example: Netflix", text: $draft.name)
         }
         field("URL") {
             TextField("example.com", text: $draft.address)
@@ -143,15 +144,15 @@ struct SiteEditorView: View {
 
     @ViewBuilder
     private var providerFields: some View {
-        field("TMDB Provider (Optional)") {
+        field("TMDB Providers (Optional)") {
             TMDBProviderPicker(
                 providers: providers,
-                selection: providerSelection
+                selection: $draft.tmdbProviders
             )
         }
         Text(
             providerLoadError
-                ?? "Associate this site so TMDB availability can open its configured Search URL."
+                ?? "Select all providers that should open this site’s configured Search URL."
         )
         .font(.caption)
         .foregroundStyle(.secondary)
@@ -172,9 +173,10 @@ struct SiteEditorView: View {
     private func save() {
         switch mode {
         case .add:
-            model.addSite(draft)
+            guard model.addSite(draft) else { return }
+
         case let .edit(site):
-            model.updateSite(site, with: draft)
+            guard model.updateSite(site, with: draft) else { return }
         }
 
         dismiss()
@@ -190,23 +192,11 @@ struct SiteEditorView: View {
         draft.searchURLTemplate = suggestion
     }
 
-    private var providerSelection: Binding<Int?> {
-        Binding(
-            get: { draft.tmdbProvider?.id },
-            set: { id in
-                draft.tmdbProvider = providers.first(where: { $0.id == id }).map {
-                    TMDBProviderReference(id: $0.id, name: $0.name)
-                }
-            }
-        )
-    }
-
     private func loadProviders() async {
         do {
             providers = try await model.tmdbClient.providers()
-            if let current = draft.tmdbProvider,
-               !providers.contains(where: { $0.id == current.id })
-            {
+
+            for current in draft.tmdbProviders where !providers.contains(where: { $0.id == current.id }) {
                 providers.insert(
                     TMDBProvider(
                         id: current.id,
@@ -224,17 +214,15 @@ struct SiteEditorView: View {
 
 private struct TMDBProviderPicker: View {
     let providers: [TMDBProvider]
-    @Binding var selection: Int?
+    @Binding var selection: [TMDBProviderReference]
     @State private var isPresented = false
     @State private var query = ""
 
-    private var selectedProvider: TMDBProvider? {
-        providers.first { $0.id == selection }
-    }
-
     private var filteredProviders: [TMDBProvider] {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+
         guard !trimmedQuery.isEmpty else { return providers }
+
         return providers.filter {
             $0.name.localizedCaseInsensitiveContains(trimmedQuery)
         }
@@ -245,8 +233,11 @@ private struct TMDBProviderPicker: View {
             isPresented.toggle()
         } label: {
             HStack {
-                Text(selectedProvider?.name ?? "Not associated")
+                Text(selection.isEmpty ? "Not associated" : selection.map(\.name).joined(separator: ", "))
+                    .lineLimit(1)
+
                 Spacer()
+
                 Image(systemName: "chevron.up.chevron.down")
                     .foregroundStyle(.secondary)
             }
@@ -258,34 +249,37 @@ private struct TMDBProviderPicker: View {
                     .textFieldStyle(.roundedBorder)
 
                 List {
-                    providerButton(name: "Not associated", id: nil)
-
                     ForEach(filteredProviders) { provider in
-                        providerButton(name: provider.name, id: provider.id)
+                        providerToggle(provider)
                     }
                 }
                 .listStyle(.plain)
+
+                HStack {
+                    Button("Clear All") { selection.removeAll() }
+                        .disabled(selection.isEmpty)
+
+                    Spacer()
+
+                    Button("Done") { isPresented = false }
+                }
             }
             .padding(12)
             .frame(width: 320, height: 360)
         }
     }
 
-    private func providerButton(name: String, id: Int?) -> some View {
-        Button {
-            selection = id
-            isPresented = false
-            query = ""
-        } label: {
-            HStack {
-                Text(name)
-                Spacer()
-                if selection == id {
-                    Image(systemName: "checkmark")
+    private func providerToggle(_ provider: TMDBProvider) -> some View {
+        Toggle(provider.name, isOn: Binding(
+            get: { selection.contains(where: { $0.id == provider.id }) },
+            set: { isSelected in
+                if isSelected {
+                    selection.append(TMDBProviderReference(id: provider.id, name: provider.name))
+                } else {
+                    selection.removeAll { $0.id == provider.id }
                 }
             }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
+        ))
+        .toggleStyle(.checkbox)
     }
 }

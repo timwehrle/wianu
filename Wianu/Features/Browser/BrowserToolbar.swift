@@ -102,10 +102,9 @@ private extension BrowserToolbar {
             Button {
                 model.showCommandPalette()
             } label: {
-                Label("Command Palette", systemImage: "magnifyingglass")
+                Label("Search", systemImage: "magnifyingglass")
             }
-            .keyboardShortcut("k", modifiers: .command)
-            .help("Search Actions, Movies, and TV Shows")
+            .help("Search Actions, Movies, and TV Shows (⌘F)")
         }
     }
 

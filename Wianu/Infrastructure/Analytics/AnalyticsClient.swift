@@ -2,6 +2,10 @@ import Foundation
 import OSLog
 
 enum AnalyticsEvent: String, Sendable {
+    case onboardingStarted = "onboarding-started"
+    case onboardingServicesOpened = "onboarding-services-opened"
+    case onboardingCompleted = "onboarding-completed"
+    case onboardingSkipped = "onboarding-skipped"
     case appLaunched = "app-launched"
     case searchOpened = "search-opened"
     case homeOpened = "home-opened"
@@ -24,11 +28,29 @@ enum AnalyticsEvent: String, Sendable {
 enum AnalyticsPreference {
     static let enabledKey = "anonymousUsageAnalyticsEnabled"
     static let distinctIDKey = "anonymousUsageAnalyticsDistinctID"
+    static let onboardingStartPendingKey = "onboardingStartPending"
+    static let onboardingStartDeliveredKey = "onboardingStartDelivered"
 }
 
 @MainActor
 protocol AnalyticsTracking {
-    func track(_ event: AnalyticsEvent)
+    func track(_ event: AnalyticsEvent, properties: [String: String])
+}
+
+extension AnalyticsTracking {
+    func track(_ event: AnalyticsEvent) {
+        track(event, properties: [:])
+    }
+}
+
+enum OnboardingSource: String {
+    case firstLaunch = "first-launch"
+    case gettingStarted = "getting-started"
+}
+
+enum OnboardingStep: String {
+    case welcome
+    case services
 }
 
 nonisolated protocol AnalyticsSession: Sendable {
@@ -45,6 +67,12 @@ final class AnalyticsClient: AnalyticsTracking {
     private let userDefaults: UserDefaults
     private let appVersion: String
     private let build: String
+    private var deliveryTask: Task<Void, Never>?
+
+    private static let onboardingProperties = [
+        "source": OnboardingSource.firstLaunch.rawValue,
+        "onboarding_version": "1"
+    ]
 
     private static let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier ?? "Wianu",
@@ -66,9 +94,11 @@ final class AnalyticsClient: AnalyticsTracking {
             forInfoDictionaryKey: "UmamiBaseURL"
         ) as? String).flatMap(Self.validConfigurationValue)
             .flatMap(URL.init(string:))
+
         let websiteID = (bundle.object(
             forInfoDictionaryKey: "UmamiWebsiteID"
         ) as? String).flatMap(Self.validConfigurationValue) ?? ""
+
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = 10
 
@@ -100,10 +130,64 @@ final class AnalyticsClient: AnalyticsTracking {
         self.userDefaults = userDefaults
         self.appVersion = appVersion
         self.build = build
+
+        if !isEnabled {
+            userDefaults.removeObject(forKey: AnalyticsPreference.onboardingStartPendingKey)
+        } else if userDefaults.bool(forKey: AnalyticsPreference.onboardingStartPendingKey) {
+            track(.onboardingStarted, properties: Self.onboardingProperties)
+        }
     }
 
-    func track(_ event: AnalyticsEvent) {
-        guard isEnabled, let endpoint, !websiteID.isEmpty else { return }
+    func track(_ event: AnalyticsEvent, properties: [String: String]) {
+        guard isEnabled else {
+            userDefaults.removeObject(forKey: AnalyticsPreference.onboardingStartPendingKey)
+            return
+        }
+
+        guard let request = makeRequest(event, properties: properties) else { return }
+
+        let isFirstLaunchOnboarding = properties["source"] == OnboardingSource.firstLaunch.rawValue
+            && [.onboardingStarted, .onboardingServicesOpened, .onboardingCompleted, .onboardingSkipped].contains(event)
+
+        if isFirstLaunchOnboarding, !userDefaults.bool(forKey: AnalyticsPreference.onboardingStartDeliveredKey) {
+            userDefaults.set(true, forKey: AnalyticsPreference.onboardingStartPendingKey)
+        }
+
+        let previousTask = deliveryTask
+
+        deliveryTask = Task {
+            await previousTask?.value
+
+            guard isEnabled else {
+                userDefaults.removeObject(forKey: AnalyticsPreference.onboardingStartPendingKey)
+                return
+            }
+
+            if isFirstLaunchOnboarding {
+                guard await deliverOnboardingStart(), event != .onboardingStarted else { return }
+            }
+
+            _ = await send(request)
+        }
+    }
+
+    private func deliverOnboardingStart() async -> Bool {
+        if userDefaults.bool(forKey: AnalyticsPreference.onboardingStartDeliveredKey) {
+            return true
+        }
+
+        guard let request = makeRequest(.onboardingStarted, properties: Self.onboardingProperties),
+              await send(request)
+        else { return false }
+
+        userDefaults.set(true, forKey: AnalyticsPreference.onboardingStartDeliveredKey)
+        userDefaults.removeObject(forKey: AnalyticsPreference.onboardingStartPendingKey)
+        return true
+    }
+
+    private func makeRequest(_ event: AnalyticsEvent, properties: [String: String]) -> URLRequest? {
+        guard let endpoint, !websiteID.isEmpty else { return nil }
+
         let payload = RequestBody(
             payload: Payload(
                 id: distinctID,
@@ -111,13 +195,14 @@ final class AnalyticsClient: AnalyticsTracking {
                 url: "/app",
                 website: websiteID,
                 name: event.rawValue,
-                data: [
+                data: properties.merging([
                     "app_version": appVersion,
                     "build": build
-                ]
+                ]) { _, value in value }
             )
         )
-        guard let data = try? JSONEncoder().encode(payload) else { return }
+
+        guard let data = try? JSONEncoder().encode(payload) else { return nil }
 
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
@@ -128,22 +213,44 @@ final class AnalyticsClient: AnalyticsTracking {
             forHTTPHeaderField: "User-Agent"
         )
 
-        let session = session
-        Task {
+        return request
+    }
+
+    private func send(_ request: URLRequest) async -> Bool {
+        for attempt in 0 ..< 3 {
+            guard isEnabled, !Task.isCancelled else { return false }
+
             do {
                 let (_, response) = try await session.data(for: request)
-                guard let http = response as? HTTPURLResponse,
-                      (200 ..< 300).contains(http.statusCode)
-                else {
-                    Self.logger.debug("Analytics request was not accepted")
-                    return
+
+                guard let http = response as? HTTPURLResponse else { return false }
+
+                if (200 ..< 300).contains(http.statusCode) {
+                    return true
                 }
+
+                guard http.statusCode == 429 || (500 ..< 600).contains(http.statusCode) else {
+                    Self.logger.debug("Analytics request was not accepted")
+                    return false
+                }
+            } catch is CancellationError {
+                return false
             } catch {
                 Self.logger.debug(
                     "Analytics request failed: \(String(describing: error), privacy: .private)"
                 )
             }
+
+            if attempt < 2 {
+                do {
+                    try await Task.sleep(for: .milliseconds(250 * (attempt + 1)))
+                } catch {
+                    return false
+                }
+            }
         }
+
+        return false
     }
 
     private var distinctID: String {
@@ -180,5 +287,5 @@ final class AnalyticsClient: AnalyticsTracking {
 
 @MainActor
 struct DisabledAnalyticsTracker: AnalyticsTracking {
-    func track(_ event: AnalyticsEvent) {}
+    func track(_ event: AnalyticsEvent, properties: [String: String]) {}
 }

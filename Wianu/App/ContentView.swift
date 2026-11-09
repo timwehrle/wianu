@@ -35,6 +35,9 @@ struct ContentView: View {
             }
         }
         .navigationTitle(model.selection == .home ? "Home" : "Wianu")
+        .focusedSceneValue(\.searchWianu) {
+            model.showCommandPalette()
+        }
         .sheet(isPresented: $showingAddSite) {
             SiteEditorView(
                 model: model,

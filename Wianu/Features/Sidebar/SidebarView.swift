@@ -191,7 +191,7 @@ struct SidebarView: View {
 
     private var watchlistSection: some View {
         Section("Watchlist", isExpanded: $watchlistExpanded) {
-            ForEach(model.watchlistStore.items) { item in
+            ForEach(model.watchlistStore.newestItems) { item in
                 WatchlistRow(item: item, needsReview: model.mediaIdentification.needsReview(.watchlist(item.id)))
                     .tag(SidebarSelection.watchlistItem(item.id))
                     .contextMenu { watchlistContextMenu(for: item) }

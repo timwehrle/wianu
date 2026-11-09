@@ -11,6 +11,20 @@ struct HomeView: View {
     @State private var weeklyState: WeeklyState = .loading
     @State private var loadRequest = 0
     @State private var featuredID: Int?
+    @AppStorage("hasDismissedWelcome") private var hasDismissedWelcome = false
+    @State private var showingGettingStarted = false
+    @State private var showingInitialWelcome: Bool
+
+    init(model: AppModel) {
+        self.model = model
+        _showingInitialWelcome = State(initialValue:
+            !UserDefaults.standard.bool(forKey: "hasDismissedWelcome") && model.siteStore.sites.isEmpty
+        )
+    }
+
+    private var showsWelcome: Bool {
+        showingGettingStarted || showingInitialWelcome
+    }
 
     private var weekly: [TMDBMediaResult] {
         guard case let .loaded(movies) = weeklyState else { return [] }
@@ -24,34 +38,62 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
-                if let featured {
-                    HomeFeature(
-                        media: featured,
-                        artworkURL: model.tmdbSearch.imageConfiguration?.backdropURL(path: featured.backdropPath),
-                        position: (weekly.firstIndex(of: featured) ?? 0) + 1,
-                        count: weekly.count,
-                        previous: { changeFeature(by: -1) },
-                        next: { changeFeature(by: 1) },
-                        action: { model.openWeeklyPick(featured) }
-                    )
+                if showsWelcome {
+                    WelcomeView(
+                        model: model,
+                        source: showingGettingStarted ? .gettingStarted : .firstLaunch
+                    ) {
+                        hasDismissedWelcome = true
+                        showingInitialWelcome = false
+                        showingGettingStarted = false
+                    }
+                } else {
+                    homeContent
                 }
-                continueWatchingShelf
-                weeklyShelf
-                watchlistShelf
             }
-            .padding(.bottom, 32)
-            .padding(.top, featured == nil ? 24 : 0)
+            .padding(.bottom, showsWelcome ? 0 : 32)
+            .padding(.top, !showsWelcome && featured == nil ? 24 : 0)
+            .frame(maxWidth: 1280)
+            .frame(maxWidth: .infinity)
         }
         .background(Color(nsColor: .windowBackgroundColor))
         .toolbar {
             ToolbarItem {
+                Button("Getting Started", systemImage: "questionmark.circle") {
+                    showingGettingStarted = true
+                }
+                .disabled(showsWelcome)
+            }
+            ToolbarItem {
                 Button { model.showCommandPalette() } label: {
                     Label("Search", systemImage: "magnifyingglass")
                 }
-                .help("Find a movie or TV show")
+                .help("Search Actions, Movies, and TV Shows (⌘F)")
             }
         }
         .task(id: loadRequest) { await loadWeekly() }
+    }
+
+    private var homeContent: some View {
+        VStack(alignment: .leading, spacing: 28) {
+            if let featured {
+                HomeFeature(
+                    media: featured,
+                    artworkURL: model.tmdbSearch.imageConfiguration?.backdropURL(path: featured.backdropPath),
+                    position: (weekly.firstIndex(of: featured) ?? 0) + 1,
+                    count: weekly.count,
+                    previous: { changeFeature(by: -1) },
+                    next: { changeFeature(by: 1) },
+                    action: { model.openWeeklyPick(featured) }
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal, 32)
+                .padding(.top, 24)
+            }
+            continueWatchingShelf
+            weeklyShelf
+            watchlistShelf
+        }
     }
 
     @ViewBuilder
@@ -83,8 +125,20 @@ struct HomeView: View {
             item.tmdbMetadata.map { (id: item.id, media: $0) }
         }
         return Group {
-            if items.isEmpty {
-                information("Identify a saved title from the sidebar to see it in Continue Watching.")
+            if model.continueWatchingStore.sortedItems.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("Pick up where you left off", systemImage: "play.circle")
+                        .font(.title2.bold())
+                    Text("Open a show’s detail page, then save it with the Continue Watching toolbar button.")
+                        .foregroundStyle(.secondary)
+                    Text("Wianu saves the page. Your streaming service handles playback progress.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    Button("Choose Services") { showingGettingStarted = true }
+                }
+                .padding(.horizontal, 32)
+            } else if items.isEmpty {
+                information("Identify your saved titles from the sidebar to show them in Continue Watching.")
             } else {
                 HomeShelf(title: "Continue Watching") {
                     ForEach(items, id: \.id) { item in
@@ -93,22 +147,43 @@ struct HomeView: View {
                         }
                     }
                 }
+
+                if items.count < model.continueWatchingStore.sortedItems.count {
+                    information(
+                        "Some saved titles still need identification. Identify them from the sidebar to show them here."
+                    )
+                }
             }
         }
     }
 
     private var watchlistShelf: some View {
-        let items = model.watchlistStore.items.compactMap { item in
+        let items = model.watchlistStore.newestItems.compactMap { item in
             item.tmdbMetadata.map { (id: item.id, media: $0) }
         }
         return Group {
-            if items.isEmpty {
-                information("Add or import titles, then identify them from the sidebar to see them in Watchlist.")
+            if model.watchlistStore.items.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("Save something for later", systemImage: "bookmark")
+                        .font(.title2.bold())
+                    Text("Find a movie to add to your watchlist, or import a Letterboxd CSV from the sidebar.")
+                        .foregroundStyle(.secondary)
+                    Button("Find a Movie") { model.showCommandPalette() }
+                }
+                .padding(.horizontal, 32)
+            } else if items.isEmpty {
+                information("Identify your saved titles from the sidebar to show them in Watchlist.")
             } else {
                 HomeShelf(title: "Watchlist") {
                     ForEach(items, id: \.id) { item in
                         card(item.media, actionLabel: "Find Providers") { showProviders(for: item.media) }
                     }
+                }
+
+                if items.count < model.watchlistStore.items.count {
+                    information(
+                        "Some saved titles still need identification. Identify them from the sidebar to show them here."
+                    )
                 }
             }
         }
@@ -241,13 +316,32 @@ private struct HomeFeature: View {
 
     var body: some View {
         Color.black
-            .frame(height: 360)
+            .frame(height: 460)
             .overlay {
-                HomeArtwork(url: artworkURL, contentMode: .fill, placeholderTitle: nil)
+                HomeArtwork(
+                    url: artworkURL,
+                    contentMode: .fill,
+                    placeholderTitle: nil,
+                    alignment: .top,
+                    backgroundColor: .black
+                )
             }
             .overlay {
-                LinearGradient(colors: [.black.opacity(0.8), .clear], startPoint: .leading, endPoint: .trailing)
-                LinearGradient(colors: [.clear, .black.opacity(0.8)], startPoint: .center, endPoint: .bottom)
+                LinearGradient(
+                    stops: [
+                        .init(color: .black.opacity(0.95), location: 0),
+                        .init(color: .black.opacity(0.7), location: 0.3),
+                        .init(color: .clear, location: 0.7)
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.65)],
+                    startPoint: .center,
+                    endPoint: .bottom
+                )
             }
             .overlay(alignment: .bottomLeading) {
                 VStack(alignment: .leading, spacing: 12) {
@@ -260,7 +354,7 @@ private struct HomeFeature: View {
                         .buttonStyle(.bordered)
                         .controlSize(.large)
                 }
-                .frame(maxWidth: 600, alignment: .leading)
+                .frame(maxWidth: 420, alignment: .leading)
                 .padding(32)
             }
             .overlay(alignment: .topTrailing) {
@@ -333,10 +427,17 @@ private struct HomeArtwork: View {
     let url: URL?
     let contentMode: ContentMode
     let placeholderTitle: String?
+    var alignment: Alignment = .center
+    var backgroundColor: Color?
 
     var body: some View {
         Rectangle()
             .fill(.quaternary)
+            .overlay {
+                if let backgroundColor {
+                    backgroundColor
+                }
+            }
             .overlay {
                 GeometryReader { geometry in
                     AsyncImage(url: url) { image in
@@ -351,7 +452,11 @@ private struct HomeArtwork: View {
                         .padding(16)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
-                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .frame(
+                        width: geometry.size.width,
+                        height: geometry.size.height,
+                        alignment: alignment
+                    )
                     .clipped()
                 }
             }

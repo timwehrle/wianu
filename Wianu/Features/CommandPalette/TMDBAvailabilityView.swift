@@ -5,6 +5,8 @@ struct TMDBAvailabilityView: View {
     let media: TMDBMediaResult
     let onBack: () -> Void
 
+    @State private var showingWatchlistSaveError = false
+
     private var search: TMDBSearchModel {
         model.tmdbSearch
     }
@@ -12,9 +14,44 @@ struct TMDBAvailabilityView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
+
+            if media.mediaType == .movie {
+                watchlistAction
+            }
+
             Divider()
             content
         }
+        .alert("Couldn’t Save Movie", isPresented: $showingWatchlistSaveError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(model.watchlistStore.persistenceError ?? "Please try again.")
+        }
+    }
+
+    private var watchlistAction: some View {
+        let isSaved = model.watchlistStore.contains(media)
+
+        return HStack {
+            Text(media.title)
+                .font(.headline)
+                .lineLimit(1)
+
+            Spacer()
+
+            Button {
+                showingWatchlistSaveError = !model.addWatchlistItem(media)
+            } label: {
+                Label(
+                    isSaved ? "In Watchlist" : "Add to Watchlist",
+                    systemImage: isSaved ? "checkmark" : "bookmark"
+                )
+            }
+            .buttonStyle(.bordered)
+            .disabled(isSaved)
+        }
+        .padding(.horizontal)
+        .padding(.bottom)
     }
 
     private var header: some View {
