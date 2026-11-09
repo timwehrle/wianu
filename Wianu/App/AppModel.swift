@@ -127,13 +127,6 @@ extension AppModel {
     }
 
     func onboardingStarted(source: OnboardingSource) {
-        if source == .firstLaunch {
-            let key = "hasTrackedOnboardingStart"
-            guard !userDefaults.bool(forKey: key) else { return }
-
-            userDefaults.set(true, forKey: key)
-        }
-
         trackOnboarding(.onboardingStarted, source: source)
     }
 

@@ -2,27 +2,6 @@ import Foundation
 import Testing
 @testable import Wianu
 
-private actor AnalyticsFixtureSession: AnalyticsSession {
-    private(set) var requests: [URLRequest] = []
-
-    // Required to be async by AnalyticsSession.
-    // swiftlint:disable:next async_without_await
-    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
-        requests.append(request)
-        let response = HTTPURLResponse(
-            url: request.url!,
-            statusCode: 204,
-            httpVersion: nil,
-            headerFields: nil
-        )!
-        return (Data(), response)
-    }
-
-    func capturedRequests() -> [URLRequest] {
-        requests
-    }
-}
-
 @Suite("Analytics client")
 struct AnalyticsClientTests {
     @Test(arguments: [
@@ -51,7 +30,7 @@ struct AnalyticsClientTests {
             build: "16"
         )
 
-        let properties = ["source": "first-launch", "onboarding_version": "1"]
+        let properties = ["source": "getting-started", "onboarding_version": "1"]
         client.track(event, properties: properties)
         try await waitForRequest(in: session)
 
@@ -81,7 +60,7 @@ struct AnalyticsClientTests {
         #expect(data == [
             "app_version": "1.5.0",
             "build": "16",
-            "source": "first-launch",
+            "source": "getting-started",
             "onboarding_version": "1"
         ])
 
@@ -310,11 +289,10 @@ struct SiteOpeningAnalyticsTests {
         )
     }
 
-    @Test func `onboarding records steps and deduplicates the first launch start`() throws {
+    @Test func `onboarding records steps with completion properties`() throws {
         let fixture = try AnalyticsAppFixture(hasSites: false)
         defer { fixture.cleanup() }
 
-        fixture.model.onboardingStarted(source: .firstLaunch)
         fixture.model.onboardingStarted(source: .firstLaunch)
         fixture.model.onboardingServicesOpened(source: .firstLaunch)
         fixture.model.onboardingCompleted(source: .firstLaunch, servicesAddedCount: 0)
