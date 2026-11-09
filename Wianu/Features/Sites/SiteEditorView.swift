@@ -72,6 +72,13 @@ struct SiteEditorView: View {
         VStack(alignment: .leading, spacing: 20) {
             editorHeader
             siteFields
+
+            if let error = model.siteStore.persistenceError {
+                Text("Couldn't save this site. \(error)")
+                    .foregroundStyle(.red)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
             Spacer()
         }
     }
@@ -166,9 +173,10 @@ struct SiteEditorView: View {
     private func save() {
         switch mode {
         case .add:
-            model.addSite(draft)
+            guard model.addSite(draft) else { return }
+
         case let .edit(site):
-            model.updateSite(site, with: draft)
+            guard model.updateSite(site, with: draft) else { return }
         }
 
         dismiss()

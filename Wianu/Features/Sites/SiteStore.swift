@@ -20,9 +20,12 @@ final class SiteStore {
         load()
     }
 
-    func addSite(_ draft: SiteDraft) {
-        guard let values = draft.validatedValues else { return }
-        sites.append(
+    @discardableResult
+    func addSite(_ draft: SiteDraft) -> Bool {
+        guard let values = draft.validatedValues else { return false }
+
+        var updatedSites = sites
+        updatedSites.append(
             SavedSite(
                 name: values.name,
                 urlString: values.url.absoluteString,
@@ -30,24 +33,27 @@ final class SiteStore {
                 tmdbProviders: values.tmdbProviders
             )
         )
-        persist()
+        return persist(updatedSites)
     }
 
-    func updateSite(id: SavedSite.ID, with draft: SiteDraft) {
+    @discardableResult
+    func updateSite(id: SavedSite.ID, with draft: SiteDraft) -> Bool {
         guard let index = sites.firstIndex(where: { $0.id == id }),
               let values = draft.validatedValues
-        else { return }
+        else { return false }
 
-        sites[index].name = values.name
-        sites[index].urlString = values.url.absoluteString
-        sites[index].searchURLTemplate = values.searchURLTemplate
-        sites[index].tmdbProviders = values.tmdbProviders
-        persist()
+        var updatedSites = sites
+        updatedSites[index].name = values.name
+        updatedSites[index].urlString = values.url.absoluteString
+        updatedSites[index].searchURLTemplate = values.searchURLTemplate
+        updatedSites[index].tmdbProviders = values.tmdbProviders
+
+        return persist(updatedSites)
     }
 
     func deleteSite(id: SavedSite.ID) {
         sites.removeAll { $0.id == id }
-        persist()
+        persist(sites)
     }
 
     private func load() {
@@ -60,12 +66,16 @@ final class SiteStore {
         }
     }
 
-    private func persist() {
+    @discardableResult
+    private func persist(_ updatedSites: [SavedSite]) -> Bool {
         do {
-            try fileStore.save(sites)
+            try fileStore.save(updatedSites)
+            sites = updatedSites
             persistenceError = nil
+            return true
         } catch {
             persistenceError = error.localizedDescription
+            return false
         }
     }
 }

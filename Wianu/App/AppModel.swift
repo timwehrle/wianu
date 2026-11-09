@@ -174,16 +174,20 @@ extension AppModel {
         analytics.track(.updateCheckStarted)
     }
 
-    func addSite(_ draft: SiteDraft) {
-        guard draft.validatedValues != nil else { return }
-        siteStore.addSite(draft)
+    @discardableResult
+    func addSite(_ draft: SiteDraft) -> Bool {
+        guard siteStore.addSite(draft) else { return false }
+
         analytics.track(.siteAdded)
+        return true
     }
 
-    func updateSite(_ site: SavedSite, with draft: SiteDraft) {
-        guard draft.validatedValues != nil else { return }
-        siteStore.updateSite(id: site.id, with: draft)
+    @discardableResult
+    func updateSite(_ site: SavedSite, with draft: SiteDraft) -> Bool {
+        guard siteStore.updateSite(id: site.id, with: draft) else { return false }
+
         analytics.track(.siteEdited)
+        return true
     }
 
     func dismissCommandPalette() {

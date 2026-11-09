@@ -103,7 +103,7 @@ struct WelcomeView: View {
             feature(
                 "Continue Watching",
                 systemImage: "play.circle",
-                description: "Save a show’s page to return to it later."
+                description: "Save a show's page to return to it later."
             )
             feature(
                 "Your Watchlist",
@@ -152,12 +152,12 @@ struct WelcomeView: View {
 
             Button("Add Other Website…") { showingAddSite = true }
 
-            Text("Sign in on each service’s website after adding it.")
+            Text("Sign in on each service's website after adding it.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
 
             if let error = model.siteStore.persistenceError {
-                Text("Couldn’t save your services. \(error)")
+                Text("Couldn't save your services. \(error)")
                     .foregroundStyle(.red)
             }
         }
@@ -201,9 +201,8 @@ struct WelcomeView: View {
 
             var draft = service
             draft.searchURLTemplate = draft.suggestedSearchURLTemplate ?? ""
-            model.addSite(draft)
 
-            guard model.siteStore.persistenceError == nil else { return }
+            guard model.addSite(draft) else { return }
         }
 
         complete()

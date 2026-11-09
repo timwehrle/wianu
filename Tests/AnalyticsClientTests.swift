@@ -59,22 +59,22 @@ struct AnalyticsClientTests {
         #expect(request.httpMethod == "POST")
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
         #expect(request.value(forHTTPHeaderField: "User-Agent") == "Wianu/1.5.0 (macOS)")
-        
+
         let body = try #require(request.httpBody)
         let json = try #require(
             JSONSerialization.jsonObject(with: body) as? [String: Any]
         )
-        
+
         let payload = try #require(json["payload"] as? [String: Any])
         let data = try #require(payload["data"] as? [String: String])
-        
+
         #expect(json["type"] as? String == "event")
         #expect(payload["website"] as? String == "website-id")
         #expect(payload["name"] as? String == event.rawValue)
         #expect(payload["url"] as? String == "/app")
         #expect(payload["hostname"] as? String == "wianu.com")
         #expect(Set(payload.keys) == ["id", "hostname", "url", "website", "name", "data"])
-        
+
         let id = try #require(payload["id"] as? String)
         #expect(UUID(uuidString: id) != nil)
         #expect(defaults.string(forKey: AnalyticsPreference.distinctIDKey) == id)
@@ -84,7 +84,7 @@ struct AnalyticsClientTests {
             "source": "first-launch",
             "onboarding_version": "1"
         ])
-        
+
         let bodyString = try #require(String(bytes: body, encoding: .utf8))
         #expect(!bodyString.contains("query"))
     }
@@ -192,6 +192,54 @@ private final class RecordingAnalyticsTracker: AnalyticsTracking {
 @MainActor
 @Suite("Site opening analytics")
 struct SiteOpeningAnalyticsTests {
+    @Test(arguments: [false, true])
+    func `failed site writes preserve saved state and can be retried`(isEditing: Bool) throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        let model = fixture.model
+        let originalSites = model.siteStore.sites
+        let fileURL = fixture.directory.appending(path: "Tests/sites.json")
+        let savedData = try Data(contentsOf: fileURL)
+
+        try FileManager.default.removeItem(at: fileURL)
+        try FileManager.default.createDirectory(at: fileURL, withIntermediateDirectories: false)
+
+        var draft = SiteDraft(site: fixture.site)
+        draft.name = "Updated Service"
+        let didSave = isEditing
+            ? model.updateSite(fixture.site, with: draft)
+            : model.addSite(draft)
+
+        #expect(!didSave)
+        #expect(model.siteStore.sites == originalSites)
+        #expect(model.siteStore.persistenceError != nil)
+        model.onboardingCompleted(source: .firstLaunch, servicesAddedCount: 1)
+        #expect(fixture.tracker.events == [.appLaunched])
+
+        try FileManager.default.removeItem(at: fileURL)
+        try savedData.write(to: fileURL)
+
+        let didRetry = isEditing
+            ? model.updateSite(fixture.site, with: draft)
+            : model.addSite(draft)
+
+        #expect(didRetry)
+        #expect(model.siteStore.persistenceError == nil)
+        #expect(model.siteStore.sites.count == (isEditing ? 1 : 2))
+        #expect(model.siteStore.sites.last?.name == "Updated Service")
+        #expect(fixture.tracker.events == [.appLaunched, isEditing ? .siteEdited : .siteAdded])
+
+        let restored = SiteStore(fileStore: JSONFileStore(
+            fileName: "sites.json",
+            folderName: "Tests",
+            baseDirectory: fixture.directory
+        ))
+        #expect(restored.sites.map(\.id) == model.siteStore.sites.map(\.id))
+        #expect(restored.sites.map(\.name) == model.siteStore.sites.map(\.name))
+        #expect(restored.sites.map(\.tmdbProviders) == model.siteStore.sites.map(\.tmdbProviders))
+    }
+
     @Test func `onboarding records steps and deduplicates the first launch start`() throws {
         let fixture = try AnalyticsAppFixture(hasSites: false)
         defer { fixture.cleanup() }
