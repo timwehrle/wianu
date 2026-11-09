@@ -120,7 +120,7 @@ struct HomeView: View {
             item.tmdbMetadata.map { (id: item.id, media: $0) }
         }
         return Group {
-            if items.isEmpty {
+            if model.continueWatchingStore.sortedItems.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     Label("Pick up where you left off", systemImage: "play.circle")
                         .font(.title2.bold())
@@ -132,6 +132,8 @@ struct HomeView: View {
                     Button("Choose Services") { showingGettingStarted = true }
                 }
                 .padding(.horizontal, 32)
+            } else if items.isEmpty {
+                information("Identify your saved titles from the sidebar to show them in Continue Watching.")
             } else {
                 HomeShelf(title: "Continue Watching") {
                     ForEach(items, id: \.id) { item in
@@ -139,6 +141,12 @@ struct HomeView: View {
                             model.select(.continueWatching(item.id))
                         }
                     }
+                }
+
+                if items.count < model.continueWatchingStore.sortedItems.count {
+                    information(
+                        "Some saved titles still need identification. Identify them from the sidebar to show them here."
+                    )
                 }
             }
         }
@@ -149,7 +157,7 @@ struct HomeView: View {
             item.tmdbMetadata.map { (id: item.id, media: $0) }
         }
         return Group {
-            if items.isEmpty {
+            if model.watchlistStore.items.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     Label("Save something for later", systemImage: "bookmark")
                         .font(.title2.bold())
@@ -158,11 +166,19 @@ struct HomeView: View {
                     Button("Find a Movie") { model.showCommandPalette() }
                 }
                 .padding(.horizontal, 32)
+            } else if items.isEmpty {
+                information("Identify your saved titles from the sidebar to show them in Watchlist.")
             } else {
                 HomeShelf(title: "Watchlist") {
                     ForEach(items, id: \.id) { item in
                         card(item.media, actionLabel: "Find Providers") { showProviders(for: item.media) }
                     }
+                }
+
+                if items.count < model.watchlistStore.items.count {
+                    information(
+                        "Some saved titles still need identification. Identify them from the sidebar to show them here."
+                    )
                 }
             }
         }
