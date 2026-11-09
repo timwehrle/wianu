@@ -66,7 +66,7 @@ struct HomeView: View {
                 Button { model.showCommandPalette() } label: {
                     Label("Search", systemImage: "magnifyingglass")
                 }
-                .help("Find a movie or TV show")
+                .help("Search Actions, Movies, and TV Shows (⌘F)")
             }
         }
         .task(id: loadRequest) { await loadWeekly() }

@@ -14,6 +14,7 @@ struct WianuApp: App {
         .defaultSize(width: 1200, height: 800)
         .commands {
             VideoInformationCommands()
+            SearchCommands()
 
             CommandGroup(replacing: .appInfo) {
                 Button("About Wianu") {
@@ -56,14 +57,37 @@ struct WianuApp: App {
     }
 }
 
+struct SearchWianuKey: FocusedValueKey {
+    typealias Value = @MainActor () -> Void
+}
+
 struct ShowVideoInformationKey: FocusedValueKey {
     typealias Value = @MainActor () -> Void
 }
 
 extension FocusedValues {
+    var searchWianu: SearchWianuKey.Value? {
+        get { self[SearchWianuKey.self] }
+        set { self[SearchWianuKey.self] = newValue }
+    }
+
     var showVideoInformation: ShowVideoInformationKey.Value? {
         get { self[ShowVideoInformationKey.self] }
         set { self[ShowVideoInformationKey.self] = newValue }
+    }
+}
+
+private struct SearchCommands: Commands {
+    @FocusedValue(\.searchWianu) private var searchWianu
+
+    var body: some Commands {
+        CommandGroup(after: .toolbar) {
+            Button("Search Wianu…") {
+                searchWianu?()
+            }
+            .keyboardShortcut("f", modifiers: .command)
+            .disabled(searchWianu == nil)
+        }
     }
 }
 
