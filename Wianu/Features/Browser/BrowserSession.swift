@@ -10,6 +10,7 @@ final class BrowserSession {
     let videoDiagnostics: VideoDiagnosticsController
 
     private(set) var historyRootID: WebPage.BackForwardList.Item.ID?
+    @ObservationIgnored private var automaticContinueWatching = AutomaticContinueWatching()
     private var navigationTask: Task<Void, Never>?
     private var handledNavigationRequestID: UUID?
 
@@ -40,6 +41,26 @@ final class BrowserSession {
 
     var forwardItem: WebPage.BackForwardList.Item? {
         page.backForwardList.forwardList.first
+    }
+
+    func continueWatchingCandidate(for site: SavedSite?) -> PlaybackPageTitle? {
+        videoDiagnostics.removeStaleReports()
+
+        guard let url = page.url,
+              videoDiagnostics.pageURL == url,
+              let site, site.url?.host() == url.host()
+        else { return nil }
+
+        if let linked = videoDiagnostics.linkedTitle, linked.url.host() == url.host() {
+            automaticContinueWatching.rememberTitle(linked.title, for: linked.url, siteName: site.name)
+        }
+
+        return automaticContinueWatching.observe(
+            url: url,
+            title: videoDiagnostics.pageTitle,
+            siteName: site.name,
+            video: videoDiagnostics.selectedVideo
+        )
     }
 
     func startQueuedNavigation() {
@@ -93,7 +114,7 @@ private extension BrowserSession {
     static let customUserAgent = """
     Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \
     AppleWebKit/605.1.15 (KHTML, like Gecko) \
-    Version/26.5.2 Safari/605.1.15
+    Version/27.2 Safari/605.1.15
     """
 
     static let pageInteractionScript = """

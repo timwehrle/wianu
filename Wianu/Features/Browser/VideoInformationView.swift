@@ -20,6 +20,8 @@ struct VideoInformationView: View {
                 Grid(alignment: .leading, horizontalSpacing: 24, verticalSpacing: 10) {
                     row("Stream Resolution", resolution(video))
                     row("Player Size", playerSize(video))
+                    row("Detected Title", diagnostics.pageTitle ?? "Unavailable")
+                    row("Captured Play Title", diagnostics.linkedTitle?.title ?? "Unavailable")
                     row("Status", video.playbackState)
                     row("Position", position(video))
                     row("Buffered Ahead", duration(video.bufferedAhead))

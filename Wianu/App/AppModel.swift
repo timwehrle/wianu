@@ -349,6 +349,18 @@ extension AppModel {
         )
     }
 
+    func saveAutomaticallyToContinueWatching(title: String, url: URL) {
+        if let item = continueWatchingStore.item(matching: url) {
+            // Preserve manual names and identification when playback is detected again.
+            continueWatchingStore.markOpened(id: item.id)
+            return
+        }
+
+        let item = continueWatchingStore.save(siteID: selectedSite?.id, title: title, url: url)
+        mediaIdentification.identifyInBackground(.continueWatching(item.id))
+        analytics.track(.continueWatchingItemAdded)
+    }
+
     func toggleContinueWatching(title: String, url: URL) {
         if let item = continueWatchingStore.item(matching: url) {
             removeContinueWatchingItem(item)

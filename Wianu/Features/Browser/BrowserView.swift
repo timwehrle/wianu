@@ -24,6 +24,9 @@ struct BrowserView: View {
             .onDisappear {
                 session.cancelNavigation()
             }
+            .task {
+                await trackContinueWatching()
+            }
             .task(id: pageInteractionID) {
                 await session.setPageInteractionBlocked(
                     model.isCommandPalettePresented || model.selection == .home
@@ -94,6 +97,18 @@ private extension BrowserView {
                 }
             }
         )
+    }
+
+    func trackContinueWatching() async {
+        while !Task.isCancelled {
+            if let candidate = session.continueWatchingCandidate(for: model.selectedSite) {
+                model.saveAutomaticallyToContinueWatching(title: candidate.title, url: candidate.url)
+            }
+
+            do {
+                try await Task.sleep(for: .seconds(1))
+            } catch { return }
+        }
     }
 
     func updateLoadingIndicator() async {

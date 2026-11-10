@@ -35,12 +35,9 @@ Playback depends on the provider, your subscription and your region.
 
 ## Continue Watching
 
-Open a show's detail page and use the Continue Watching button in the toolbar
-to save it. Later, open the saved show and use the provider's Continue or
-Resume button.
-
-Wianu saves links, not playback progress. Save the show page rather than an
-individual episode so the provider can resume the right episode across devices.
+Recognized titles are added automatically after 30 seconds of playback.
+You can also save pages manually, rename entries, or remove them.
+Your streaming service handles resume progress across devices.
 
 ## Watchlist
 

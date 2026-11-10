@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E2A300013040000000000001 /* AutomaticContinueWatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A300023040000000000002 /* AutomaticContinueWatchingTests.swift */; };
+		E2A200013040000000000001 /* VideoObserverScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A200023040000000000002 /* VideoObserverScript.swift */; };
+		E2A100013040000000000001 /* AutomaticContinueWatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A100023040000000000002 /* AutomaticContinueWatching.swift */; };
 		21392BB5A368A104286329C5 /* TMDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4864F4CC291E958A50456E1F /* TMDBClient.swift */; };
 		2A8A8308E06AA024385EF725 /* TMDBResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2779DA82DAB320184F2669D1 /* TMDBResponses.swift */; };
 		3B696CC64A0307E645BFBE56 /* LetterboxdImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AB648782105E118BE086F8 /* LetterboxdImportView.swift */; };
@@ -98,6 +101,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E2A300023040000000000002 /* AutomaticContinueWatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticContinueWatchingTests.swift; sourceTree = "<group>"; };
+		E2A200023040000000000002 /* VideoObserverScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoObserverScript.swift; sourceTree = "<group>"; };
+		E2A100023040000000000002 /* AutomaticContinueWatching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticContinueWatching.swift; sourceTree = "<group>"; };
 		1EFF6F7118F05B89732A32C3 /* LetterboxdTestSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdTestSession.swift; sourceTree = "<group>"; };
 		2779DA82DAB320184F2669D1 /* TMDBResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBResponses.swift; sourceTree = "<group>"; };
 		297D70DC28BF39EC09DA4C62 /* LetterboxdImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportTests.swift; sourceTree = "<group>"; };
@@ -328,6 +334,7 @@
 				D1B972473015341900B64B10 /* BrowserView.swift */,
 				D1B972483015341900B64B10 /* BrowserTitleView.swift */,
 				D1F000033040000000000003 /* VideoDiagnostics.swift */,
+				E2A200023040000000000002 /* VideoObserverScript.swift */,
 				D1F000043040000000000004 /* VideoInformationView.swift */,
 			);
 			path = Browser;
@@ -337,6 +344,7 @@
 			isa = PBXGroup;
 			children = (
 				D1B9724A3015341900B64B10 /* ContinueWatchingItem.swift */,
+				E2A100023040000000000002 /* AutomaticContinueWatching.swift */,
 				D1B9724B3015341900B64B10 /* ContinueWatchingRow.swift */,
 				D1B9724C3015341900B64B10 /* ContinueWatchingStore.swift */,
 				D1B9724D3015341900B64B10 /* RenameContinueWatchingView.swift */,
@@ -476,6 +484,7 @@
 				AB0000030000000000000002 /* AnalyticsDeliveryTests.swift */,
 				D1F100063070000000000006 /* BrowserPresentationTests.swift */,
 				D1F000063040000000000006 /* VideoDiagnosticsTests.swift */,
+				E2A300023040000000000002 /* AutomaticContinueWatchingTests.swift */,
 				D1E300033030000000000003 /* CommandCatalogTests.swift */,
 				D1C1000C302000000000010C /* BrowserNavigationRouterTests.swift */,
 				D1C100023020000000000102 /* TMDBClientTests.swift */,
@@ -645,6 +654,7 @@
 				D1B9727E3015341900B64B10 /* SiteDraft.swift in Sources */,
 				D1B9727F3015341900B64B10 /* SiteRow.swift in Sources */,
 				D1B972803015341900B64B10 /* ContinueWatchingItem.swift in Sources */,
+				E2A100013040000000000001 /* AutomaticContinueWatching.swift in Sources */,
 				D1B972813015341900B64B10 /* BrowserNavigationDecider.swift in Sources */,
 				D1B972823015341900B64B10 /* ContinueWatchingRow.swift in Sources */,
 				D1B972833015341900B64B10 /* WatchlistStore.swift in Sources */,
@@ -658,6 +668,7 @@
 				D1E400013030000000000001 /* TMDBAvailabilityView.swift in Sources */,
 				D1E400023030000000000002 /* TMDBMediaViews.swift in Sources */,
 				D1F000013040000000000001 /* VideoDiagnostics.swift in Sources */,
+				E2A200013040000000000001 /* VideoObserverScript.swift in Sources */,
 				D1F000023040000000000002 /* VideoInformationView.swift in Sources */,
 				D1F100013070000000000001 /* BrowserSession.swift in Sources */,
 				D1F100023070000000000002 /* BrowserToolbar.swift in Sources */,
@@ -678,6 +689,7 @@
 				D1A100033060000000000003 /* AnalyticsClientTests.swift in Sources */,
 				AB0000030000000000000001 /* AnalyticsDeliveryTests.swift in Sources */,
 				D1F000053040000000000005 /* VideoDiagnosticsTests.swift in Sources */,
+				E2A300013040000000000001 /* AutomaticContinueWatchingTests.swift in Sources */,
 				D1E300013030000000000001 /* CommandCatalogTests.swift in Sources */,
 				D1C1000D302000000000010D /* BrowserNavigationRouterTests.swift in Sources */,
 				D1F100053070000000000005 /* BrowserPresentationTests.swift in Sources */,

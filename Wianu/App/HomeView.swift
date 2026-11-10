@@ -129,7 +129,7 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Label("Pick up where you left off", systemImage: "play.circle")
                         .font(.title2.bold())
-                    Text("Open a show’s detail page, then save it with the Continue Watching toolbar button.")
+                    Text("Start watching to add a title automatically, or save its page with the toolbar button.")
                         .foregroundStyle(.secondary)
                     Text("Wianu saves the page. Your streaming service handles playback progress.")
                         .font(.callout)
@@ -345,7 +345,7 @@ private struct HomeFeature: View {
             }
             .overlay(alignment: .bottomLeading) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("This Week’s Pick").font(.subheadline.weight(.medium))
+                    Text("This Week's Pick").font(.subheadline.weight(.medium))
                     Text(media.title).font(.largeTitle.bold()).lineLimit(2)
                     Text([media.year, media.mediaType == .movie ? "Movie" : "TV Show"]
                         .compactMap(\.self).joined(separator: " · "))
