@@ -416,6 +416,30 @@ struct SiteOpeningAnalyticsTests {
         #expect(fixture.tracker.events == [.appLaunched, .continueWatchingOpened])
     }
 
+    @Test func `Automatic playback reuses saved Netflix entries without changing manual names`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        let originalURL = try #require(URL(string: "https://www.netflix.com/watch/123?trackId=456"))
+        let item = fixture.model.continueWatchingStore.save(
+            siteID: fixture.site.id, title: "My saved name", url: originalURL
+        )
+        let media = IdentificationFixtures.media()
+        fixture.model.continueWatchingStore.associate(id: item.id, with: media)
+        fixture.model.select(.continueWatching(item.id))
+
+        let detectedURL = try #require(URL(string: "https://www.netflix.com/title/123"))
+        fixture.model.saveAutomaticallyToContinueWatching(title: "Star Trek Beyond", url: detectedURL)
+
+        let saved = try #require(fixture.model.continueWatchingStore.item(id: item.id))
+
+        #expect(fixture.model.continueWatchingStore.items.count == 1)
+        #expect(saved.title == "My saved name")
+        #expect(saved.url == originalURL)
+        #expect(saved.tmdbMetadata == media)
+        #expect(!fixture.tracker.events.contains(.continueWatchingItemAdded))
+    }
+
     @Test func `weekly picks record opening details without recording a site open`() throws {
         let fixture = try AnalyticsAppFixture()
         defer { fixture.cleanup() }

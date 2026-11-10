@@ -32,6 +32,46 @@ struct MediaIdentificationPersistenceTests {
         #expect(stores.continueWatching.item(id: saved.id)?.tmdbMetadata == nil)
     }
 
+    @Test(arguments: [
+        "https://www.netflix.com/watch/123?trackId=456",
+        "https://www.netflix.com/title/123?trackId=789",
+        "https://www.netflix.com/browse?jbv=123&trackId=456",
+        "https://netflix.com/title/123"
+    ])
+    func `Netflix title links match the same saved item`(link: String) throws {
+        let stores = IdentificationStores()
+        defer { stores.cleanup() }
+
+        let originalURL = try #require(URL(string: "https://www.netflix.com/title/123?trackId=111"))
+        let item = stores.continueWatching.save(siteID: nil, title: "Star Trek Beyond", url: originalURL)
+        let playbackURL = try #require(URL(string: link))
+        let reopened = ContinueWatchingStore(fileStore: stores.continueWatchingFile)
+
+        #expect(reopened.item(matching: playbackURL)?.id == item.id)
+
+        reopened.save(siteID: nil, title: "Star Trek Beyond", url: playbackURL)
+
+        #expect(reopened.items.count == 1)
+        #expect(reopened.items.first?.id == item.id)
+    }
+
+    @Test(arguments: [
+        "https://www.netflix.com/title/456",
+        "https://www.netflix.com/browse?jbv=invalid",
+        "https://other.example/title/123"
+    ])
+    func `Unrelated pages do not match a saved Netflix title`(link: String) throws {
+        let stores = IdentificationStores()
+        defer { stores.cleanup() }
+
+        let originalURL = try #require(URL(string: "https://www.netflix.com/title/123"))
+        stores.continueWatching.save(siteID: nil, title: "Star Trek Beyond", url: originalURL)
+
+        let unrelatedURL = try #require(URL(string: link))
+
+        #expect(stores.continueWatching.item(matching: unrelatedURL) == nil)
+    }
+
     @Test func `manual watchlist persists both ID and media type`() throws {
         let stores = IdentificationStores()
         defer { stores.cleanup() }

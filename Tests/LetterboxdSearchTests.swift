@@ -82,7 +82,16 @@ struct LetterboxdSearchTests {
     @Test func `cancellation stops rate limit backoff`() async throws {
         let session = LetterboxdTestSession(pages: [LetterboxdTestFixtures.enemy], statuses: [429])
         let task = Task { try await TMDBClient(session: session).searchMovies(query: "Enemy", year: 2013) }
-        try await Task.sleep(for: .milliseconds(450))
+        defer { task.cancel() }
+
+        let deadline = ContinuousClock.now + .seconds(5)
+
+        while await session.requests.isEmpty {
+            try #require(ContinuousClock.now < deadline, "The first request did not start")
+
+            try await Task.sleep(for: .milliseconds(10))
+        }
+
         task.cancel()
 
         await #expect(throws: CancellationError.self) { _ = try await task.value }

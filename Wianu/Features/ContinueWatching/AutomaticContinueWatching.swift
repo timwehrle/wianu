@@ -23,7 +23,7 @@ struct AutomaticContinueWatching {
         video: VideoDiagnostic?,
         now: Date = .now
     ) -> PlaybackPageTitle? {
-        let key = contentKey(for: url)
+        let key = URLNormalizer.continueWatchingComparisonKey(for: url)
 
         rememberTitle(title, for: url, siteName: siteName)
 
@@ -65,13 +65,13 @@ struct AutomaticContinueWatching {
     mutating func rememberTitle(_ title: String?, for url: URL, siteName: String) {
         guard let title = usefulTitle(title, siteName: siteName, url: url) else { return }
 
-        let key = contentKey(for: url)
+        let key = URLNormalizer.continueWatchingComparisonKey(for: url)
 
         if titles.count >= 100, titles[key] == nil {
             titles.removeAll()
         }
 
-        titles[key] = PlaybackPageTitle(title: title, url: savedURL(for: url))
+        titles[key] = PlaybackPageTitle(title: title, url: URLNormalizer.continueWatchingPageURL(for: url))
     }
 
     private func usefulTitle(_ title: String?, siteName: String, url: URL) -> String? {
@@ -86,40 +86,5 @@ struct AutomaticContinueWatching {
         else { return nil }
 
         return cleaned
-    }
-
-    private func netflixID(for url: URL) -> String? {
-        guard let host = url.host(), host == "netflix.com" || host.hasSuffix(".netflix.com") else { return nil }
-
-        let parts = url.pathComponents
-
-        if let index = parts.firstIndex(where: { $0 == "title" || $0 == "watch" }),
-           parts.indices.contains(index + 1), parts[index + 1].allSatisfy(\.isNumber)
-        {
-            return parts[index + 1]
-        }
-
-        return URLComponents(url: url, resolvingAgainstBaseURL: false)?
-            .queryItems?.first(where: { $0.name == "jbv" })?.value
-    }
-
-    private func contentKey(for url: URL) -> String {
-        if let netflixID = netflixID(for: url) {
-            return "netflix:\(netflixID)"
-        }
-
-        return URLNormalizer.comparisonKey(for: url)
-    }
-
-    private func savedURL(for url: URL) -> URL {
-        guard let netflixID = netflixID(for: url),
-              var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        else { return url }
-
-        components.path = "/title/\(netflixID)"
-        components.query = nil
-        components.fragment = nil
-
-        return components.url ?? url
     }
 }

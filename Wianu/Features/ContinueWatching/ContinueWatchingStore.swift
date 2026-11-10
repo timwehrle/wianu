@@ -39,10 +39,10 @@ final class ContinueWatchingStore {
     }
 
     func item(matching url: URL) -> ContinueWatchingItem? {
-        let key = URLNormalizer.comparisonKey(for: url)
+        let key = URLNormalizer.continueWatchingComparisonKey(for: url)
 
         return items.first {
-            URLNormalizer.comparisonKey(for: $0.url) == key
+            URLNormalizer.continueWatchingComparisonKey(for: $0.url) == key
         }
     }
 
@@ -53,11 +53,11 @@ final class ContinueWatchingStore {
         url: URL
     ) -> ContinueWatchingItem {
         let normalizedURL = URLNormalizer.continueWatchingURL(url)
-        let comparisonKey = URLNormalizer.comparisonKey(for: normalizedURL)
+        let comparisonKey = URLNormalizer.continueWatchingComparisonKey(for: normalizedURL)
         let now = Date()
 
         if let index = items.firstIndex(where: {
-            URLNormalizer.comparisonKey(for: $0.url) == comparisonKey
+            URLNormalizer.continueWatchingComparisonKey(for: $0.url) == comparisonKey
         }) {
             items[index].siteID = siteID
             items[index].title = title
