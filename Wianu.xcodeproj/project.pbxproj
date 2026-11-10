@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E2A400013040000000000001 /* VideoObserverIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A400023040000000000002 /* VideoObserverIntegrationTests.swift */; };
 		E2A300013040000000000001 /* AutomaticContinueWatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A300023040000000000002 /* AutomaticContinueWatchingTests.swift */; };
 		E2A200013040000000000001 /* VideoObserverScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A200023040000000000002 /* VideoObserverScript.swift */; };
 		E2A100013040000000000001 /* AutomaticContinueWatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A100023040000000000002 /* AutomaticContinueWatching.swift */; };
@@ -101,6 +102,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E2A400023040000000000002 /* VideoObserverIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoObserverIntegrationTests.swift; sourceTree = "<group>"; };
 		E2A300023040000000000002 /* AutomaticContinueWatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticContinueWatchingTests.swift; sourceTree = "<group>"; };
 		E2A200023040000000000002 /* VideoObserverScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoObserverScript.swift; sourceTree = "<group>"; };
 		E2A100023040000000000002 /* AutomaticContinueWatching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticContinueWatching.swift; sourceTree = "<group>"; };
@@ -484,6 +486,7 @@
 				AB0000030000000000000002 /* AnalyticsDeliveryTests.swift */,
 				D1F100063070000000000006 /* BrowserPresentationTests.swift */,
 				D1F000063040000000000006 /* VideoDiagnosticsTests.swift */,
+				E2A400023040000000000002 /* VideoObserverIntegrationTests.swift */,
 				E2A300023040000000000002 /* AutomaticContinueWatchingTests.swift */,
 				D1E300033030000000000003 /* CommandCatalogTests.swift */,
 				D1C1000C302000000000010C /* BrowserNavigationRouterTests.swift */,
@@ -689,6 +692,7 @@
 				D1A100033060000000000003 /* AnalyticsClientTests.swift in Sources */,
 				AB0000030000000000000001 /* AnalyticsDeliveryTests.swift in Sources */,
 				D1F000053040000000000005 /* VideoDiagnosticsTests.swift in Sources */,
+				E2A400013040000000000001 /* VideoObserverIntegrationTests.swift in Sources */,
 				E2A300013040000000000001 /* AutomaticContinueWatchingTests.swift in Sources */,
 				D1E300013030000000000001 /* CommandCatalogTests.swift in Sources */,
 				D1C1000D302000000000010D /* BrowserNavigationRouterTests.swift in Sources */,
