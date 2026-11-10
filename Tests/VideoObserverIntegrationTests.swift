@@ -38,7 +38,11 @@ struct VideoObserverIntegrationTests {
     func `Page title sources and video reports reach Swift`(source: String) async throws {
         let titleMarkup = switch source {
         case "metadata":
-            "<title>Netflix</title><meta property='og:title' content='Dune: Part Two'>"
+            """
+            <title>Netflix</title>
+            <meta property="og:type" content="video.movie">
+            <meta property="og:title" content="Dune: Part Two">
+            """
         case "player":
             "<title>Netflix</title><div data-uia='video-title'>Dune: Part Two</div>"
         default:
@@ -58,10 +62,66 @@ struct VideoObserverIntegrationTests {
 
         let video = try #require(fixture.diagnostics.selectedVideo)
 
+        #expect(fixture.diagnostics.mediaTitle == (source == "document" ? nil : "Dune: Part Two"))
         #expect(video.paused)
         #expect(video.duration == nil)
         #expect(video.displayWidth == 640)
         #expect(video.displayHeight == 360)
+    }
+
+    @Test
+    func `Prime player title takes precedence over its marketing metadata`() async throws {
+        let fixture = VideoObserverFixture(pages: [
+            "/detail/123": """
+            <title>Prime Video: Filme, Serien, Sport und Live-TV ansehen</title>
+            <meta property="og:title" content="Prime Video: Filme, Serien, Sport und Live-TV ansehen">
+            <div class="atvwebplayersdk-title-text">Dune: Part Two</div>
+            <video width=640 height=360></video>
+            """
+        ], host: "www.primevideo.com")
+        defer { fixture.stop() }
+
+        try await fixture.load("/detail/123")
+        try await fixture.waitUntil {
+            fixture.diagnostics.pageTitle == "Dune: Part Two"
+                && fixture.diagnostics.selectedVideo != nil
+        }
+
+        #expect(fixture.diagnostics.mediaTitle == "Dune: Part Two")
+
+        _ = try await fixture.webView.evaluateJavaScript("""
+        document.querySelector('.atvwebplayersdk-title-text').remove();
+        """)
+
+        try await fixture.waitUntil {
+            fixture.diagnostics.pageTitle == "Prime Video: Filme, Serien, Sport und Live-TV ansehen"
+        }
+
+        #expect(fixture.diagnostics.mediaTitle == nil)
+    }
+
+    @Test(arguments: [
+        "Prime Video: Filme, Serien, Sport und Live-TV ansehen",
+        "Watch movies, shows and sports",
+        "Regardez des films et des séries",
+        "Any future provider slogan"
+    ])
+    func `Website titles are not treated as media titles in any language`(title: String) async throws {
+        let fixture = VideoObserverFixture(pages: [
+            "/detail/123": """
+            <title>\(title)</title>
+            <meta property="og:type" content="website">
+            <meta property="og:title" content="\(title)">
+            <video></video>
+            """
+        ], host: "www.primevideo.com")
+        defer { fixture.stop() }
+
+        try await fixture.load("/detail/123")
+        try await fixture.waitUntil { fixture.diagnostics.selectedVideo != nil }
+
+        #expect(fixture.diagnostics.pageTitle == title)
+        #expect(fixture.diagnostics.mediaTitle == nil)
     }
 
     @Test
@@ -111,7 +171,11 @@ private final class VideoObserverFixture {
     let diagnostics = VideoDiagnosticsController()
     let webView: WKWebView
 
-    init(pages: [String: String]) {
+    private let host: String
+
+    init(pages: [String: String], host: String = "www.netflix.com") {
+        self.host = host
+
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
 
@@ -129,7 +193,7 @@ private final class VideoObserverFixture {
     }
 
     func load(_ path: String) async throws {
-        let url = try #require(URL(string: "wianu-test://www.netflix.com\(path)"))
+        let url = try #require(URL(string: "wianu-test://\(host)\(path)"))
         webView.load(URLRequest(url: url))
 
         try await waitUntil { self.diagnostics.pageURL == url }

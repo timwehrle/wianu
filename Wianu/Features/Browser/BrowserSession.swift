@@ -57,7 +57,7 @@ final class BrowserSession {
 
         return automaticContinueWatching.observe(
             url: url,
-            title: videoDiagnostics.pageTitle,
+            title: videoDiagnostics.mediaTitle,
             siteName: site.name,
             video: videoDiagnostics.selectedVideo
         )

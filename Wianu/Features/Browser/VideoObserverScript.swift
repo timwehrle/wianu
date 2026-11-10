@@ -83,7 +83,7 @@ enum VideoObserverScript {
             };
         };
 
-        const pageTitle = () => {
+        const pageTitles = () => {
             // Netflix replaces the document title with its provider name during playback.
             const artwork = isNetflix
                 ? document.querySelector(".previewModal--player-titleTreatment-logo, .title-logo")
@@ -92,11 +92,22 @@ enum VideoObserverScript {
                 ? document.querySelector('[data-uia="video-title"], .video-title h4, .video-title h3')?.textContent
                 : null;
 
-            return (playerTitle?.trim()
-                || navigator.mediaSession?.metadata?.title
-                || artwork?.alt
-                || document.querySelector('meta[property="og:title"]')?.content
-                || document.title).slice(0, 500);
+            const primeTitle = document.querySelector('.atvwebplayersdk-title-text')?.textContent;
+            const metadataTitle = document.querySelector('meta[property="og:title"]')?.content;
+            const metadataType = document.querySelector('meta[property="og:type"]')?.content;
+            const isVideoMetadata = metadataType === "video" || metadataType?.startsWith("video.");
+            const mediaTitle = [
+                primeTitle,
+                playerTitle,
+                navigator.mediaSession?.metadata?.title,
+                artwork?.alt,
+                isVideoMetadata ? metadataTitle : null
+            ].map((title) => title?.trim()).find((title) => title);
+
+            return {
+                title: (mediaTitle || metadataTitle || document.title).slice(0, 500),
+                mediaTitle: mediaTitle?.slice(0, 500) ?? null
+            };
         };
 
         const send = (linkedURL = null, linkedTitle = null) => {
@@ -105,7 +116,7 @@ enum VideoObserverScript {
                 pageURL: location.href,
                 linkedURL,
                 linkedTitle,
-                title: pageTitle(),
+                ...pageTitles(),
                 videos: Array.from(document.querySelectorAll("video")).map(describe)
             });
 

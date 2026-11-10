@@ -53,6 +53,7 @@ private struct VideoFrameReport: Decodable {
     let videos: [VideoDiagnostic]
     let pageURL: URL?
     let title: String?
+    let mediaTitle: String?
     let linkedURL: URL?
     let linkedTitle: String?
 }
@@ -74,6 +75,7 @@ final class VideoDiagnosticsController: NSObject, WKScriptMessageHandler {
     private var frames: [String: FrameVideos] = [:]
     private(set) var pageURL: URL?
     private(set) var pageTitle: String?
+    private(set) var mediaTitle: String?
 
     /// Keep the clicked title across navigation into the provider's player.
     private(set) var linkedTitle: PlaybackPageTitle?
@@ -118,6 +120,7 @@ final class VideoDiagnosticsController: NSObject, WKScriptMessageHandler {
         frames.removeAll()
         pageURL = nil
         pageTitle = nil
+        mediaTitle = nil
     }
 
     func removeStaleReports(now: Date = Date()) {
@@ -152,6 +155,7 @@ final class VideoDiagnosticsController: NSObject, WKScriptMessageHandler {
         if isMainFrame {
             pageURL = report.pageURL
             pageTitle = report.title
+            mediaTitle = report.mediaTitle
 
             if let url = report.linkedURL, let title = report.linkedTitle,
                url.host() == report.pageURL?.host(), title.count <= 500

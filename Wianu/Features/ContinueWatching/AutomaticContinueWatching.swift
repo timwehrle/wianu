@@ -79,7 +79,7 @@ struct AutomaticContinueWatching {
 
         let cleaned = PageTitleCleaner.clean(title, siteName: siteName)
 
-        let generic = [siteName, url.host() ?? "", "Netflix", "Home", "Browse", "Watch", "Player"]
+        let generic = [siteName, url.host() ?? ""]
 
         guard !cleaned.isEmpty,
               !generic.contains(where: { cleaned.caseInsensitiveCompare($0) == .orderedSame })

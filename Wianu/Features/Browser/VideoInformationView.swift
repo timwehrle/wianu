@@ -21,6 +21,7 @@ struct VideoInformationView: View {
                     row("Stream Resolution", resolution(video))
                     row("Player Size", playerSize(video))
                     row("Detected Title", diagnostics.pageTitle ?? "Unavailable")
+                    row("Media Title", diagnostics.mediaTitle ?? "Unavailable")
                     row("Captured Play Title", diagnostics.linkedTitle?.title ?? "Unavailable")
                     row("Status", video.playbackState)
                     row("Position", position(video))

@@ -101,6 +101,40 @@ struct AutomaticContinueWatchingTests {
         #expect(saved?.title == "Dune: Part Two")
     }
 
+    @Test
+    func `Missing media title does not replace a previously captured movie title`() throws {
+        let url = try #require(URL(string: "https://www.primevideo.com/detail/123"))
+        var tracker = AutomaticContinueWatching()
+
+        tracker.rememberTitle("Dune: Part Two", for: url, siteName: "Prime Video")
+
+        var saved: PlaybackPageTitle?
+
+        for second in 0 ... 30 {
+            saved = tracker.observe(
+                url: url, title: nil, siteName: "Prime Video",
+                video: playbackVideo(position: Double(second)),
+                now: Date(timeIntervalSince1970: Double(second))
+            )
+        }
+
+        #expect(saved?.title == "Dune: Part Two")
+    }
+
+    @Test
+    func `Playback without a media title is not saved automatically`() throws {
+        let url = try #require(URL(string: "https://www.primevideo.com/detail/123"))
+        var tracker = AutomaticContinueWatching()
+
+        for second in 0 ... 40 {
+            #expect(tracker.observe(
+                url: url, title: nil, siteName: "Amazon Prime",
+                video: playbackVideo(position: Double(second)),
+                now: Date(timeIntervalSince1970: Double(second))
+            ) == nil)
+        }
+    }
+
     private func playbackVideo(
         position: Double,
         duration: Double = 7200,
