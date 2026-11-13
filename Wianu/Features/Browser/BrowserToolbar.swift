@@ -10,7 +10,6 @@ struct BrowserToolbar: ToolbarContent {
         navigationItems
         browserTitleItem
         watchlistItem
-        continueWatchingItem
         commandPaletteItem
     }
 }
@@ -79,24 +78,6 @@ private extension BrowserToolbar {
         }
     }
 
-    var continueWatchingItem: some ToolbarContent {
-        ToolbarItem(placement: .primaryAction) {
-            Button(action: toggleContinueWatching) {
-                Image(
-                    systemName: currentPageIsSaved
-                        ? "play.rectangle.fill"
-                        : "play.rectangle"
-                )
-            }
-            .disabled(!canSaveCurrentPage)
-            .help(
-                currentPageIsSaved
-                    ? "Remove from Continue Watching"
-                    : "Save to Continue Watching"
-            )
-        }
-    }
-
     var commandPaletteItem: some ToolbarContent {
         ToolbarItem(placement: .primaryAction) {
             Button {
@@ -121,9 +102,7 @@ private extension BrowserToolbar {
     }
 
     var fallbackTitle: String {
-        model.selectedContinueWatchingItem?.title
-            ?? model.selectedSite?.name
-            ?? "Wianu"
+        model.selectedContinueWatchingEntry?.title ?? model.selectedSite?.name ?? "Wianu"
     }
 
     var canSaveCurrentPage: Bool {
@@ -132,11 +111,6 @@ private extension BrowserToolbar {
 
     var pageTitle: String? {
         BrowserPageMetadata.normalizedTitle(session.page.title)
-    }
-
-    var currentPageIsSaved: Bool {
-        guard let url = session.page.url else { return false }
-        return model.continueWatchingStore.contains(url: url)
     }
 
     var currentPageIsOnWatchlist: Bool {
@@ -155,11 +129,6 @@ private extension BrowserToolbar {
     func goHome() {
         guard let homeURL else { return }
         session.router.openInCurrentPage(URLRequest(url: homeURL))
-    }
-
-    func toggleContinueWatching() {
-        guard let url = session.page.url, let pageTitle else { return }
-        model.toggleContinueWatching(title: pageTitle, url: url)
     }
 
     func toggleWatchlist() {

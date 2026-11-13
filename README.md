@@ -35,12 +35,9 @@ Playback depends on the provider, your subscription and your region.
 
 ## Continue Watching
 
-Open a show's detail page and use the Continue Watching button in the toolbar
-to save it. Later, open the saved show and use the provider's Continue or
-Resume button.
-
-Wianu saves links, not playback progress. Save the show page rather than an
-individual episode so the provider can resume the right episode across devices.
+Continue Watching loads directly from supported services into the sidebar.
+Use the refresh button to reload a queue. Queues are saved locally between launches.
+Your streaming service handles resume progress across devices.
 
 ## Watchlist
 

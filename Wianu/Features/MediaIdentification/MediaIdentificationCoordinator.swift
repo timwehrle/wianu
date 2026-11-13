@@ -8,7 +8,6 @@ final class MediaIdentificationCoordinator {
     private(set) var errors: [MediaIdentificationTarget: String] = [:]
 
     @ObservationIgnored private let watchlist: WatchlistStore
-    @ObservationIgnored private let continueWatching: ContinueWatchingStore
     @ObservationIgnored private let service: MediaIdentificationService
     @ObservationIgnored private var tasks: [MediaIdentificationTarget: PendingTask] = [:]
 
@@ -17,9 +16,8 @@ final class MediaIdentificationCoordinator {
         let task: Task<Void, Never>
     }
 
-    init(watchlist: WatchlistStore, continueWatching: ContinueWatchingStore, client: TMDBClient) {
+    init(watchlist: WatchlistStore, client: TMDBClient) {
         self.watchlist = watchlist
-        self.continueWatching = continueWatching
         service = MediaIdentificationService(client: client)
     }
 
@@ -28,23 +26,18 @@ final class MediaIdentificationCoordinator {
         case let .watchlist(id):
             guard let item = watchlist.item(id: id) else { return nil }
             return .savedTitle(item.title, year: item.year, mediaType: item.source == .letterboxd ? .movie : nil)
-        case let .continueWatching(id):
-            guard let item = continueWatching.item(id: id) else { return nil }
-            return .savedTitle(item.title)
         }
     }
 
     func metadata(for target: MediaIdentificationTarget) -> TMDBMediaResult? {
         switch target {
         case let .watchlist(id): watchlist.item(id: id)?.tmdbMetadata
-        case let .continueWatching(id): continueWatching.item(id: id)?.tmdbMetadata
         }
     }
 
     func isIdentified(_ target: MediaIdentificationTarget) -> Bool {
         switch target {
         case let .watchlist(id): watchlist.item(id: id)?.tmdbID != nil
-        case let .continueWatching(id): continueWatching.item(id: id)?.tmdbID != nil
         }
     }
 
@@ -55,10 +48,6 @@ final class MediaIdentificationCoordinator {
     func identifyInBackground(_ target: MediaIdentificationTarget) {
         cancel(target)
         guard !isIdentified(target), let query = query(for: target), !query.title.isEmpty else { return }
-        if let shared = sharedMetadata(for: target), query.mediaType == nil || shared.mediaType == query.mediaType {
-            associate(shared, with: target)
-            return
-        }
         let token = UUID()
         let task = Task {
             defer {
@@ -88,7 +77,6 @@ final class MediaIdentificationCoordinator {
         cancel(target)
         switch target {
         case let .watchlist(id): watchlist.associate(id: id, with: media)
-        case let .continueWatching(id): continueWatching.associate(id: id, with: media)
         }
     }
 
@@ -97,17 +85,6 @@ final class MediaIdentificationCoordinator {
         if clearResult {
             results[target] = nil
             errors[target] = nil
-        }
-    }
-
-    private func sharedMetadata(for target: MediaIdentificationTarget) -> TMDBMediaResult? {
-        switch target {
-        case let .watchlist(id):
-            guard let url = watchlist.item(id: id)?.url else { return nil }
-            return continueWatching.item(matching: url)?.tmdbMetadata
-        case let .continueWatching(id):
-            guard let url = continueWatching.item(id: id)?.url else { return nil }
-            return watchlist.item(matching: url)?.tmdbMetadata
         }
     }
 }

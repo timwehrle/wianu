@@ -407,12 +407,19 @@ struct SiteOpeningAnalyticsTests {
     @Test func `only valid saved Continue Watching pages record opens`() throws {
         let fixture = try AnalyticsAppFixture()
         defer { fixture.cleanup() }
-        let url = try #require(URL(string: "https://private.example/private-title"))
-        let item = fixture.model.continueWatchingStore.save(siteID: fixture.site.id, title: "Private Title", url: url)
-        fixture.model.select(.continueWatching(item.id))
-        #expect(fixture.model.destinationURL == url)
+        let queue = try #require(fixture.model.continueWatchingQueues.first { $0.id == .netflix })
+        let url = try #require(URL(string: "https://www.netflix.com/browse"))
+        queue.receive(json: """
+        [{"id":"123","title":"Private Title","url":"https://www.netflix.com/watch/123"}]
+        """, from: url)
+
+        fixture.model.select(.continueWatching(.netflix, "123"))
+
+        #expect(fixture.model.destinationURL?.absoluteString == "https://www.netflix.com/watch/123")
         #expect(fixture.tracker.events == [.appLaunched, .continueWatchingOpened])
-        fixture.model.select(.continueWatching(UUID()))
+
+        fixture.model.select(.continueWatching(.netflix, "missing"))
+
         #expect(fixture.tracker.events == [.appLaunched, .continueWatchingOpened])
     }
 
@@ -450,12 +457,12 @@ struct SiteOpeningAnalyticsTests {
 }
 
 @MainActor
-private struct AnalyticsAppFixture {
+struct AnalyticsAppFixture {
     let directory: URL
     let suiteName: String
     let defaults: UserDefaults
     let site: SavedSite
-    let tracker: RecordingAnalyticsTracker
+    fileprivate let tracker: RecordingAnalyticsTracker
     let model: AppModel
 
     init(hasSites: Bool = true, hasSavedSelection: Bool = false) throws {
@@ -476,9 +483,6 @@ private struct AnalyticsAppFixture {
         tracker = RecordingAnalyticsTracker()
         model = AppModel(
             siteStore: SiteStore(fileStore: sites),
-            continueWatchingStore: ContinueWatchingStore(fileStore: JSONFileStore(
-                fileName: "continue.json", folderName: "Tests", baseDirectory: directory
-            )),
             watchlistStore: WatchlistStore(fileStore: JSONFileStore(
                 fileName: "watchlist.json", folderName: "Tests", baseDirectory: directory
             )),

@@ -9,7 +9,7 @@ nonisolated enum URLNormalizer {
         "utm_content"
     ]
 
-    static func continueWatchingURL(_ url: URL) -> URL {
+    static func normalizedPageURL(_ url: URL) -> URL {
         guard var components = URLComponents(
             url: url,
             resolvingAgainstBaseURL: false
@@ -32,7 +32,7 @@ nonisolated enum URLNormalizer {
     }
 
     static func comparisonKey(for url: URL) -> String {
-        let normalizedURL = continueWatchingURL(url)
+        let normalizedURL = normalizedPageURL(url)
 
         guard var components = URLComponents(
             url: normalizedURL,

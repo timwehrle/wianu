@@ -9,7 +9,7 @@ struct BrowserView: View {
 
     init(model: AppModel) {
         self.model = model
-        _session = State(initialValue: BrowserSession())
+        _session = State(initialValue: BrowserSession(continueWatchingQueues: model.continueWatchingQueues))
     }
 
     var body: some View {

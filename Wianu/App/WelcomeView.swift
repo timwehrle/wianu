@@ -113,7 +113,7 @@ struct WelcomeView: View {
             feature(
                 "Continue Watching",
                 systemImage: "play.circle",
-                description: "Save a show's page to return to it later."
+                description: "Pick up where you left off with Continue Watching from supported streaming services."
             )
             feature(
                 "Your Watchlist",

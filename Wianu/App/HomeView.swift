@@ -90,7 +90,6 @@ struct HomeView: View {
                 .padding(.horizontal, 32)
                 .padding(.top, 24)
             }
-            continueWatchingShelf
             weeklyShelf
             watchlistShelf
         }
@@ -115,43 +114,6 @@ struct HomeView: View {
                     ForEach(movies) { media in
                         card(media, actionLabel: "Find Providers") { model.openWeeklyPick(media) }
                     }
-                }
-            }
-        }
-    }
-
-    private var continueWatchingShelf: some View {
-        let items = model.continueWatchingStore.sortedItems.compactMap { item in
-            item.tmdbMetadata.map { (id: item.id, media: $0) }
-        }
-        return Group {
-            if model.continueWatchingStore.sortedItems.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Label("Pick up where you left off", systemImage: "play.circle")
-                        .font(.title2.bold())
-                    Text("Open a show’s detail page, then save it with the Continue Watching toolbar button.")
-                        .foregroundStyle(.secondary)
-                    Text("Wianu saves the page. Your streaming service handles playback progress.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                    Button("Choose Services") { showingGettingStarted = true }
-                }
-                .padding(.horizontal, 32)
-            } else if items.isEmpty {
-                information("Identify your saved titles from the sidebar to show them in Continue Watching.")
-            } else {
-                HomeShelf(title: "Continue Watching") {
-                    ForEach(items, id: \.id) { item in
-                        card(item.media, actionLabel: "Open Saved Page", showsPlayIcon: true) {
-                            model.select(.continueWatching(item.id))
-                        }
-                    }
-                }
-
-                if items.count < model.continueWatchingStore.sortedItems.count {
-                    information(
-                        "Some saved titles still need identification. Identify them from the sidebar to show them here."
-                    )
                 }
             }
         }
@@ -192,14 +154,12 @@ struct HomeView: View {
     private func card(
         _ media: TMDBMediaResult,
         actionLabel: String,
-        showsPlayIcon: Bool = false,
         action: @escaping () -> Void
     ) -> some View {
         HomePosterCard(
             media: media,
             posterURL: model.tmdbSearch.imageConfiguration?.posterURL(path: media.posterPath),
             actionLabel: actionLabel,
-            showsPlayIcon: showsPlayIcon,
             action: action
         )
     }
@@ -345,7 +305,7 @@ private struct HomeFeature: View {
             }
             .overlay(alignment: .bottomLeading) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("This Week’s Pick").font(.subheadline.weight(.medium))
+                    Text("This Week's Pick").font(.subheadline.weight(.medium))
                     Text(media.title).font(.largeTitle.bold()).lineLimit(2)
                     Text([media.year, media.mediaType == .movie ? "Movie" : "TV Show"]
                         .compactMap(\.self).joined(separator: " · "))
@@ -378,7 +338,6 @@ private struct HomePosterCard: View {
     let media: TMDBMediaResult
     let posterURL: URL?
     let actionLabel: String
-    let showsPlayIcon: Bool
     let action: () -> Void
 
     var body: some View {
@@ -386,27 +345,20 @@ private struct HomePosterCard: View {
             HomeArtwork(url: posterURL, contentMode: .fill, placeholderTitle: media.title)
                 .frame(width: HomeShelfLayout.posterWidth, height: 270)
                 .overlay(alignment: .bottomLeading) {
-                    VStack(alignment: .leading, spacing: 5) {
-                        HStack(spacing: 6) {
-                            if showsPlayIcon {
-                                Image(systemName: "play.fill")
-                            }
-                            Text([media.year, media.mediaType == .movie ? "Movie" : "TV Show"]
-                                .compactMap(\.self).joined(separator: " · "))
-                        }
+                    Text([media.year, media.mediaType == .movie ? "Movie" : "TV Show"]
+                        .compactMap(\.self).joined(separator: " · "))
                         .font(.caption.weight(.medium))
-                    }
-                    .foregroundStyle(.white)
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 24)
-                    .background {
-                        LinearGradient(
-                            colors: [.clear, .black.opacity(0.9)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    }
+                        .foregroundStyle(.white)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 24)
+                        .background {
+                            LinearGradient(
+                                colors: [.clear, .black.opacity(0.9)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .overlay {

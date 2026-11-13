@@ -52,6 +52,16 @@ struct VideoDiagnosticsTests {
         #expect(controller.videos.isEmpty)
     }
 
+    @Test
+    func `Embedded frames cannot supply captured page titles`() {
+        let controller = VideoDiagnosticsController()
+        controller.receive(json: """
+        {"frameID":"embedded","videos":[],"pageURL":"https://www.netflix.com/browse",
+         "title":"Wrong title","linkedURL":"https://www.netflix.com/watch/123","linkedTitle":"Wrong title"}
+        """, isMainFrame: false)
+        #expect(controller.pageTitle == nil)
+    }
+
     private func reportJSON(videos: [String]) -> String {
         """
         {"frameID":"frame","videos":[\(videos.joined(separator: ","))]}

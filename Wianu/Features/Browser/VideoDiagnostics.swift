@@ -46,11 +46,16 @@ struct VideoDiagnostic: Decodable, Identifiable {
 private struct VideoFrameReport: Decodable {
     let frameID: String
     let videos: [VideoDiagnostic]
+    let pageURL: URL?
+    let title: String?
+    let mediaTitle: String?
 }
 
 @MainActor
 @Observable
 final class VideoDiagnosticsController: NSObject, WKScriptMessageHandler {
+    private static let observerScript = BundledJavaScript.load("VideoObserver")
+
     private struct FrameVideos {
         let videos: [VideoDiagnostic]
         let receivedAt: Date
@@ -63,6 +68,9 @@ final class VideoDiagnosticsController: NSObject, WKScriptMessageHandler {
     )
 
     private var frames: [String: FrameVideos] = [:]
+    private(set) var pageURL: URL?
+    private(set) var pageTitle: String?
+    private(set) var mediaTitle: String?
 
     var videos: [VideoDiagnostic] {
         frames.values.flatMap(\.videos)
@@ -102,6 +110,9 @@ final class VideoDiagnosticsController: NSObject, WKScriptMessageHandler {
 
     func clear() {
         frames.removeAll()
+        pageURL = nil
+        pageTitle = nil
+        mediaTitle = nil
     }
 
     func removeStaleReports(now: Date = Date()) {
@@ -119,10 +130,10 @@ final class VideoDiagnosticsController: NSObject, WKScriptMessageHandler {
               let json = message.body as? String
         else { return }
 
-        receive(json: json)
+        receive(json: json, isMainFrame: message.frameInfo.isMainFrame)
     }
 
-    func receive(json: String, now: Date = Date()) {
+    func receive(json: String, now: Date = Date(), isMainFrame: Bool = true) {
         guard json.utf8.count <= 64000,
               let data = json.data(using: .utf8),
               let report = try? JSONDecoder().decode(
@@ -133,117 +144,16 @@ final class VideoDiagnosticsController: NSObject, WKScriptMessageHandler {
               report.videos.count <= 50
         else { return }
 
+        if isMainFrame {
+            pageURL = report.pageURL
+            pageTitle = report.title
+            mediaTitle = report.mediaTitle
+        }
+
         frames[report.frameID] = FrameVideos(
             videos: report.videos,
             receivedAt: now
         )
         removeStaleReports(now: now)
     }
-
-    private static let observerScript = #"""
-    (() => {
-        if (globalThis.__wianuVideoDiagnosticsInstalled) return;
-        globalThis.__wianuVideoDiagnosticsInstalled = true;
-
-        const frameID = globalThis.crypto?.randomUUID?.()
-            ?? `${Date.now()}-${Math.random()}`;
-        const ids = new WeakMap();
-        let nextID = 0;
-
-        const finiteNumber = (value, fallback = 0) =>
-            Number.isFinite(value) ? value : fallback;
-
-        const videoID = (video) => {
-            if (!ids.has(video)) ids.set(video, `${frameID}-${nextID++}`);
-            return ids.get(video);
-        };
-
-        const sourceInfo = (video) => {
-            const source = video.currentSrc || video.src || "";
-            let sourceDescription = null;
-            if (source.startsWith("blob:")) {
-                sourceDescription = "Media Source (blob)";
-            } else if (source) {
-                try {
-                    const url = new URL(source, document.baseURI);
-                    sourceDescription = url.host || url.protocol.replace(":", "");
-                } catch (_) {}
-            }
-
-            let sourceType = null;
-            const candidates = Array.from(video.querySelectorAll("source"));
-            const selected = candidates.find((candidate) =>
-                candidate.src && candidate.src === video.currentSrc
-            ) ?? candidates.find((candidate) => candidate.type);
-            if (selected?.type) sourceType = selected.type.slice(0, 200);
-
-            return {
-                sourceDescription: sourceDescription?.slice(0, 200) ?? null,
-                sourceType
-            };
-        };
-
-        const bufferedAhead = (video) => {
-            for (let index = 0; index < video.buffered.length; index++) {
-                if (video.buffered.start(index) <= video.currentTime
-                    && video.buffered.end(index) >= video.currentTime) {
-                    return video.buffered.end(index) - video.currentTime;
-                }
-            }
-            return 0;
-        };
-
-        const describe = (video) => {
-            const rect = video.getBoundingClientRect();
-            const quality = video.getVideoPlaybackQuality?.();
-            const droppedFrames = quality?.droppedVideoFrames
-                ?? video.webkitDroppedFrameCount;
-            const totalFrames = quality?.totalVideoFrames
-                ?? video.webkitDecodedFrameCount;
-
-            return {
-                id: videoID(video),
-                videoWidth: Math.max(0, Math.round(finiteNumber(video.videoWidth))),
-                videoHeight: Math.max(0, Math.round(finiteNumber(video.videoHeight))),
-                displayWidth: Math.max(0, finiteNumber(rect.width)),
-                displayHeight: Math.max(0, finiteNumber(rect.height)),
-                paused: video.paused,
-                ended: video.ended,
-                seeking: video.seeking,
-                readyState: video.readyState,
-                currentTime: Math.max(0, finiteNumber(video.currentTime)),
-                duration: Number.isFinite(video.duration) ? video.duration : null,
-                bufferedAhead: Math.max(0, finiteNumber(bufferedAhead(video))),
-                droppedFrames: Number.isFinite(droppedFrames)
-                    ? Math.max(0, Math.round(droppedFrames)) : null,
-                totalFrames: Number.isFinite(totalFrames)
-                    ? Math.max(0, Math.round(totalFrames)) : null,
-                ...sourceInfo(video)
-            };
-        };
-
-        const send = () => {
-            const json = JSON.stringify({
-                frameID,
-                videos: Array.from(document.querySelectorAll("video")).map(describe)
-            });
-            globalThis.webkit?.messageHandlers?.videoDiagnostics?.postMessage(json);
-        };
-
-        const events = [
-            "durationchange", "emptied", "ended", "loadedmetadata", "pause",
-            "play", "playing", "progress", "resize", "seeking", "waiting"
-        ];
-        for (const event of events) {
-            document.addEventListener(event, send, true);
-        }
-
-        new MutationObserver(send).observe(document.documentElement, {
-            childList: true,
-            subtree: true
-        });
-        setInterval(send, 1000);
-        send();
-    })();
-    """#
 }

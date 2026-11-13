@@ -5,7 +5,7 @@ struct SettingsView: View {
 
     var body: some View {
         GeneralSettingsView()
-            .frame(width: 560, height: 240)
+            .frame(width: 560, height: 340)
             .onAppear {
                 model.settingsOpened()
             }
@@ -24,10 +24,8 @@ private struct GeneralSettingsView: View {
             )
 
             Text(
-                "Share basic feature usage and the Wianu version. "
-                    + "A random installation ID links repeat visits. "
-                    + "Searches, titles, URLs, providers, and personal "
-                    + "identifiers are never included."
+                "Share feature usage. "
+                    + "Titles, searches, and URLs aren’t sent."
             )
             .font(.callout)
             .foregroundStyle(.secondary)

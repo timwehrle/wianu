@@ -8,15 +8,22 @@ final class BrowserSession {
     let router: BrowserNavigationRouter
     let page: WebPage
     let videoDiagnostics: VideoDiagnosticsController
+    let continueWatchingQueues: [ContinueWatchingController]
 
     private(set) var historyRootID: WebPage.BackForwardList.Item.ID?
     private var navigationTask: Task<Void, Never>?
     private var handledNavigationRequestID: UUID?
 
-    init() {
+    init(continueWatchingQueues: [ContinueWatchingController]? = nil) {
+        let continueWatchingQueues = continueWatchingQueues ?? ContinueWatchingAdapter.all.map {
+            ContinueWatchingController(adapter: $0)
+        }
         let router = BrowserNavigationRouter()
         let videoDiagnostics = VideoDiagnosticsController()
         let configuration = WebPage.Configuration()
+        for queue in continueWatchingQueues {
+            queue.install(in: configuration.userContentController)
+        }
         videoDiagnostics.install(in: configuration.userContentController)
 
         let page = WebPage(
@@ -28,6 +35,7 @@ final class BrowserSession {
         self.router = router
         self.page = page
         self.videoDiagnostics = videoDiagnostics
+        self.continueWatchingQueues = continueWatchingQueues
     }
 
     var backItem: WebPage.BackForwardList.Item? {
@@ -93,35 +101,10 @@ private extension BrowserSession {
     static let customUserAgent = """
     Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \
     AppleWebKit/605.1.15 (KHTML, like Gecko) \
-    Version/26.5.2 Safari/605.1.15
+    Version/27.2 Safari/605.1.15
     """
 
-    static let pageInteractionScript = """
-    const root = document.documentElement;
-    const marker = "data-wianu-interaction-blocked";
-    if (blocked) {
-        if (!root.hasAttribute(marker)) {
-            globalThis.wianuPointerEvents = {
-                value: root.style.getPropertyValue("pointer-events"),
-                priority: root.style.getPropertyPriority("pointer-events")
-            };
-            root.setAttribute(marker, "");
-        }
-        root.style.setProperty("pointer-events", "none", "important");
-    } else if (root.hasAttribute(marker)) {
-        const previous = globalThis.wianuPointerEvents ?? {
-            value: "",
-            priority: ""
-        };
-        root.style.setProperty(
-            "pointer-events",
-            previous.value,
-            previous.priority
-        );
-        root.removeAttribute(marker);
-        delete globalThis.wianuPointerEvents;
-    }
-    """
+    static let pageInteractionScript = BundledJavaScript.load("PageInteraction")
 
     func perform(_ request: BrowserNavigationRouter.Request) async {
         switch request.action {

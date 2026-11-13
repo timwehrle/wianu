@@ -26,26 +26,13 @@ struct MediaIdentificationCoordinatorTests {
         ])
         let session = LetterboxdTestSession(pages: [page])
         let coordinator = stores.coordinator(session: session)
-        let item = stores.continueWatching.save(siteID: nil, title: "Severance", url: stores.url)
-        let target = MediaIdentificationTarget.continueWatching(item.id)
+        let item = stores.watchlist.add(title: "Severance", year: nil, url: stores.url)
+        let target = MediaIdentificationTarget.watchlist(item.id)
         coordinator.identifyInBackground(target)
         try await waitUntil { coordinator.needsReview(target) }
-        #expect(stores.continueWatching.item(id: item.id)?.tmdbID == nil)
+        #expect(stores.watchlist.item(id: item.id)?.tmdbID == nil)
         coordinator.associate(IdentificationFixtures.media(), with: target)
         #expect(!coordinator.needsReview(target) && coordinator.isIdentified(target))
-    }
-
-    @Test func `confirmed matches are reused across lists without searching`() async {
-        let stores = IdentificationStores()
-        defer { stores.cleanup() }
-        let session = LetterboxdTestSession(pages: [])
-        let coordinator = stores.coordinator(session: session)
-        let playing = stores.continueWatching.save(siteID: nil, title: "Severance", url: stores.url)
-        stores.continueWatching.associate(id: playing.id, with: IdentificationFixtures.media())
-        let saved = stores.watchlist.add(title: "Severance", year: nil, url: stores.url)
-        coordinator.identifyInBackground(.watchlist(saved.id))
-        #expect(stores.watchlist.item(id: saved.id)?.tmdbMediaType == .tv)
-        #expect(await session.requests.isEmpty)
     }
 
     @Test func `late search cannot override user confirmation`() async throws {
