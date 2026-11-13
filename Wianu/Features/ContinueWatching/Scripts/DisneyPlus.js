@@ -1,4 +1,6 @@
 function createContinueWatchingReader(schedule) {
+    const episodePattern = /\bS\s*(\d+)\s*:\s*[EF]\s*(\d+)\b/i;
+
     return () => {
         const metadata = Array.from(document.querySelectorAll('a[data-testid="cw-set-item-metadata"]'));
 
@@ -25,7 +27,8 @@ function createContinueWatchingReader(schedule) {
             const lines = Array.from(text.children)
                 .map((child) => child.textContent.trim())
                 .filter(Boolean);
-            const episodeIndex = lines.findIndex((line) => /\bS\d+\s*:/.test(line));
+            const episodeIndex = lines.findIndex((line) => episodePattern.test(line));
+            const episodeMetadata = episodeIndex >= 0 ? lines[episodeIndex].match(episodePattern) : null;
             const normalize = (value) => value.replace(/\s+/g, ' ').trim();
             const label = normalize(anchor.getAttribute('aria-label') || '');
             const confirmedTitle = lines.find((line) => {
@@ -51,6 +54,8 @@ function createContinueWatchingReader(schedule) {
                 id,
                 title: title?.slice(0, 500),
                 episodeTitle: episodeIndex >= 0 ? lines[episodeIndex] : null,
+                season: episodeMetadata ? Number(episodeMetadata[1]) : null,
+                episode: episodeMetadata ? Number(episodeMetadata[2]) : null,
                 url: url.href
             };
         });

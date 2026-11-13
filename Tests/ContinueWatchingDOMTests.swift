@@ -4,6 +4,71 @@ import Testing
 
 @MainActor
 struct ContinueWatchingDOMTests {
+    @Test(arguments: ["S1:E2 Episode Two", "S 1 : E 2 Episode Two", "s1:e2 Episode Two", "S1:F2 Zweite Folge"])
+    func `Disney season and episode metadata reaches the sidebar entry`(label: String) async throws {
+        let fixture = VideoObserverFixture(pages: ["/": """
+        <base href="https://www.disneyplus.com/"><title>Disney+</title>
+        <div><a data-testid="set-item" data-item-id="episode-123"
+            aria-label="A Show" href="/play/episode-123">Play</a>
+            <a data-testid="cw-set-item-metadata"><div>A Show</div><div id="episode">\(label)</div></a>
+        </div>
+        """], host: "www.disneyplus.com", adapter: .disneyPlus)
+        defer { fixture.stop() }
+
+        try await fixture.load("/")
+        try await fixture.waitUntil { fixture.continueWatchingQueue.updatedAt != nil }
+
+        let entry = try #require(fixture.continueWatchingQueue.entries.first)
+        #expect(entry.title == "A Show")
+        #expect(entry.season == 1)
+        #expect(entry.episode == 2)
+
+        _ = try await fixture.webView.evaluateJavaScript("""
+        document.getElementById('episode').textContent = 'S12:E34 Next Episode';
+        """)
+        try await fixture.waitUntil { fixture.continueWatchingQueue.entries.first?.episode == 34 }
+
+        #expect(fixture.continueWatchingQueue.entries.first?.season == 12)
+    }
+
+    @Test
+    func `Disney German episode labels are read from nested metadata beside rating badges`() async throws {
+        let fixture = VideoObserverFixture(pages: ["/": """
+        <base href="https://www.disneyplus.com/"><title>Disney+</title>
+        <div data-testid="set-shelf-item" role="group" aria-hidden="false" aria-roledescription="slide">
+            <span data-testid="cw-set-item-wrapper">
+                <a data-item-id="ae249b50-fc62-4fad-8ad4-8a34f4d03a65" data-testid="set-item"
+                    aria-label="The Bear: King of the Kitchen Staffel 3 Folge 9 Entschuldigungen Noch 23&nbsp;Minuten"
+                    href="/de-de/play/ae249b50-fc62-4fad-8ad4-8a34f4d03a65">
+                    <div data-testid="set-item-tile"><img alt="">
+                        <progress aria-label="45" max="100" value="45"></progress>
+                    </div>
+                </a>
+                <a data-testid="cw-set-item-metadata"
+                    href="/de-de/browse/entity-05eb6a8e-90ed-4947-8c0b-e6536cbddd5f">
+                    <div>Noch 23&nbsp;Min.</div>
+                    <div>The Bear: King of the Kitchen</div>
+                    <div>
+                        <div data-testid="set-item-rating"><img alt="12" src="data:,"></div>
+                        <span>S3:F9 Entschuldigungen</span>
+                    </div>
+                </a>
+            </span>
+        </div>
+        """], host: "www.disneyplus.com", adapter: .disneyPlus)
+        defer { fixture.stop() }
+
+        try await fixture.load("/")
+        try await fixture.waitUntil { fixture.continueWatchingQueue.updatedAt != nil }
+
+        let entry = try #require(fixture.continueWatchingQueue.entries.first)
+        #expect(entry.title == "The Bear: King of the Kitchen")
+        #expect(entry.season == 3)
+        #expect(entry.episode == 9)
+        #expect(entry.episodeTitle == "S3:F9 Entschuldigungen")
+        #expect(entry.url.path == "/de-de/play/ae249b50-fc62-4fad-8ad4-8a34f4d03a65")
+    }
+
     @Test
     func `Apple diagnostics include shelf cards without treating recommendations as a queue`() async throws {
         let fixture = VideoObserverFixture(pages: ["/": """
@@ -125,6 +190,8 @@ struct ContinueWatchingDOMTests {
         try await fixture.waitUntil { fixture.continueWatchingQueue.updatedAt != nil }
 
         #expect(fixture.continueWatchingQueue.entries.first?.title == "Black Swan")
+        #expect(fixture.continueWatchingQueue.entries.first?.season == nil)
+        #expect(fixture.continueWatchingQueue.entries.first?.episode == nil)
         #expect(fixture.continueWatchingQueue.entries.first?.url
             .path == "/de-de/play/0de850bd-a343-4dd7-86c4-c008cdaca86f")
     }
