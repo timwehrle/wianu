@@ -99,7 +99,14 @@ struct TMDBClientTests {
 
         model.query = "Dune"
         model.queryChanged()
-        try? await Task.sleep(for: .milliseconds(500))
+
+        let deadline = ContinuousClock.now + .seconds(5)
+
+        while model.isSearching {
+            try #require(ContinuousClock.now < deadline, "Cancelled search did not finish")
+
+            try await Task.sleep(for: .milliseconds(10))
+        }
 
         #expect(model.errorMessage == nil)
         #expect(!model.isSearching)

@@ -43,6 +43,10 @@ final class BrowserSession {
         page.backForwardList.forwardList.first
     }
 
+    func resetAutomaticContinueWatching() {
+        automaticContinueWatching = AutomaticContinueWatching()
+    }
+
     func continueWatchingCandidate(for site: SavedSite?) -> PlaybackPageTitle? {
         videoDiagnostics.removeStaleReports()
 

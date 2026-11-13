@@ -36,7 +36,8 @@ Playback depends on the provider, your subscription and your region.
 ## Continue Watching
 
 Recognized titles are added automatically after 30 seconds of playback.
-You can also save pages manually, rename entries, or remove them.
+Turn automatic saving off in Settings if you prefer to save pages manually.
+Right-click an entry and choose **Use Current Page** to change where it opens.
 Your streaming service handles resume progress across devices.
 
 ## Watchlist

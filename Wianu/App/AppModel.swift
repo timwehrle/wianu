@@ -19,6 +19,7 @@ final class AppModel {
 
     private(set) var selection: SidebarSelection?
     private(set) var navigationRequest: NavigationRequest?
+    var currentPageURL: URL?
     @ObservationIgnored
     private let userDefaults: UserDefaults
     @ObservationIgnored
@@ -349,7 +350,25 @@ extension AppModel {
         )
     }
 
+    func canUseCurrentPage(for item: ContinueWatchingItem) -> Bool {
+        guard selection != .home, let url = currentPageURL,
+              BrowserURLPolicy.allowsExternalNavigation(to: url),
+              normalizedHost(for: url) == normalizedHost(for: item.url)
+        else { return false }
+
+        return continueWatchingStore.item(matching: url).map { $0.id == item.id } ?? true
+    }
+
+    func useCurrentPage(for item: ContinueWatchingItem) {
+        guard canUseCurrentPage(for: item), let url = currentPageURL else { return }
+
+        continueWatchingStore.replaceURL(id: item.id, with: url)
+    }
+
     func saveAutomaticallyToContinueWatching(title: String, url: URL) {
+        guard userDefaults.object(forKey: ContinueWatchingPreference.automaticSavingKey) as? Bool ?? true
+        else { return }
+
         if let item = continueWatchingStore.item(matching: url) {
             // Preserve manual names and identification when playback is detected again.
             continueWatchingStore.markOpened(id: item.id)

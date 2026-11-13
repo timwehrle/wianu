@@ -5,7 +5,7 @@ struct SettingsView: View {
 
     var body: some View {
         GeneralSettingsView()
-            .frame(width: 560, height: 240)
+            .frame(width: 560, height: 340)
             .onAppear {
                 model.settingsOpened()
             }
@@ -13,21 +13,28 @@ struct SettingsView: View {
 }
 
 private struct GeneralSettingsView: View {
+    @AppStorage(ContinueWatchingPreference.automaticSavingKey)
+    private var automaticSavingEnabled = true
+
     @AppStorage(AnalyticsPreference.enabledKey)
     private var analyticsEnabled = true
 
     var body: some View {
         Form {
+            Toggle("Automatically Add to Continue Watching", isOn: $automaticSavingEnabled)
+
+            Text("Add recognized titles after 30 seconds of playback.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+
             Toggle(
                 "Send Anonymous Usage Analytics",
                 isOn: $analyticsEnabled
             )
 
             Text(
-                "Share basic feature usage and the Wianu version. "
-                    + "A random installation ID links repeat visits. "
-                    + "Searches, titles, URLs, providers, and personal "
-                    + "identifiers are never included."
+                "Share feature usage. "
+                    + "Titles, searches, and URLs aren’t sent."
             )
             .font(.callout)
             .foregroundStyle(.secondary)

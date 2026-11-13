@@ -474,12 +474,12 @@ struct SiteOpeningAnalyticsTests {
 }
 
 @MainActor
-private struct AnalyticsAppFixture {
+struct AnalyticsAppFixture {
     let directory: URL
     let suiteName: String
     let defaults: UserDefaults
     let site: SavedSite
-    let tracker: RecordingAnalyticsTracker
+    fileprivate let tracker: RecordingAnalyticsTracker
     let model: AppModel
 
     init(hasSites: Bool = true, hasSavedSelection: Bool = false) throws {

@@ -6,6 +6,8 @@ struct BrowserView: View {
     @State private var session: BrowserSession
     @State private var isVideoInformationPresented = false
     @State private var showsLoadingIndicator = false
+    @AppStorage(ContinueWatchingPreference.automaticSavingKey)
+    private var automaticSavingEnabled = true
 
     init(model: AppModel) {
         self.model = model
@@ -24,7 +26,10 @@ struct BrowserView: View {
             .onDisappear {
                 session.cancelNavigation()
             }
-            .task {
+            .task(id: automaticSavingEnabled) {
+                guard automaticSavingEnabled else { return }
+
+                session.resetAutomaticContinueWatching()
                 await trackContinueWatching()
             }
             .task(id: pageInteractionID) {
@@ -33,6 +38,7 @@ struct BrowserView: View {
                 )
             }
             .onChange(of: session.page.url) { _, url in
+                model.currentPageURL = url
                 session.videoDiagnostics.clear()
                 model.activateSite(matching: url)
             }

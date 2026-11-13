@@ -178,6 +178,11 @@ struct SidebarView: View {
                             identificationTarget = .continueWatching(item.id)
                         }
                         Divider()
+                        Button("Use Current Page") {
+                            model.useCurrentPage(for: item)
+                        }
+                        .disabled(!model.canUseCurrentPage(for: item))
+
                         Button("Rename") { renamingItem = item }
                         Divider()
                         Button("Remove", role: .destructive) {

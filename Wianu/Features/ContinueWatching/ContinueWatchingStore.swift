@@ -41,8 +41,14 @@ final class ContinueWatchingStore {
     func item(matching url: URL) -> ContinueWatchingItem? {
         let key = URLNormalizer.continueWatchingComparisonKey(for: url)
 
-        return items.first {
-            URLNormalizer.continueWatchingComparisonKey(for: $0.url) == key
+        return items.first { item in
+            if URLNormalizer.continueWatchingComparisonKey(for: item.url) == key {
+                return true
+            }
+
+            guard let playbackURL = item.playbackURL else { return false }
+
+            return URLNormalizer.continueWatchingComparisonKey(for: playbackURL) == key
         }
     }
 
@@ -91,6 +97,17 @@ final class ContinueWatchingStore {
         items[index].tmdbID = media?.id
         items[index].tmdbMediaType = media?.mediaType
         items[index].tmdbMetadata = media
+        persist()
+    }
+
+    func replaceURL(id: ContinueWatchingItem.ID, with url: URL) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+
+        let normalizedURL = URLNormalizer.continueWatchingURL(url)
+        guard items[index].url != normalizedURL else { return }
+
+        items[index].playbackURL = items[index].playbackURL ?? items[index].url
+        items[index].url = normalizedURL
         persist()
     }
 

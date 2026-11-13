@@ -9,6 +9,7 @@ struct ContinueWatchingItem: Identifiable, Codable, Hashable, Sendable {
 
     var title: String
     var url: URL
+    var playbackURL: URL?
     var dateAdded: Date
     var lastOpenedAt: Date
 
@@ -27,4 +28,8 @@ struct ContinueWatchingItem: Identifiable, Codable, Hashable, Sendable {
         self.dateAdded = dateAdded
         self.lastOpenedAt = lastOpenedAt
     }
+}
+
+enum ContinueWatchingPreference {
+    static let automaticSavingKey = "automaticallyAddToContinueWatching"
 }

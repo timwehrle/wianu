@@ -72,6 +72,28 @@ struct MediaIdentificationPersistenceTests {
         #expect(stores.continueWatching.item(matching: unrelatedURL) == nil)
     }
 
+    @Test func `Replacing a saved link persists its playback identity and preserves metadata`() throws {
+        let stores = IdentificationStores()
+        defer { stores.cleanup() }
+
+        let item = stores.continueWatching.save(siteID: nil, title: "My Show", url: stores.url)
+        let showURL = try #require(URL(string: "https://example.com/show/42"))
+        let revisedURL = try #require(URL(string: "https://example.com/show/42/details"))
+        let media = IdentificationFixtures.media()
+        stores.continueWatching.associate(id: item.id, with: media)
+        stores.continueWatching.replaceURL(id: item.id, with: showURL)
+        stores.continueWatching.replaceURL(id: item.id, with: revisedURL)
+
+        let reopened = ContinueWatchingStore(fileStore: stores.continueWatchingFile)
+        let restored = try #require(reopened.item(matching: stores.url))
+
+        #expect(restored.id == item.id)
+        #expect(restored.url == revisedURL)
+        #expect(restored.title == "My Show")
+        #expect(restored.tmdbMetadata == media)
+        #expect(reopened.item(matching: revisedURL)?.id == item.id)
+    }
+
     @Test func `manual watchlist persists both ID and media type`() throws {
         let stores = IdentificationStores()
         defer { stores.cleanup() }
