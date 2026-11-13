@@ -100,6 +100,11 @@
 		E697DF6F2C49D3896EDD34F6 /* MediaIdentificationQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D4A20E1E2F736F889213ABE /* MediaIdentificationQuery.swift */; };
 		EE632D160867851E435ED914 /* LetterboxdImportModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B4353EB434BACE445011DA /* LetterboxdImportModel.swift */; };
 		F5927CBD90A6F2FAC3C7C7DA /* LetterboxdMatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97A346E0C79A80327AC8AB99 /* LetterboxdMatcherTests.swift */; };
+		AC7800000000000000000001 /* ReleaseNotesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7700000000000000000001 /* ReleaseNotesModel.swift */; };
+		AC7800000000000000000002 /* WhatsNewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7700000000000000000002 /* WhatsNewView.swift */; };
+		AC7800000000000000000003 /* ReleaseNotes.json in Resources */ = {isa = PBXBuildFile; fileRef = AC7700000000000000000003 /* ReleaseNotes.json */; };
+		AC7800000000000000000004 /* ReleaseNotesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7700000000000000000004 /* ReleaseNotesTests.swift */; };
+		AC7800000000000000000005 /* ReleaseNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7700000000000000000005 /* ReleaseNote.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -224,6 +229,11 @@
 		F22FFC23CF024EE97DC8594E /* MediaMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaMatcher.swift; sourceTree = "<group>"; };
 		F39C616C5A98BDB046546184 /* LetterboxdMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdMatcher.swift; sourceTree = "<group>"; };
 		F4ABD7CF583F976CCA50316E /* LetterboxdImportReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportReviewView.swift; sourceTree = "<group>"; };
+		AC7700000000000000000001 /* ReleaseNotesModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseNotesModel.swift; sourceTree = "<group>"; };
+		AC7700000000000000000002 /* WhatsNewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatsNewView.swift; sourceTree = "<group>"; };
+		AC7700000000000000000003 /* ReleaseNotes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ReleaseNotes.json; sourceTree = "<group>"; };
+		AC7700000000000000000004 /* ReleaseNotesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseNotesTests.swift; sourceTree = "<group>"; };
+		AC7700000000000000000005 /* ReleaseNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseNote.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -446,6 +456,7 @@
 		D1B9725D3015341900B64B10 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				AC7900000000000000000001 /* WhatsNew */,
 				1CC97F7F9472654E509E2D4D /* MediaIdentification */,
 				D1E100033030000000000003 /* CommandPalette */,
 				D1B972493015341900B64B10 /* Browser */,
@@ -505,6 +516,7 @@
 		D1B972693015341900B64B10 /* Wianu */ = {
 			isa = PBXGroup;
 			children = (
+				AC7900000000000000000002 /* Resources */,
 				D11E8238301787330092ECC8 /* Info.plist */,
 				D1B972443015341900B64B10 /* App */,
 				D1B9725D3015341900B64B10 /* Features */,
@@ -520,6 +532,7 @@
 		D1C100043020000000000104 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				AC7700000000000000000004 /* ReleaseNotesTests.swift */,
 				7E1C8BC3BE1F06774A417B24 /* MediaIdentificationPersistenceTests.swift */,
 				D96A377CC9548C46D1AD9057 /* MediaIdentificationCoordinatorTests.swift */,
 				7E6A3723BA126AC0A3976EFC /* MediaIdentificationTests.swift */,
@@ -561,6 +574,24 @@
 				D1FE001B30163BD700DA12EE /* WianuIcon.png */,
 			);
 			path = Assets;
+			sourceTree = "<group>";
+		};
+		AC7900000000000000000001 /* WhatsNew */ = {
+			isa = PBXGroup;
+			children = (
+				AC7700000000000000000001 /* ReleaseNotesModel.swift */,
+				AC7700000000000000000002 /* WhatsNewView.swift */,
+				AC7700000000000000000005 /* ReleaseNote.swift */,
+			);
+			path = WhatsNew;
+			sourceTree = "<group>";
+		};
+		AC7900000000000000000002 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AC7700000000000000000003 /* ReleaseNotes.json */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -649,6 +680,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC7800000000000000000003 /* ReleaseNotes.json in Resources */,
 				D10EF48E3015F2800070703E /* WianuLogo.icon in Resources */,
 				DD5C1851C85141DF833CF18E /* HBOMax.js in Resources */,
 				3D9A20A9AF7A4BC79FFE1566 /* DisneyPlus.js in Resources */,
@@ -669,6 +701,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC7800000000000000000002 /* WhatsNewView.swift in Sources */,
+				AC7800000000000000000001 /* ReleaseNotesModel.swift in Sources */,
+				AC7800000000000000000005 /* ReleaseNote.swift in Sources */,
 				49EA1C557036281C086C4496 /* SidebarDeletion.swift in Sources */,
 				A6D1B39D20134D9DA7123A50 /* MediaMatcher.swift in Sources */,
 				6A0C392C4E128BF31A17E12A /* MediaIdentity.swift in Sources */,
@@ -738,6 +773,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC7800000000000000000004 /* ReleaseNotesTests.swift in Sources */,
 				7A4E303EB388AE9949E944FA /* MediaIdentificationPersistenceTests.swift in Sources */,
 				9F7B9262E1006687B0D87591 /* MediaIdentificationCoordinatorTests.swift in Sources */,
 				3D0BF001E7AA886894E68E80 /* MediaIdentificationTests.swift in Sources */,

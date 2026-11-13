@@ -1,0 +1,17 @@
+[
+  {
+    "version": "1.9.0",
+    "changes": [
+      {
+        "title": "What's New",
+        "description": "See the latest changes after updating Wianu. Reopen these notes anytime from the Help menu.",
+        "symbol": "sparkles"
+      },
+      {
+        "title": "Continue Watching",
+        "description": "Adding Continue Watching items now happens fully automatic. Live from the sites you use most. Supported for Netflix, HBO, Disney, Prime Video and Apple TV.",
+        "symbol": "play"
+      }
+    ]
+  }
+]
