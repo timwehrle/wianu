@@ -20,17 +20,35 @@ struct ContinueWatchingSidebarSection: View {
 private struct ContinueWatchingGroup: View {
     @Bindable var model: AppModel
     @Bindable var queue: ContinueWatchingController
-    @State private var isExpanded = true
+    @State private var isExpanded: Bool
+    @State private var isHovered = false
+    @FocusState private var isRefreshFocused: Bool
+
+    init(model: AppModel, queue: ContinueWatchingController) {
+        self.model = model
+        self.queue = queue
+        _isExpanded = State(initialValue: !queue.entries.isEmpty)
+    }
 
     var body: some View {
         DisclosureGroup(isExpanded: $isExpanded) {
             queueContent
         } label: {
             HStack {
-                Text(queue.adapter.name)
+                Label {
+                    Text(queue.adapter.name)
+                        .lineLimit(1)
+                } icon: {
+                    FaviconView(url: model.continueWatchingSite(for: queue.id)?.url)
+                }
+
                 Spacer()
+
                 refreshButton
+                    .opacity(isHovered || isRefreshFocused || queue.refreshID != nil ? 1 : 0)
             }
+            .contentShape(.rect)
+            .onHover { isHovered = $0 }
         }
         .task(id: queue.refreshID) {
             guard let id = queue.refreshID else { return }
@@ -46,7 +64,7 @@ private struct ContinueWatchingGroup: View {
     @ViewBuilder
     private var queueContent: some View {
         ForEach(queue.entries) { entry in
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(entry.title)
                     .lineLimit(1)
 
@@ -56,6 +74,7 @@ private struct ContinueWatchingGroup: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            .padding(.vertical, 2)
             .tag(SidebarSelection.continueWatching(queue.id, entry.id))
             .help(entry.episodeTitle ?? entry.title)
         }
@@ -95,6 +114,7 @@ private struct ContinueWatchingGroup: View {
             }
         }
         .buttonStyle(.borderless)
+        .focused($isRefreshFocused)
         .disabled(model.continueWatchingSite(for: queue.id) == nil || queue.refreshID != nil)
         .help("Refresh \(queue.adapter.name) Continue Watching")
         .accessibilityLabel("Refresh \(queue.adapter.name) Continue Watching")
