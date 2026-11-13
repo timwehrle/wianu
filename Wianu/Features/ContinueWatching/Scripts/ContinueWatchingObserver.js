@@ -12,6 +12,14 @@ function observeContinueWatching(configuration, createReader) {
     let previousSnapshot;
     let previousDiagnostics;
     let pending = false;
+    let emptyPage;
+    let emptyTimer;
+
+    const resetEmptyState = () => {
+        clearTimeout(emptyTimer);
+        emptyTimer = undefined;
+        emptyPage = undefined;
+    };
 
     const appleShelfDiagnostics = (headings) => {
         return headings
@@ -106,16 +114,41 @@ function observeContinueWatching(configuration, createReader) {
             const result = readQueue();
 
             if (result === null) {
+                resetEmptyState();
                 diagnose('No readable Continue Watching shelf found');
                 return;
             }
 
-            const entries = result.slice(0, 100).filter((entry) => entry.id && entry.title && entry.url);
-            // A loading shelf must not erase the last successfully read queue.
+            const cards = result.slice(0, 100);
+            const entries = cards.filter((entry) => entry.id && entry.title?.trim() && entry.url);
 
-            if (result.length && !entries.length) {
+            if (entries.length !== cards.length) {
+                resetEmptyState();
                 diagnose('Shelf found, but titles or destinations are missing');
                 return;
+            }
+
+            if (!entries.length) {
+                if (document.readyState !== 'complete' || document.querySelector('[aria-busy="true"]')) {
+                    resetEmptyState();
+                    diagnose('Waiting for the home page to finish loading');
+                    return;
+                }
+
+                if (emptyPage !== location.href) {
+                    resetEmptyState();
+                    emptyPage = location.href;
+                    emptyTimer = setTimeout(() => {
+                        emptyTimer = undefined;
+                        scan();
+                    }, 2000);
+                    diagnose('Waiting to confirm the missing Continue Watching section');
+                    return;
+                }
+
+                if (emptyTimer !== undefined) return;
+            } else {
+                resetEmptyState();
             }
 
             diagnose(entries.length + ' readable titles from ' + result.length + ' cards');
@@ -129,6 +162,7 @@ function observeContinueWatching(configuration, createReader) {
     };
 
     const schedule = () => {
+        if (emptyTimer !== undefined) resetEmptyState();
         if (pending) return;
 
         pending = true;
@@ -146,12 +180,16 @@ function observeContinueWatching(configuration, createReader) {
             attributeFilter: [
                 'href',
                 'aria-label',
+                'aria-busy',
                 'alt',
                 'data-list-context',
+                'data-item-id',
+                'data-set-style',
                 'aria-valuenow',
                 'data-card-title'
             ]
         });
+        globalThis.addEventListener('load', schedule, { once: true });
     };
 
     if (document.readyState === 'loading') {

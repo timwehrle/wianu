@@ -31,7 +31,14 @@ function createContinueWatchingReader(schedule) {
             '[data-automation-id="continue-watching"], [data-testid="continue-watching"]'
         );
 
-        if (!shelf) return null;
+        if (!shelf) {
+            const isHome =
+                /^\/(?:region\/[a-z]{2}\/?)?$/i.test(location.pathname) ||
+                /^\/gp\/video\/storefront\/?$/i.test(location.pathname);
+            const hasRecommendations = document.querySelector('article[data-card-title] a[href*="/detail/"]');
+
+            return isHome && hasRecommendations ? [] : null;
+        }
 
         const anchors = Array.from(shelf.querySelectorAll('a[href*="/detail/"]'));
 

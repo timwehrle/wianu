@@ -4,7 +4,17 @@ function createContinueWatchingReader(schedule) {
     return () => {
         const metadata = Array.from(document.querySelectorAll('a[data-testid="cw-set-item-metadata"]'));
 
-        if (!metadata.length) return null;
+        if (!metadata.length) {
+            const isHome = /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?home\/?$/i.test(location.pathname);
+            const hasRecommendations = document.querySelector(
+                'a[data-testid="set-item"][data-item-id][href]'
+            );
+            const shelf = document.querySelector(
+                '[data-set-style="continue_watching"], [data-testid="cw-set-item-wrapper"]'
+            );
+
+            return isHome && hasRecommendations && !shelf ? [] : null;
+        }
 
         return metadata.slice(0, 100).map((meta) => {
             let tile = meta.parentElement;

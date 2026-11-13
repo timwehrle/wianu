@@ -17,6 +17,7 @@
 		DD5C1851C85141DF833CF18E /* HBOMax.js in Resources */ = {isa = PBXBuildFile; fileRef = 31A5E1A307C5486686FE499F /* HBOMax.js */; };
 		E2B100013040000000000001 /* BundledJavaScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B100023040000000000002 /* BundledJavaScript.swift */; };
 		E2AE00013040000000000001 /* ContinueWatchingDOMTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AE00023040000000000002 /* ContinueWatchingDOMTests.swift */; };
+		E2B400013040000000000001 /* ContinueWatchingSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B400023040000000000002 /* ContinueWatchingSnapshotTests.swift */; };
 		E2B000013040000000000001 /* AppleContinueWatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B000023040000000000002 /* AppleContinueWatchingTests.swift */; };
 		E2AC00013040000000000001 /* ContinueWatchingScripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AC00023040000000000002 /* ContinueWatchingScripts.swift */; };
 		E2AB00013040000000000001 /* ContinueWatchingAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AB00023040000000000002 /* ContinueWatchingAdapter.swift */; };
@@ -122,6 +123,7 @@
 		31A5E1A307C5486686FE499F /* HBOMax.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "HBOMax.js"; sourceTree = "<group>"; };
 		E2B100023040000000000002 /* BundledJavaScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledJavaScript.swift; sourceTree = "<group>"; };
 		E2AE00023040000000000002 /* ContinueWatchingDOMTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingDOMTests.swift; sourceTree = "<group>"; };
+		E2B400023040000000000002 /* ContinueWatchingSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingSnapshotTests.swift; sourceTree = "<group>"; };
 		E2B000023040000000000002 /* AppleContinueWatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleContinueWatchingTests.swift; sourceTree = "<group>"; };
 		E2AC00023040000000000002 /* ContinueWatchingScripts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingScripts.swift; sourceTree = "<group>"; };
 		E2AB00023040000000000002 /* ContinueWatchingAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingAdapter.swift; sourceTree = "<group>"; };
@@ -531,6 +533,7 @@
 				D1F000063040000000000006 /* VideoDiagnosticsTests.swift */,
 				E2A400023040000000000002 /* VideoObserverIntegrationTests.swift */,
 				E2AE00023040000000000002 /* ContinueWatchingDOMTests.swift */,
+				E2B400023040000000000002 /* ContinueWatchingSnapshotTests.swift */,
 				E2B000023040000000000002 /* AppleContinueWatchingTests.swift */,
 				E2A800023040000000000002 /* ContinueWatchingControllerTests.swift */,
 				E2A500023040000000000002 /* ContinueWatchingControlsTests.swift */,
@@ -747,6 +750,7 @@
 				D1F000053040000000000005 /* VideoDiagnosticsTests.swift in Sources */,
 				E2A400013040000000000001 /* VideoObserverIntegrationTests.swift in Sources */,
 				E2AE00013040000000000001 /* ContinueWatchingDOMTests.swift in Sources */,
+				E2B400013040000000000001 /* ContinueWatchingSnapshotTests.swift in Sources */,
 				E2B000013040000000000001 /* AppleContinueWatchingTests.swift in Sources */,
 				E2A800013040000000000001 /* ContinueWatchingControllerTests.swift in Sources */,
 				E2A500013040000000000001 /* ContinueWatchingControlsTests.swift in Sources */,

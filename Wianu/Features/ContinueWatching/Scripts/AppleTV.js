@@ -80,7 +80,14 @@ function createContinueWatchingReader(schedule) {
     const readAppleQueue = () => {
         const cards = Array.from(document.querySelectorAll('[data-testid="continue-watching-lockup"]'));
 
-        if (!cards.length) return null;
+        if (!cards.length) {
+            const isHome = /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/?)?$/i.test(location.pathname);
+            const signedIn = document.querySelector('[data-testid="account-menu"]');
+            const hasRecommendations = document.querySelector('a[data-testid="lockup"][href]');
+            const shelf = document.querySelector('[data-testid="continue-watching-lockup-container"]');
+
+            return isHome && signedIn && hasRecommendations && !shelf ? [] : null;
+        }
 
         const entries = [];
 

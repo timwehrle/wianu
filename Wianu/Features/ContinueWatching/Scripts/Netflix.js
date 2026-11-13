@@ -7,7 +7,13 @@ function createContinueWatchingReader(schedule) {
             ? progressCards
             : Array.from(shelf?.querySelectorAll('a[href*="/watch/"], a[href*="/title/"]') || []);
 
-        if (!anchors.length) return null;
+        if (!anchors.length) {
+            const isHome =
+                /^\/browse\/?$/.test(location.pathname) && !new URL(location.href).searchParams.has('jbv');
+            const hasRecommendations = document.querySelector('a[href*="/title/"], a[href*="/browse?jbv="]');
+
+            return isHome && hasRecommendations && !shelf ? [] : null;
+        }
 
         return anchors.slice(0, 100).map((anchor) => {
             const tile = anchor.closest('.title-card, .slider-item') || anchor;

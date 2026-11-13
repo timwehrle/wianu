@@ -12,13 +12,14 @@
         const alias = json?.data?.attributes?.alias;
 
         if (typeof alias !== 'string' || !alias.includes('continue-watching')) return;
-        if (!Array.isArray(json.included)) return;
-
         const items = json.data.relationships?.items?.data;
 
         if (!Array.isArray(items)) return;
+        if (items.length && !Array.isArray(json.included)) return;
 
-        const graph = new Map(json.included.filter(Boolean).map((item) => [`${item.type}:${item.id}`, item]));
+        const graph = new Map(
+            (json.included || []).filter(Boolean).map((item) => [`${item.type}:${item.id}`, item])
+        );
 
         const related = (entity, name) => {
             const value = entity?.relationships?.[name]?.data;
@@ -33,13 +34,13 @@
             const video = related(item, 'video');
             const attributes = video?.attributes;
 
-            if (!attributes || typeof video.id !== 'string') continue;
+            if (!attributes || typeof video.id !== 'string') return;
 
             const show = related(video, 'show');
             const videoTitle = attributes.name || attributes.originalName;
             const title = show?.attributes?.name || show?.attributes?.originalName || videoTitle;
 
-            if (typeof title !== 'string' || !title.trim()) continue;
+            if (typeof title !== 'string' || !title.trim()) return;
 
             entries.push({
                 id: video.id,
