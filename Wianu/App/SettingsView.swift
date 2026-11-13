@@ -13,20 +13,11 @@ struct SettingsView: View {
 }
 
 private struct GeneralSettingsView: View {
-    @AppStorage(ContinueWatchingPreference.automaticSavingKey)
-    private var automaticSavingEnabled = true
-
     @AppStorage(AnalyticsPreference.enabledKey)
     private var analyticsEnabled = true
 
     var body: some View {
         Form {
-            Toggle("Automatically Add to Continue Watching", isOn: $automaticSavingEnabled)
-
-            Text("Add recognized titles after 30 seconds of playback.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-
             Toggle(
                 "Send Anonymous Usage Analytics",
                 isOn: $analyticsEnabled

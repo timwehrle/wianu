@@ -15,8 +15,6 @@ enum AnalyticsEvent: String, Sendable {
     case letterboxdImportSucceeded = "letterboxd-import-succeeded"
     case watchlistItemAdded = "watchlist-item-added"
     case watchlistItemRemoved = "watchlist-item-removed"
-    case continueWatchingItemAdded = "continue-watching-item-added"
-    case continueWatchingItemRemoved = "continue-watching-item-removed"
     case siteAdded = "site-added"
     case siteOpened = "site-opened"
     case siteEdited = "site-edited"

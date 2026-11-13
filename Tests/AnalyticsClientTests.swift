@@ -407,37 +407,20 @@ struct SiteOpeningAnalyticsTests {
     @Test func `only valid saved Continue Watching pages record opens`() throws {
         let fixture = try AnalyticsAppFixture()
         defer { fixture.cleanup() }
-        let url = try #require(URL(string: "https://private.example/private-title"))
-        let item = fixture.model.continueWatchingStore.save(siteID: fixture.site.id, title: "Private Title", url: url)
-        fixture.model.select(.continueWatching(item.id))
-        #expect(fixture.model.destinationURL == url)
+        let queue = try #require(fixture.model.continueWatchingQueues.first { $0.id == .netflix })
+        let url = try #require(URL(string: "https://www.netflix.com/browse"))
+        queue.receive(json: """
+        [{"id":"123","title":"Private Title","url":"https://www.netflix.com/watch/123"}]
+        """, from: url)
+
+        fixture.model.select(.continueWatching(.netflix, "123"))
+
+        #expect(fixture.model.destinationURL?.absoluteString == "https://www.netflix.com/watch/123")
         #expect(fixture.tracker.events == [.appLaunched, .continueWatchingOpened])
-        fixture.model.select(.continueWatching(UUID()))
+
+        fixture.model.select(.continueWatching(.netflix, "missing"))
+
         #expect(fixture.tracker.events == [.appLaunched, .continueWatchingOpened])
-    }
-
-    @Test func `Automatic playback reuses saved Netflix entries without changing manual names`() throws {
-        let fixture = try AnalyticsAppFixture()
-        defer { fixture.cleanup() }
-
-        let originalURL = try #require(URL(string: "https://www.netflix.com/watch/123?trackId=456"))
-        let item = fixture.model.continueWatchingStore.save(
-            siteID: fixture.site.id, title: "My saved name", url: originalURL
-        )
-        let media = IdentificationFixtures.media()
-        fixture.model.continueWatchingStore.associate(id: item.id, with: media)
-        fixture.model.select(.continueWatching(item.id))
-
-        let detectedURL = try #require(URL(string: "https://www.netflix.com/title/123"))
-        fixture.model.saveAutomaticallyToContinueWatching(title: "Star Trek Beyond", url: detectedURL)
-
-        let saved = try #require(fixture.model.continueWatchingStore.item(id: item.id))
-
-        #expect(fixture.model.continueWatchingStore.items.count == 1)
-        #expect(saved.title == "My saved name")
-        #expect(saved.url == originalURL)
-        #expect(saved.tmdbMetadata == media)
-        #expect(!fixture.tracker.events.contains(.continueWatchingItemAdded))
     }
 
     @Test func `weekly picks record opening details without recording a site open`() throws {
@@ -500,9 +483,6 @@ struct AnalyticsAppFixture {
         tracker = RecordingAnalyticsTracker()
         model = AppModel(
             siteStore: SiteStore(fileStore: sites),
-            continueWatchingStore: ContinueWatchingStore(fileStore: JSONFileStore(
-                fileName: "continue.json", folderName: "Tests", baseDirectory: directory
-            )),
             watchlistStore: WatchlistStore(fileStore: JSONFileStore(
                 fileName: "watchlist.json", folderName: "Tests", baseDirectory: directory
             )),

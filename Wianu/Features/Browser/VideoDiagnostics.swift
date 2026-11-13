@@ -43,24 +43,19 @@ struct VideoDiagnostic: Decodable, Identifiable {
     }
 }
 
-struct PlaybackPageTitle: Equatable {
-    let title: String
-    let url: URL
-}
-
 private struct VideoFrameReport: Decodable {
     let frameID: String
     let videos: [VideoDiagnostic]
     let pageURL: URL?
     let title: String?
     let mediaTitle: String?
-    let linkedURL: URL?
-    let linkedTitle: String?
 }
 
 @MainActor
 @Observable
 final class VideoDiagnosticsController: NSObject, WKScriptMessageHandler {
+    private static let observerScript = BundledJavaScript.load("VideoObserver")
+
     private struct FrameVideos {
         let videos: [VideoDiagnostic]
         let receivedAt: Date
@@ -76,9 +71,6 @@ final class VideoDiagnosticsController: NSObject, WKScriptMessageHandler {
     private(set) var pageURL: URL?
     private(set) var pageTitle: String?
     private(set) var mediaTitle: String?
-
-    /// Keep the clicked title across navigation into the provider's player.
-    private(set) var linkedTitle: PlaybackPageTitle?
 
     var videos: [VideoDiagnostic] {
         frames.values.flatMap(\.videos)
@@ -108,7 +100,7 @@ final class VideoDiagnosticsController: NSObject, WKScriptMessageHandler {
         )
         userContentController.addUserScript(
             WKUserScript(
-                source: VideoObserverScript.source,
+                source: Self.observerScript,
                 injectionTime: .atDocumentEnd,
                 forMainFrameOnly: false,
                 in: Self.contentWorld
@@ -156,12 +148,6 @@ final class VideoDiagnosticsController: NSObject, WKScriptMessageHandler {
             pageURL = report.pageURL
             pageTitle = report.title
             mediaTitle = report.mediaTitle
-
-            if let url = report.linkedURL, let title = report.linkedTitle,
-               url.host() == report.pageURL?.host(), title.count <= 500
-            {
-                linkedTitle = .init(title: title, url: url)
-            }
         }
 
         frames[report.frameID] = FrameVideos(

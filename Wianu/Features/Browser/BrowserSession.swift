@@ -8,16 +8,22 @@ final class BrowserSession {
     let router: BrowserNavigationRouter
     let page: WebPage
     let videoDiagnostics: VideoDiagnosticsController
+    let continueWatchingQueues: [ContinueWatchingController]
 
     private(set) var historyRootID: WebPage.BackForwardList.Item.ID?
-    @ObservationIgnored private var automaticContinueWatching = AutomaticContinueWatching()
     private var navigationTask: Task<Void, Never>?
     private var handledNavigationRequestID: UUID?
 
-    init() {
+    init(continueWatchingQueues: [ContinueWatchingController]? = nil) {
+        let continueWatchingQueues = continueWatchingQueues ?? ContinueWatchingAdapter.all.map {
+            ContinueWatchingController(adapter: $0)
+        }
         let router = BrowserNavigationRouter()
         let videoDiagnostics = VideoDiagnosticsController()
         let configuration = WebPage.Configuration()
+        for queue in continueWatchingQueues {
+            queue.install(in: configuration.userContentController)
+        }
         videoDiagnostics.install(in: configuration.userContentController)
 
         let page = WebPage(
@@ -29,6 +35,7 @@ final class BrowserSession {
         self.router = router
         self.page = page
         self.videoDiagnostics = videoDiagnostics
+        self.continueWatchingQueues = continueWatchingQueues
     }
 
     var backItem: WebPage.BackForwardList.Item? {
@@ -41,30 +48,6 @@ final class BrowserSession {
 
     var forwardItem: WebPage.BackForwardList.Item? {
         page.backForwardList.forwardList.first
-    }
-
-    func resetAutomaticContinueWatching() {
-        automaticContinueWatching = AutomaticContinueWatching()
-    }
-
-    func continueWatchingCandidate(for site: SavedSite?) -> PlaybackPageTitle? {
-        videoDiagnostics.removeStaleReports()
-
-        guard let url = page.url,
-              videoDiagnostics.pageURL == url,
-              let site, site.url?.host() == url.host()
-        else { return nil }
-
-        if let linked = videoDiagnostics.linkedTitle, linked.url.host() == url.host() {
-            automaticContinueWatching.rememberTitle(linked.title, for: linked.url, siteName: site.name)
-        }
-
-        return automaticContinueWatching.observe(
-            url: url,
-            title: videoDiagnostics.mediaTitle,
-            siteName: site.name,
-            video: videoDiagnostics.selectedVideo
-        )
     }
 
     func startQueuedNavigation() {
@@ -121,32 +104,7 @@ private extension BrowserSession {
     Version/27.2 Safari/605.1.15
     """
 
-    static let pageInteractionScript = """
-    const root = document.documentElement;
-    const marker = "data-wianu-interaction-blocked";
-    if (blocked) {
-        if (!root.hasAttribute(marker)) {
-            globalThis.wianuPointerEvents = {
-                value: root.style.getPropertyValue("pointer-events"),
-                priority: root.style.getPropertyPriority("pointer-events")
-            };
-            root.setAttribute(marker, "");
-        }
-        root.style.setProperty("pointer-events", "none", "important");
-    } else if (root.hasAttribute(marker)) {
-        const previous = globalThis.wianuPointerEvents ?? {
-            value: "",
-            priority: ""
-        };
-        root.style.setProperty(
-            "pointer-events",
-            previous.value,
-            previous.priority
-        );
-        root.removeAttribute(marker);
-        delete globalThis.wianuPointerEvents;
-    }
-    """
+    static let pageInteractionScript = BundledJavaScript.load("PageInteraction")
 
     func perform(_ request: BrowserNavigationRouter.Request) async {
         switch request.action {

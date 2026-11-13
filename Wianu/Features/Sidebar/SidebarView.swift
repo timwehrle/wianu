@@ -6,7 +6,6 @@ struct SidebarView: View {
     @Binding var showingAddSite: Bool
 
     @State private var editingSite: SavedSite?
-    @State private var renamingItem: ContinueWatchingItem?
     @State private var pendingDeletion: SidebarDeletion?
     @State private var showingWatchlistImporter = false
     @State private var showingAddWatchlistItem = false
@@ -15,7 +14,6 @@ struct SidebarView: View {
     @State private var importURL: URL?
     @State private var importMessage: String?
     @State private var sitesExpanded = true
-    @State private var continueWatchingExpanded = true
     @State private var watchlistExpanded = true
 
     var body: some View {
@@ -24,7 +22,7 @@ struct SidebarView: View {
             Label("Home", systemImage: "house")
                 .tag(SidebarSelection.home)
             sitesSection
-            continueWatchingSection
+            ContinueWatchingSidebarSection(model: model)
             watchlistSection
         }
         .listStyle(.sidebar)
@@ -34,12 +32,6 @@ struct SidebarView: View {
                 model: model,
                 mode: .edit(site)
             )
-        }
-        .sheet(item: $renamingItem) { item in
-            RenameContinueWatchingView(item: item) { title in
-                model.continueWatchingStore.rename(id: item.id, to: title)
-                model.mediaIdentification.identifyInBackground(.continueWatching(item.id))
-            }
         }
         .sheet(isPresented: $showingAddWatchlistItem) {
             WatchlistItemEditorView { title, year, url in
@@ -156,44 +148,6 @@ struct SidebarView: View {
         }
     }
 
-    @ViewBuilder
-    private var continueWatchingSection: some View {
-        if !model.continueWatchingStore.sortedItems.isEmpty {
-            Section(
-                "Continue Watching",
-                isExpanded: $continueWatchingExpanded
-            ) {
-                ForEach(model.continueWatchingStore.sortedItems) { item in
-                    ContinueWatchingRow(
-                        item: item,
-                        site: site(for: item),
-                        needsReview: model.mediaIdentification.needsReview(.continueWatching(item.id))
-                    )
-                    .tag(SidebarSelection.continueWatching(item.id))
-                    .contextMenu {
-                        MediaIdentificationMenu(
-                            target: .continueWatching(item.id),
-                            coordinator: model.mediaIdentification
-                        ) {
-                            identificationTarget = .continueWatching(item.id)
-                        }
-                        Divider()
-                        Button("Use Current Page") {
-                            model.useCurrentPage(for: item)
-                        }
-                        .disabled(!model.canUseCurrentPage(for: item))
-
-                        Button("Rename") { renamingItem = item }
-                        Divider()
-                        Button("Remove", role: .destructive) {
-                            pendingDeletion = .continueWatching(item)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private var watchlistSection: some View {
         Section("Watchlist", isExpanded: $watchlistExpanded) {
             ForEach(model.watchlistStore.newestItems) { item in
@@ -252,10 +206,6 @@ struct SidebarView: View {
         )
     }
 
-    private func site(for item: ContinueWatchingItem) -> SavedSite? {
-        model.siteStore.sites.first { $0.id == item.siteID }
-    }
-
     private func importWatchlist(_ result: Result<[URL], Error>) {
         switch result {
         case let .success(urls):
@@ -281,8 +231,6 @@ struct SidebarView: View {
         switch deletion {
         case let .site(site):
             model.deleteSite(site)
-        case let .continueWatching(item):
-            model.removeContinueWatchingItem(item)
         case let .watchlistItem(item):
             model.removeWatchlistItem(item)
         }

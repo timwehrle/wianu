@@ -9,8 +9,8 @@ final class AppModel {
         let url: URL
     }
 
+    let continueWatchingQueues: [ContinueWatchingController]
     let siteStore: SiteStore
-    let continueWatchingStore: ContinueWatchingStore
     let watchlistStore: WatchlistStore
     let mediaIdentification: MediaIdentificationCoordinator
     private(set) var tmdbClient: TMDBClient
@@ -19,7 +19,6 @@ final class AppModel {
 
     private(set) var selection: SidebarSelection?
     private(set) var navigationRequest: NavigationRequest?
-    var currentPageURL: URL?
     @ObservationIgnored
     private let userDefaults: UserDefaults
     @ObservationIgnored
@@ -27,13 +26,48 @@ final class AppModel {
 
     private static let lastSelectedSiteKey = "lastSelectedSiteID"
 
+    func continueWatchingSite(for service: ContinueWatchingService) -> SavedSite? {
+        guard let adapter = continueWatchingQueues.first(where: { $0.id == service })?.adapter else { return nil }
+
+        return siteStore.sites.first { adapter.matches($0.url) }
+    }
+
+    var sidebarContinueWatchingQueues: [ContinueWatchingController] {
+        let registered = siteStore.sites.compactMap { site in
+            continueWatchingQueues.first { $0.adapter.matches(site.url) }
+        }
+        let saved = continueWatchingQueues.filter { $0.updatedAt != nil }
+        var seen: Set<ContinueWatchingService> = []
+
+        return (registered + saved).filter { seen.insert($0.id).inserted }
+    }
+
+    func refreshContinueWatching(_ service: ContinueWatchingService) {
+        guard let queue = continueWatchingQueues.first(where: { $0.id == service }),
+              let site = continueWatchingSite(for: service), let siteURL = site.url,
+              let url = queue.adapter.refreshURL(for: siteURL)
+        else { return }
+
+        queue.beginRefresh()
+        select(.site(site.id))
+        navigate(to: url)
+    }
+
     var destinationURL: URL? {
         navigationRequest?.url
     }
 
     init() {
+        continueWatchingQueues = ContinueWatchingAdapter.all.map {
+            ContinueWatchingController(
+                adapter: $0,
+                fileStore: JSONFileStore(
+                    fileName: "continue-watching-\($0.id.rawValue).json",
+                    folderName: "Wianu"
+                )
+            )
+        }
         siteStore = SiteStore()
-        continueWatchingStore = ContinueWatchingStore()
         watchlistStore = WatchlistStore()
         userDefaults = .standard
         let analytics = AnalyticsClient(userDefaults: userDefaults)
@@ -41,7 +75,6 @@ final class AppModel {
         let client = TMDBClient()
         mediaIdentification = MediaIdentificationCoordinator(
             watchlist: watchlistStore,
-            continueWatching: continueWatchingStore,
             client: client
         )
         tmdbClient = client
@@ -55,21 +88,19 @@ final class AppModel {
 
     init(
         siteStore: SiteStore,
-        continueWatchingStore: ContinueWatchingStore,
         watchlistStore: WatchlistStore,
         userDefaults: UserDefaults,
         tmdbClient: TMDBClient,
         analytics: (any AnalyticsTracking)? = nil
     ) {
+        continueWatchingQueues = ContinueWatchingAdapter.all.map { ContinueWatchingController(adapter: $0) }
         self.siteStore = siteStore
-        self.continueWatchingStore = continueWatchingStore
         self.watchlistStore = watchlistStore
         self.userDefaults = userDefaults
         let analytics = analytics ?? DisabledAnalyticsTracker()
         self.analytics = analytics
         mediaIdentification = MediaIdentificationCoordinator(
             watchlist: watchlistStore,
-            continueWatching: continueWatchingStore,
             client: tmdbClient
         )
         self.tmdbClient = tmdbClient
@@ -88,17 +119,18 @@ extension AppModel {
         return siteStore.sites.first { $0.id == selectedSiteID }
     }
 
-    var selectedContinueWatchingItem: ContinueWatchingItem? {
-        guard case let .continueWatching(itemID) = selection else { return nil }
-        return continueWatchingStore.item(id: itemID)
+    var selectedContinueWatchingEntry: ContinueWatchingEntry? {
+        guard case let .continueWatching(service, itemID) = selection else { return nil }
+
+        return continueWatchingQueues.first { $0.id == service }?.entries.first { $0.id == itemID }
     }
 
     func destination(for selection: SidebarSelection?) -> URL? {
         switch selection {
         case let .site(siteID):
             siteStore.sites.first { $0.id == siteID }?.url
-        case let .continueWatching(itemID):
-            continueWatchingStore.item(id: itemID)?.url
+        case let .continueWatching(service, itemID):
+            continueWatchingQueues.first { $0.id == service }?.entries.first { $0.id == itemID }?.url
         case let .watchlistItem(itemID):
             watchlistStore.item(id: itemID)?.url
         case .home, nil:
@@ -226,10 +258,6 @@ extension AppModel {
             break
         }
 
-        if case let .continueWatching(itemID) = newSelection {
-            continueWatchingStore.markOpened(id: itemID)
-        }
-
         if let selectedSiteID {
             userDefaults.set(
                 selectedSiteID.uuidString,
@@ -244,7 +272,6 @@ extension AppModel {
             navigate(to: nil)
         }
 
-        continueWatchingStore.removeItems(forSiteID: site.id)
         siteStore.deleteSite(id: site.id)
         analytics.track(.siteDeleted)
 
@@ -253,20 +280,6 @@ extension AppModel {
         {
             userDefaults.removeObject(forKey: Self.lastSelectedSiteKey)
         }
-    }
-
-    func removeContinueWatchingItem(_ item: ContinueWatchingItem) {
-        if selection == .continueWatching(item.id) {
-            if let siteID = item.siteID {
-                select(.site(siteID))
-            } else {
-                select(nil)
-            }
-        }
-
-        mediaIdentification.cancel(.continueWatching(item.id))
-        continueWatchingStore.remove(id: item.id)
-        analytics.track(.continueWatchingItemRemoved)
     }
 
     func replaceImportedWatchlistItems(
@@ -350,65 +363,6 @@ extension AppModel {
         )
     }
 
-    func canUseCurrentPage(for item: ContinueWatchingItem) -> Bool {
-        guard selection != .home, let url = currentPageURL,
-              BrowserURLPolicy.allowsExternalNavigation(to: url),
-              normalizedHost(for: url) == normalizedHost(for: item.url)
-        else { return false }
-
-        return continueWatchingStore.item(matching: url).map { $0.id == item.id } ?? true
-    }
-
-    func useCurrentPage(for item: ContinueWatchingItem) {
-        guard canUseCurrentPage(for: item), let url = currentPageURL else { return }
-
-        continueWatchingStore.replaceURL(id: item.id, with: url)
-    }
-
-    func saveAutomaticallyToContinueWatching(title: String, url: URL) {
-        guard userDefaults.object(forKey: ContinueWatchingPreference.automaticSavingKey) as? Bool ?? true
-        else { return }
-
-        if let item = continueWatchingStore.item(matching: url) {
-            // Preserve manual names and identification when playback is detected again.
-            continueWatchingStore.markOpened(id: item.id)
-            return
-        }
-
-        let item = continueWatchingStore.save(siteID: selectedSite?.id, title: title, url: url)
-        mediaIdentification.identifyInBackground(.continueWatching(item.id))
-        analytics.track(.continueWatchingItemAdded)
-    }
-
-    func toggleContinueWatching(title: String, url: URL) {
-        if let item = continueWatchingStore.item(matching: url) {
-            removeContinueWatchingItem(item)
-        } else {
-            let trimmedTitle = title.trimmingCharacters(
-                in: .whitespacesAndNewlines
-            )
-            let savedTitle: String =
-                if let site = selectedSite {
-                    PageTitleCleaner.clean(
-                        trimmedTitle,
-                        siteName: site.name
-                    )
-                } else {
-                    trimmedTitle.isEmpty
-                        ? url.host() ?? "Untitled Page"
-                        : trimmedTitle
-                }
-
-            let item = continueWatchingStore.save(
-                siteID: selectedSite?.id,
-                title: savedTitle,
-                url: url
-            )
-            mediaIdentification.identifyInBackground(.continueWatching(item.id))
-            analytics.track(.continueWatchingItemAdded)
-        }
-    }
-
     func toggleWatchlist(title: String, url: URL) {
         if let item = watchlistStore.item(matching: url) {
             removeWatchlistItem(item)
@@ -443,8 +397,8 @@ extension AppModel {
         switch selection {
         case let .site(siteID):
             siteID
-        case let .continueWatching(itemID):
-            continueWatchingStore.item(id: itemID)?.siteID
+        case let .continueWatching(service, _):
+            continueWatchingSite(for: service)?.id
         case .watchlistItem:
             nil
         case .home, nil:

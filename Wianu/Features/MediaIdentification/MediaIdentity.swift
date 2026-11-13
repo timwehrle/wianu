@@ -13,7 +13,6 @@ extension TMDBMediaResult {
 
 nonisolated enum MediaIdentificationTarget: Hashable, Identifiable {
     case watchlist(UUID)
-    case continueWatching(UUID)
 
     var id: Self {
         self

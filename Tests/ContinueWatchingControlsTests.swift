@@ -4,80 +4,60 @@ import Testing
 
 @MainActor
 struct ContinueWatchingControlsTests {
-    @Test func `Using the current page preserves the entry and prevents playback from replacing its link`() throws {
-        let fixture = try AnalyticsAppFixture()
+    @Test func `Provider accordions follow site order and show each service once`() throws {
+        let fixture = try AnalyticsAppFixture(hasSites: false)
         defer { fixture.cleanup() }
 
-        let episodeURL = try #require(URL(string: "https://private.example/player/episode"))
-        let showURL = try #require(URL(string: "https://private.example/show/series"))
-        let item = fixture.model.continueWatchingStore.save(
-            siteID: fixture.site.id, title: "My Show", url: episodeURL
-        )
-        let media = IdentificationFixtures.media()
-        fixture.model.continueWatchingStore.associate(id: item.id, with: media)
-        fixture.model.select(.site(fixture.site.id))
-        fixture.model.currentPageURL = showURL
+        for (name, address) in [
+            ("Disney+", "https://www.disneyplus.com/"),
+            ("Netflix", "https://www.netflix.com/"),
+            ("Netflix Profile", "https://www.netflix.com/browse"),
+            ("HBO Max", "https://www.hbomax.com/")
+        ] {
+            #expect(fixture.model.siteStore.addSite(SiteDraft(name: name, address: address)))
+        }
 
-        #expect(fixture.model.canUseCurrentPage(for: item))
+        let apple = try #require(fixture.model.continueWatchingQueues.first { $0.id == .appleTV })
+        try apple.receive(json: "[]", from: #require(URL(string: "https://tv.apple.com/")))
 
-        fixture.model.useCurrentPage(for: item)
-        fixture.model.saveAutomaticallyToContinueWatching(title: "Detected Title", url: episodeURL)
+        #expect(fixture.model.sidebarContinueWatchingQueues.map(\.id) == [.disneyPlus, .netflix, .hboMax, .appleTV])
 
-        let updated = try #require(fixture.model.continueWatchingStore.item(id: item.id))
+        let disney = try #require(fixture.model.siteStore.sites.first)
+        #expect(fixture.model.siteStore.updateSite(
+            id: disney.id,
+            with: SiteDraft(name: "Prime Video", address: "https://www.primevideo.com/")
+        ))
 
-        #expect(fixture.model.continueWatchingStore.items.count == 1)
-        #expect(updated.url == showURL)
-        #expect(updated.title == "My Show")
-        #expect(updated.tmdbMetadata == media)
-        #expect(updated.siteID == fixture.site.id)
-        #expect(updated.dateAdded == item.dateAdded)
+        #expect(fixture.model.sidebarContinueWatchingQueues.map(\.id) == [.primeVideo, .netflix, .hboMax, .appleTV])
     }
 
-    @Test func `Use Current Page rejects home another provider and another saved destination`() throws {
+    @Test func `Header refresh loads the provider home page and starts a bounded refresh`() throws {
         let fixture = try AnalyticsAppFixture()
         defer { fixture.cleanup() }
 
-        let originalURL = try #require(URL(string: "https://private.example/player/episode"))
-        let item = fixture.model.continueWatchingStore.save(siteID: fixture.site.id, title: "My Show", url: originalURL)
-        fixture.model.currentPageURL = originalURL
-        fixture.model.select(.home)
+        #expect(fixture.model.siteStore.addSite(SiteDraft(
+            name: "HBO Max", address: "https://www.hbomax.com/video/watch/old-episode"
+        )))
 
-        #expect(!fixture.model.canUseCurrentPage(for: item))
+        fixture.model.refreshContinueWatching(.hboMax)
 
-        fixture.model.select(.site(fixture.site.id))
-        fixture.model.currentPageURL = URL(string: "https://other.example/show")
-        fixture.model.useCurrentPage(for: item)
-
-        #expect(fixture.model.continueWatchingStore.item(id: item.id)?.url == originalURL)
-
-        let otherURL = try #require(URL(string: "https://private.example/show/other"))
-        fixture.model.continueWatchingStore.save(siteID: fixture.site.id, title: "Other", url: otherURL)
-        fixture.model.currentPageURL = otherURL
-
-        #expect(!fixture.model.canUseCurrentPage(for: item))
+        #expect(fixture.model.destinationURL?.absoluteString == "https://www.hbomax.com/")
+        #expect(fixture.model.continueWatchingQueues.first { $0.id == .hboMax }?.refreshID != nil)
     }
 
-    @Test func `Disabling automatic saving preserves existing entries and manual saving`() throws {
+    @Test func `Provider sidebar entries open the episode returned by the provider`() throws {
         let fixture = try AnalyticsAppFixture()
         defer { fixture.cleanup() }
 
-        let existingURL = try #require(URL(string: "https://private.example/first"))
-        let newURL = try #require(URL(string: "https://private.example/second"))
-        let item = fixture.model.continueWatchingStore.save(
-            siteID: fixture.site.id,
-            title: "Existing",
-            url: existingURL
-        )
-        fixture.defaults.set(false, forKey: ContinueWatchingPreference.automaticSavingKey)
+        let url = try #require(URL(string: "https://www.hbomax.com/"))
+        let id = try #require(UUID(uuidString: "00000000-0000-0000-0000-000000000001"))
+        let queue = try #require(fixture.model.continueWatchingQueues.first { $0.id == .hboMax })
+        queue.receive(json: """
+        [{"id":"00000000-0000-0000-0000-000000000001","title":"A Show","season":2,"episode":3}]
+        """, from: url)
+        fixture.model.select(.continueWatching(.hboMax, id.uuidString.lowercased()))
 
-        fixture.model.saveAutomaticallyToContinueWatching(title: "Automatic", url: newURL)
-
-        #expect(fixture.model.continueWatchingStore.items.count == 1)
-        #expect(fixture.model.continueWatchingStore.item(id: item.id) != nil)
-        #expect(fixture.defaults.object(forKey: ContinueWatchingPreference.automaticSavingKey) as? Bool == false)
-
-        fixture.model.toggleContinueWatching(title: "Manual", url: newURL)
-
-        #expect(fixture.model.continueWatchingStore.item(matching: newURL)?.title == "Manual")
+        #expect(fixture.model.destinationURL?.path == "/video/watch/00000000-0000-0000-0000-000000000001")
+        #expect(queue.entries.count == 1)
     }
 }

@@ -50,8 +50,8 @@ struct ContentView: View {
         switch action {
         case let .openSite(siteID):
             model.select(.site(siteID))
-        case let .continueWatching(itemID):
-            model.select(.continueWatching(itemID))
+        case let .continueWatching(service, itemID):
+            model.select(.continueWatching(service, itemID))
         case .addSite:
             model.dismissCommandPalette()
             showingAddSite = true

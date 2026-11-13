@@ -2,7 +2,7 @@ import Foundation
 
 enum CommandPaletteAction: Hashable, Sendable {
     case openSite(SavedSite.ID)
-    case continueWatching(ContinueWatchingItem.ID)
+    case continueWatching(ContinueWatchingService, String)
     case addSite
     case openSettings
 }
@@ -19,20 +19,21 @@ struct CommandPaletteCommand: Identifiable, Hashable, Sendable {
     }
 }
 
+@MainActor
 enum CommandCatalog {
     static func commands(
         matching query: String,
         sites: [SavedSite],
-        continueWatchingItems: [ContinueWatchingItem]
+        continueWatchingQueues: [ContinueWatchingController]
     ) -> [CommandPaletteCommand] {
         let trimmedQuery = query.trimmingCharacters(
             in: .whitespacesAndNewlines
         )
         let general = generalCommands
         let siteCommands = sites.map { openSiteCommand($0) }
-        let continueCommands = continueWatchingItems
-            .sorted { $0.lastOpenedAt > $1.lastOpenedAt }
-            .map { continueWatchingCommand($0) }
+        let continueCommands = continueWatchingQueues.flatMap { queue in
+            queue.entries.map { continueWatchingCommand($0, service: queue.adapter) }
+        }
 
         guard !trimmedQuery.isEmpty else {
             return general + siteCommands
@@ -88,12 +89,13 @@ enum CommandCatalog {
     }
 
     private static func continueWatchingCommand(
-        _ item: ContinueWatchingItem
+        _ item: ContinueWatchingEntry,
+        service: ContinueWatchingAdapter
     ) -> CommandPaletteCommand {
         CommandPaletteCommand(
-            action: .continueWatching(item.id),
+            action: .continueWatching(service.id, item.id),
             title: "Continue \(item.title)",
-            subtitle: item.url.host(),
+            subtitle: service.name,
             systemImage: "play.rectangle",
             keywords: [item.title, "continue", "watch", "resume"]
         )

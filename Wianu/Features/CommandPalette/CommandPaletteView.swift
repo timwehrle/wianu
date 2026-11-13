@@ -23,7 +23,7 @@ struct CommandPaletteView: View {
         CommandCatalog.commands(
             matching: search.query,
             sites: model.siteStore.sites,
-            continueWatchingItems: model.continueWatchingStore.sortedItems
+            continueWatchingQueues: model.sidebarContinueWatchingQueues
         )
     }
 

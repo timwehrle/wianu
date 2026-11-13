@@ -6,12 +6,10 @@ struct BrowserView: View {
     @State private var session: BrowserSession
     @State private var isVideoInformationPresented = false
     @State private var showsLoadingIndicator = false
-    @AppStorage(ContinueWatchingPreference.automaticSavingKey)
-    private var automaticSavingEnabled = true
 
     init(model: AppModel) {
         self.model = model
-        _session = State(initialValue: BrowserSession())
+        _session = State(initialValue: BrowserSession(continueWatchingQueues: model.continueWatchingQueues))
     }
 
     var body: some View {
@@ -26,19 +24,12 @@ struct BrowserView: View {
             .onDisappear {
                 session.cancelNavigation()
             }
-            .task(id: automaticSavingEnabled) {
-                guard automaticSavingEnabled else { return }
-
-                session.resetAutomaticContinueWatching()
-                await trackContinueWatching()
-            }
             .task(id: pageInteractionID) {
                 await session.setPageInteractionBlocked(
                     model.isCommandPalettePresented || model.selection == .home
                 )
             }
             .onChange(of: session.page.url) { _, url in
-                model.currentPageURL = url
                 session.videoDiagnostics.clear()
                 model.activateSite(matching: url)
             }
@@ -103,18 +94,6 @@ private extension BrowserView {
                 }
             }
         )
-    }
-
-    func trackContinueWatching() async {
-        while !Task.isCancelled {
-            if let candidate = session.continueWatchingCandidate(for: model.selectedSite) {
-                model.saveAutomaticallyToContinueWatching(title: candidate.title, url: candidate.url)
-            }
-
-            do {
-                try await Task.sleep(for: .seconds(1))
-            } catch { return }
-        }
     }
 
     func updateLoadingIndicator() async {

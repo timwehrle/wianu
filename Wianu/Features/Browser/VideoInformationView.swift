@@ -22,7 +22,6 @@ struct VideoInformationView: View {
                     row("Player Size", playerSize(video))
                     row("Detected Title", diagnostics.pageTitle ?? "Unavailable")
                     row("Media Title", diagnostics.mediaTitle ?? "Unavailable")
-                    row("Captured Play Title", diagnostics.linkedTitle?.title ?? "Unavailable")
                     row("Status", video.playbackState)
                     row("Position", position(video))
                     row("Buffered Ahead", duration(video.bufferedAhead))

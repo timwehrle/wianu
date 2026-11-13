@@ -59,7 +59,6 @@ struct VideoDiagnosticsTests {
         {"frameID":"embedded","videos":[],"pageURL":"https://www.netflix.com/browse",
          "title":"Wrong title","linkedURL":"https://www.netflix.com/watch/123","linkedTitle":"Wrong title"}
         """, isMainFrame: false)
-        #expect(controller.linkedTitle == nil)
         #expect(controller.pageTitle == nil)
     }
 

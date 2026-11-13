@@ -5,33 +5,134 @@ import WebKit
 
 @MainActor
 struct VideoObserverIntegrationTests {
-    @Test
-    func `Netflix play click captures the title before navigating to a generic player page`() async throws {
+    @Test(arguments: ["fetch", "xhr"])
+    func `Provider response capture reaches Swift without consuming the website response`(
+        transport: String
+    ) async throws {
         let fixture = VideoObserverFixture(pages: [
-            "/browse": """
-            <title>Netflix</title>
-            <div class="previewModal--container">
-                <img class="title-logo" alt="Dune: Part Two">
-                <a href="wianu-test://www.netflix.com/watch/123"><span id="play">Play</span></a>
-            </div>
-            """,
-            "/watch/123": "<title>Netflix</title><video width=640 height=360></video>"
-        ])
+            "/": """
+            <title>Loading</title>
+            <script>
+            if ("\(transport)" === "fetch") {
+                fetch('/cms/collections/home').then(response => response.json()).then(json => {
+                    document.title = json.data.attributes.alias;
+                });
+            } else {
+                const request = new XMLHttpRequest();
+                request.open('GET', '/cms/collections/home');
+                request.addEventListener('load', () => {
+                    document.title = JSON.parse(request.responseText).data.attributes.alias;
+                });
+                request.send();
+            }
+            </script>
+            """
+        ], host: "www.hbomax.com", pageScript: """
+        const queuePayload = {
+            data: {
+                attributes: { alias: "continue-watching" },
+                relationships: { items: { data: [{ type: "collectionItem", id: "card" }] } }
+            },
+            included: [
+                { type: "collectionItem", id: "card", relationships: {
+                    video: { data: { type: "video", id: "00000000-0000-0000-0000-000000000001" } }
+                } },
+                { type: "video", id: "00000000-0000-0000-0000-000000000001", attributes: {
+                    name: "The Next Episode", seasonNumber: 2, episodeNumber: 3
+                }, relationships: { show: { data: { type: "show", id: "series" } } } },
+                { type: "show", id: "series", attributes: { name: "A Show" } }
+            ]
+        };
+        globalThis.fetch = async () => new Response(JSON.stringify(queuePayload));
+        XMLHttpRequest.prototype.send = function() {
+            Object.defineProperties(this, {
+                status: { value: 200 },
+                responseURL: { value: 'https://api.hbomax.com/cms/collections/home' },
+                responseText: { value: JSON.stringify(queuePayload) }
+            });
+            this.dispatchEvent(new Event('load'));
+        };
+        """)
         defer { fixture.stop() }
 
-        try await fixture.load("/browse")
-        try await fixture.waitUntil { fixture.diagnostics.pageTitle == "Dune: Part Two" }
-
-        _ = try await fixture.webView.evaluateJavaScript("document.getElementById('play').click()")
-
+        try await fixture.load("/")
         try await fixture.waitUntil {
-            fixture.diagnostics.pageURL?.path == "/watch/123"
-                && fixture.diagnostics.pageTitle == "Netflix"
-                && fixture.diagnostics.selectedVideo != nil
+            fixture.continueWatchingQueue.updatedAt != nil && fixture.diagnostics.pageTitle == "continue-watching"
         }
 
-        #expect(fixture.diagnostics.linkedTitle?.title == "Dune: Part Two")
-        #expect(fixture.diagnostics.linkedTitle?.url.path == "/watch/123")
+        #expect(fixture.continueWatchingQueue.entries.first?.title == "A Show")
+        #expect(fixture.continueWatchingQueue.entries.first?.episode == 3)
+    }
+
+    @Test(arguments: ["netflix", "primeVideo", "disneyPlus", "appleTV"])
+    func `Service adapters extract only their Continue Watching shelf`(name: String) async throws {
+        let adapter = try #require(ContinueWatchingAdapter.all.first { $0.id.rawValue == name })
+        let markup: String
+        let host: String
+
+        switch adapter.id {
+        case .netflix:
+            host = "www.netflix.com"
+            markup = """
+            <div data-list-context="continueWatching"><div class="title-card">
+            <a href="https://www.netflix.com/watch/123"><img alt="A Show"></a></div></div>
+            """
+        case .primeVideo:
+            host = "www.primevideo.com"
+            markup = """
+            <div data-testid="continue-watching">
+            <a href="https://www.primevideo.com/detail/B00ABC"><img alt="A Show"></a></div>
+            """
+        case .disneyPlus:
+            host = "www.disneyplus.com"
+            markup = """
+            <div><a data-testid="set-item" data-item-id="episode-123"
+            href="https://www.disneyplus.com/play/episode-123">Play</a>
+            <a data-testid="cw-set-item-metadata"><div>A Show</div><div>S2:E3 Episode</div></a></div>
+            """
+        case .appleTV:
+            host = "tv.apple.com"
+            markup = """
+            <a data-testid="continue-watching-lockup" aria-label="A Show"
+            href="https://tv.apple.com/episode/name/umc.cmc.123">Play</a>
+            """
+        case .hboMax:
+            Issue.record("HBO uses response capture rather than the DOM adapter")
+            return
+        }
+
+        let fixture = VideoObserverFixture(
+            pages: ["/": "<title>Provider</title>" + markup],
+            host: host,
+            adapter: adapter
+        )
+        defer { fixture.stop() }
+
+        try await fixture.load("/")
+        try await fixture.waitUntil { fixture.continueWatchingQueue.updatedAt != nil }
+
+        #expect(fixture.continueWatchingQueue.entries.count == 1)
+        #expect(fixture.continueWatchingQueue.entries.first?.title == "A Show")
+        #expect(fixture.continueWatchingQueue.entries.first?.url.scheme == "https")
+    }
+
+    @Test
+    func `An unfinished shelf is not treated as an empty queue and late cards are detected`() async throws {
+        let fixture = VideoObserverFixture(pages: [
+            "/": "<title>Netflix</title><div data-list-context='continueWatching'></div>"
+        ], adapter: .netflix)
+        defer { fixture.stop() }
+
+        try await fixture.load("/")
+
+        #expect(fixture.continueWatchingQueue.updatedAt == nil)
+
+        _ = try await fixture.webView.evaluateJavaScript("""
+        document.querySelector('[data-list-context]').innerHTML =
+            '<a href="https://www.netflix.com/watch/123"><img alt="A Show"></a>';
+        """)
+
+        try await fixture.waitUntil { fixture.continueWatchingQueue.entries.first?.id == "123" }
     }
 
     @Test(arguments: ["document", "metadata", "player"])
@@ -162,19 +263,25 @@ struct VideoObserverIntegrationTests {
 
         #expect(fixture.diagnostics.pageTitle == "Dune: Part Two")
         #expect(fixture.diagnostics.pageURL?.path == "/watch/123")
-        #expect(fixture.diagnostics.linkedTitle == nil)
     }
 }
 
 @MainActor
-private final class VideoObserverFixture {
+final class VideoObserverFixture {
     let diagnostics = VideoDiagnosticsController()
+    let continueWatchingQueue: ContinueWatchingController
     let webView: WKWebView
 
     private let host: String
 
-    init(pages: [String: String], host: String = "www.netflix.com") {
+    init(
+        pages: [String: String],
+        host: String = "www.netflix.com",
+        pageScript: String? = nil,
+        adapter: ContinueWatchingAdapter? = nil
+    ) {
         self.host = host
+        continueWatchingQueue = ContinueWatchingController(adapter: adapter ?? .hboMax)
 
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
@@ -186,6 +293,16 @@ private final class VideoObserverFixture {
             forMainFrameOnly: false,
             in: .world(name: "WianuVideoDiagnostics")
         ))
+        if let pageScript {
+            configuration.userContentController.addUserScript(WKUserScript(
+                source: pageScript,
+                injectionTime: .atDocumentStart,
+                forMainFrameOnly: true,
+                in: .page
+            ))
+        }
+
+        continueWatchingQueue.install(in: configuration.userContentController)
         diagnostics.install(in: configuration.userContentController)
         configuration.setURLSchemeHandler(FixturePages(pages: pages), forURLScheme: "wianu-test")
 

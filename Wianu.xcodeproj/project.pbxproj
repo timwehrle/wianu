@@ -7,11 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E2B300013040000000000001 /* PageInteraction.js in Resources */ = {isa = PBXBuildFile; fileRef = E2B300023040000000000002 /* PageInteraction.js */; };
+		E8246EA4A72F4AED8556DF41 /* VideoObserver.js in Resources */ = {isa = PBXBuildFile; fileRef = 39C8403A43C84AA3853F6A74 /* VideoObserver.js */; };
+		5DB07386953043D881AA472A /* AppleTV.js in Resources */ = {isa = PBXBuildFile; fileRef = 468858E494334D5289734BA4 /* AppleTV.js */; };
+		4B5C1BECF6C24792B7B1BF4F /* PrimeVideo.js in Resources */ = {isa = PBXBuildFile; fileRef = CECDB547FD234F6BA927D8AC /* PrimeVideo.js */; };
+		E6694C6DCC9B478991E6AEF8 /* Netflix.js in Resources */ = {isa = PBXBuildFile; fileRef = 9CEA64E175C84ACDA8BDF5B8 /* Netflix.js */; };
+		88AD767A41A740928E140D76 /* ContinueWatchingObserver.js in Resources */ = {isa = PBXBuildFile; fileRef = 6E542CBD6AF7440B92C83700 /* ContinueWatchingObserver.js */; };
+		3D9A20A9AF7A4BC79FFE1566 /* DisneyPlus.js in Resources */ = {isa = PBXBuildFile; fileRef = 4D5971F87FC8485290ABD500 /* DisneyPlus.js */; };
+		DD5C1851C85141DF833CF18E /* HBOMax.js in Resources */ = {isa = PBXBuildFile; fileRef = 31A5E1A307C5486686FE499F /* HBOMax.js */; };
+		E2B100013040000000000001 /* BundledJavaScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B100023040000000000002 /* BundledJavaScript.swift */; };
+		E2AE00013040000000000001 /* ContinueWatchingDOMTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AE00023040000000000002 /* ContinueWatchingDOMTests.swift */; };
+		E2B000013040000000000001 /* AppleContinueWatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B000023040000000000002 /* AppleContinueWatchingTests.swift */; };
+		E2AC00013040000000000001 /* ContinueWatchingScripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AC00023040000000000002 /* ContinueWatchingScripts.swift */; };
+		E2AB00013040000000000001 /* ContinueWatchingAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AB00023040000000000002 /* ContinueWatchingAdapter.swift */; };
+		E2AA00013040000000000001 /* ContinueWatchingSidebarSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AA00023040000000000002 /* ContinueWatchingSidebarSection.swift */; };
+		E2A800013040000000000001 /* ContinueWatchingControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A800023040000000000002 /* ContinueWatchingControllerTests.swift */; };
+		E2A600013040000000000001 /* ContinueWatchingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A600023040000000000002 /* ContinueWatchingController.swift */; };
 		E2A500013040000000000001 /* ContinueWatchingControlsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A500023040000000000002 /* ContinueWatchingControlsTests.swift */; };
 		E2A400013040000000000001 /* VideoObserverIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A400023040000000000002 /* VideoObserverIntegrationTests.swift */; };
-		E2A300013040000000000001 /* AutomaticContinueWatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A300023040000000000002 /* AutomaticContinueWatchingTests.swift */; };
-		E2A200013040000000000001 /* VideoObserverScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A200023040000000000002 /* VideoObserverScript.swift */; };
-		E2A100013040000000000001 /* AutomaticContinueWatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A100023040000000000002 /* AutomaticContinueWatching.swift */; };
 		21392BB5A368A104286329C5 /* TMDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4864F4CC291E958A50456E1F /* TMDBClient.swift */; };
 		2A8A8308E06AA024385EF725 /* TMDBResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2779DA82DAB320184F2669D1 /* TMDBResponses.swift */; };
 		3B696CC64A0307E645BFBE56 /* LetterboxdImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AB648782105E118BE086F8 /* LetterboxdImportView.swift */; };
@@ -56,16 +69,12 @@
 		D1B972763015341900B64B10 /* URLNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972623015341900B64B10 /* URLNormalizer.swift */; };
 		D1B972773015341900B64B10 /* WatchlistRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972513015341900B64B10 /* WatchlistRow.swift */; };
 		D1B972783015341900B64B10 /* SiteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B9725B3015341900B64B10 /* SiteStore.swift */; };
-		D1B972793015341900B64B10 /* RenameContinueWatchingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B9724D3015341900B64B10 /* RenameContinueWatchingView.swift */; };
 		D1B9727A3015341900B64B10 /* LetterboxdWatchlistImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B9724F3015341900B64B10 /* LetterboxdWatchlistImporter.swift */; };
-		D1B9727B3015341900B64B10 /* ContinueWatchingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B9724C3015341900B64B10 /* ContinueWatchingStore.swift */; };
 		D1B9727C3015341900B64B10 /* FaviconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972643015341900B64B10 /* FaviconView.swift */; };
 		D1B9727D3015341900B64B10 /* BrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972473015341900B64B10 /* BrowserView.swift */; };
 		D1B9727E3015341900B64B10 /* SiteDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972583015341900B64B10 /* SiteDraft.swift */; };
 		D1B9727F3015341900B64B10 /* SiteRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B9725A3015341900B64B10 /* SiteRow.swift */; };
-		D1B972803015341900B64B10 /* ContinueWatchingItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B9724A3015341900B64B10 /* ContinueWatchingItem.swift */; };
 		D1B972813015341900B64B10 /* BrowserNavigationDecider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972453015341900B64B10 /* BrowserNavigationDecider.swift */; };
-		D1B972823015341900B64B10 /* ContinueWatchingRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B9724B3015341900B64B10 /* ContinueWatchingRow.swift */; };
 		D1B972833015341900B64B10 /* WatchlistStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972523015341900B64B10 /* WatchlistStore.swift */; };
 		D1B972843015341900B64B10 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972553015341900B64B10 /* SidebarView.swift */; };
 		D1B972853015341900B64B10 /* SavedSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B972573015341900B64B10 /* SavedSite.swift */; };
@@ -103,11 +112,24 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E2B300023040000000000002 /* PageInteraction.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = PageInteraction.js; sourceTree = "<group>"; };
+		39C8403A43C84AA3853F6A74 /* VideoObserver.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "VideoObserver.js"; sourceTree = "<group>"; };
+		468858E494334D5289734BA4 /* AppleTV.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "AppleTV.js"; sourceTree = "<group>"; };
+		CECDB547FD234F6BA927D8AC /* PrimeVideo.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "PrimeVideo.js"; sourceTree = "<group>"; };
+		9CEA64E175C84ACDA8BDF5B8 /* Netflix.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "Netflix.js"; sourceTree = "<group>"; };
+		6E542CBD6AF7440B92C83700 /* ContinueWatchingObserver.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "ContinueWatchingObserver.js"; sourceTree = "<group>"; };
+		4D5971F87FC8485290ABD500 /* DisneyPlus.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "DisneyPlus.js"; sourceTree = "<group>"; };
+		31A5E1A307C5486686FE499F /* HBOMax.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "HBOMax.js"; sourceTree = "<group>"; };
+		E2B100023040000000000002 /* BundledJavaScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledJavaScript.swift; sourceTree = "<group>"; };
+		E2AE00023040000000000002 /* ContinueWatchingDOMTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingDOMTests.swift; sourceTree = "<group>"; };
+		E2B000023040000000000002 /* AppleContinueWatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleContinueWatchingTests.swift; sourceTree = "<group>"; };
+		E2AC00023040000000000002 /* ContinueWatchingScripts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingScripts.swift; sourceTree = "<group>"; };
+		E2AB00023040000000000002 /* ContinueWatchingAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingAdapter.swift; sourceTree = "<group>"; };
+		E2AA00023040000000000002 /* ContinueWatchingSidebarSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingSidebarSection.swift; sourceTree = "<group>"; };
+		E2A800023040000000000002 /* ContinueWatchingControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingControllerTests.swift; sourceTree = "<group>"; };
+		E2A600023040000000000002 /* ContinueWatchingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingController.swift; sourceTree = "<group>"; };
 		E2A500023040000000000002 /* ContinueWatchingControlsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingControlsTests.swift; sourceTree = "<group>"; };
 		E2A400023040000000000002 /* VideoObserverIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoObserverIntegrationTests.swift; sourceTree = "<group>"; };
-		E2A300023040000000000002 /* AutomaticContinueWatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticContinueWatchingTests.swift; sourceTree = "<group>"; };
-		E2A200023040000000000002 /* VideoObserverScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoObserverScript.swift; sourceTree = "<group>"; };
-		E2A100023040000000000002 /* AutomaticContinueWatching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticContinueWatching.swift; sourceTree = "<group>"; };
 		1EFF6F7118F05B89732A32C3 /* LetterboxdTestSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdTestSession.swift; sourceTree = "<group>"; };
 		2779DA82DAB320184F2669D1 /* TMDBResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBResponses.swift; sourceTree = "<group>"; };
 		297D70DC28BF39EC09DA4C62 /* LetterboxdImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportTests.swift; sourceTree = "<group>"; };
@@ -158,10 +180,6 @@
 		D1B972463015341900B64B10 /* BrowserPaneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserPaneView.swift; sourceTree = "<group>"; };
 		D1B972473015341900B64B10 /* BrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserView.swift; sourceTree = "<group>"; };
 		D1B972483015341900B64B10 /* BrowserTitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserTitleView.swift; sourceTree = "<group>"; };
-		D1B9724A3015341900B64B10 /* ContinueWatchingItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingItem.swift; sourceTree = "<group>"; };
-		D1B9724B3015341900B64B10 /* ContinueWatchingRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingRow.swift; sourceTree = "<group>"; };
-		D1B9724C3015341900B64B10 /* ContinueWatchingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingStore.swift; sourceTree = "<group>"; };
-		D1B9724D3015341900B64B10 /* RenameContinueWatchingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameContinueWatchingView.swift; sourceTree = "<group>"; };
 		D1B9724F3015341900B64B10 /* LetterboxdWatchlistImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdWatchlistImporter.swift; sourceTree = "<group>"; };
 		D1B972503015341900B64B10 /* WatchlistItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistItem.swift; sourceTree = "<group>"; };
 		D1B972513015341900B64B10 /* WatchlistRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistRow.swift; sourceTree = "<group>"; };
@@ -218,6 +236,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E2B300033040000000000003 /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				E2B300023040000000000002 /* PageInteraction.js */,
+				39C8403A43C84AA3853F6A74 /* VideoObserver.js */,
+			);
+			path = Scripts;
+			sourceTree = "<group>";
+		};
+		9E0366A339BB4D45AF57B3CC /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				31A5E1A307C5486686FE499F /* HBOMax.js */,
+				4D5971F87FC8485290ABD500 /* DisneyPlus.js */,
+				6E542CBD6AF7440B92C83700 /* ContinueWatchingObserver.js */,
+				9CEA64E175C84ACDA8BDF5B8 /* Netflix.js */,
+				CECDB547FD234F6BA927D8AC /* PrimeVideo.js */,
+				468858E494334D5289734BA4 /* AppleTV.js */,
+			);
+			path = Scripts;
+			sourceTree = "<group>";
+		};
 		1CC97F7F9472654E509E2D4D /* MediaIdentification */ = {
 			isa = PBXGroup;
 			children = (
@@ -331,6 +371,8 @@
 		D1B972493015341900B64B10 /* Browser */ = {
 			isa = PBXGroup;
 			children = (
+				E2B300033040000000000003 /* Scripts */,
+				E2B100023040000000000002 /* BundledJavaScript.swift */,
 				D1B972453015341900B64B10 /* BrowserNavigationDecider.swift */,
 				D1B972463015341900B64B10 /* BrowserPaneView.swift */,
 				D1F100033070000000000003 /* BrowserSession.swift */,
@@ -338,7 +380,6 @@
 				D1B972473015341900B64B10 /* BrowserView.swift */,
 				D1B972483015341900B64B10 /* BrowserTitleView.swift */,
 				D1F000033040000000000003 /* VideoDiagnostics.swift */,
-				E2A200023040000000000002 /* VideoObserverScript.swift */,
 				D1F000043040000000000004 /* VideoInformationView.swift */,
 			);
 			path = Browser;
@@ -347,11 +388,10 @@
 		D1B9724E3015341900B64B10 /* ContinueWatching */ = {
 			isa = PBXGroup;
 			children = (
-				D1B9724A3015341900B64B10 /* ContinueWatchingItem.swift */,
-				E2A100023040000000000002 /* AutomaticContinueWatching.swift */,
-				D1B9724B3015341900B64B10 /* ContinueWatchingRow.swift */,
-				D1B9724C3015341900B64B10 /* ContinueWatchingStore.swift */,
-				D1B9724D3015341900B64B10 /* RenameContinueWatchingView.swift */,
+				9E0366A339BB4D45AF57B3CC /* Scripts */,
+				E2A600023040000000000002 /* ContinueWatchingController.swift */,
+				E2AC00023040000000000002 /* ContinueWatchingScripts.swift */,
+				E2AB00023040000000000002 /* ContinueWatchingAdapter.swift */,
 			);
 			path = ContinueWatching;
 			sourceTree = "<group>";
@@ -379,6 +419,7 @@
 				35AC6853CD9B8604D4C99160 /* SidebarDeletion.swift */,
 				D1B972543015341900B64B10 /* SidebarSelection.swift */,
 				D1B972553015341900B64B10 /* SidebarView.swift */,
+				E2AA00023040000000000002 /* ContinueWatchingSidebarSection.swift */,
 			);
 			path = Sidebar;
 			sourceTree = "<group>";
@@ -489,7 +530,9 @@
 				D1F100063070000000000006 /* BrowserPresentationTests.swift */,
 				D1F000063040000000000006 /* VideoDiagnosticsTests.swift */,
 				E2A400023040000000000002 /* VideoObserverIntegrationTests.swift */,
-				E2A300023040000000000002 /* AutomaticContinueWatchingTests.swift */,
+				E2AE00023040000000000002 /* ContinueWatchingDOMTests.swift */,
+				E2B000023040000000000002 /* AppleContinueWatchingTests.swift */,
+				E2A800023040000000000002 /* ContinueWatchingControllerTests.swift */,
 				E2A500023040000000000002 /* ContinueWatchingControlsTests.swift */,
 				D1E300033030000000000003 /* CommandCatalogTests.swift */,
 				D1C1000C302000000000010C /* BrowserNavigationRouterTests.swift */,
@@ -604,6 +647,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				D10EF48E3015F2800070703E /* WianuLogo.icon in Resources */,
+				DD5C1851C85141DF833CF18E /* HBOMax.js in Resources */,
+				3D9A20A9AF7A4BC79FFE1566 /* DisneyPlus.js in Resources */,
+				88AD767A41A740928E140D76 /* ContinueWatchingObserver.js in Resources */,
+				E6694C6DCC9B478991E6AEF8 /* Netflix.js in Resources */,
+				4B5C1BECF6C24792B7B1BF4F /* PrimeVideo.js in Resources */,
+				5DB07386953043D881AA472A /* AppleTV.js in Resources */,
+				E2B300013040000000000001 /* PageInteraction.js in Resources */,
+				E8246EA4A72F4AED8556DF41 /* VideoObserver.js in Resources */,
 				D1B9726A3015341900B64B10 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -652,19 +703,18 @@
 				D1B972863015341900B64B10 /* WatchlistItemEditorView.swift in Sources */,
 				D13E65ED3018F6B400E58017 /* UpdateService.swift in Sources */,
 				D1B972783015341900B64B10 /* SiteStore.swift in Sources */,
-				D1B972793015341900B64B10 /* RenameContinueWatchingView.swift in Sources */,
 				D1B9727A3015341900B64B10 /* LetterboxdWatchlistImporter.swift in Sources */,
-				D1B9727B3015341900B64B10 /* ContinueWatchingStore.swift in Sources */,
 				D1B9727C3015341900B64B10 /* FaviconView.swift in Sources */,
 				D1B9727D3015341900B64B10 /* BrowserView.swift in Sources */,
 				D1B9727E3015341900B64B10 /* SiteDraft.swift in Sources */,
 				D1B9727F3015341900B64B10 /* SiteRow.swift in Sources */,
-				D1B972803015341900B64B10 /* ContinueWatchingItem.swift in Sources */,
-				E2A100013040000000000001 /* AutomaticContinueWatching.swift in Sources */,
+				E2A600013040000000000001 /* ContinueWatchingController.swift in Sources */,
+				E2AC00013040000000000001 /* ContinueWatchingScripts.swift in Sources */,
+				E2AB00013040000000000001 /* ContinueWatchingAdapter.swift in Sources */,
 				D1B972813015341900B64B10 /* BrowserNavigationDecider.swift in Sources */,
-				D1B972823015341900B64B10 /* ContinueWatchingRow.swift in Sources */,
 				D1B972833015341900B64B10 /* WatchlistStore.swift in Sources */,
 				D1B972843015341900B64B10 /* SidebarView.swift in Sources */,
+				E2AA00013040000000000001 /* ContinueWatchingSidebarSection.swift in Sources */,
 				D1B972853015341900B64B10 /* SavedSite.swift in Sources */,
 				D1B973023015341900B64B10 /* StreamingSearchURL.swift in Sources */,
 				D1B973033015341900B64B10 /* CommandPaletteView.swift in Sources */,
@@ -674,7 +724,7 @@
 				D1E400013030000000000001 /* TMDBAvailabilityView.swift in Sources */,
 				D1E400023030000000000002 /* TMDBMediaViews.swift in Sources */,
 				D1F000013040000000000001 /* VideoDiagnostics.swift in Sources */,
-				E2A200013040000000000001 /* VideoObserverScript.swift in Sources */,
+				E2B100013040000000000001 /* BundledJavaScript.swift in Sources */,
 				D1F000023040000000000002 /* VideoInformationView.swift in Sources */,
 				D1F100013070000000000001 /* BrowserSession.swift in Sources */,
 				D1F100023070000000000002 /* BrowserToolbar.swift in Sources */,
@@ -696,7 +746,9 @@
 				AB0000030000000000000001 /* AnalyticsDeliveryTests.swift in Sources */,
 				D1F000053040000000000005 /* VideoDiagnosticsTests.swift in Sources */,
 				E2A400013040000000000001 /* VideoObserverIntegrationTests.swift in Sources */,
-				E2A300013040000000000001 /* AutomaticContinueWatchingTests.swift in Sources */,
+				E2AE00013040000000000001 /* ContinueWatchingDOMTests.swift in Sources */,
+				E2B000013040000000000001 /* AppleContinueWatchingTests.swift in Sources */,
+				E2A800013040000000000001 /* ContinueWatchingControllerTests.swift in Sources */,
 				E2A500013040000000000001 /* ContinueWatchingControlsTests.swift in Sources */,
 				D1E300013030000000000001 /* CommandCatalogTests.swift in Sources */,
 				D1C1000D302000000000010D /* BrowserNavigationRouterTests.swift in Sources */,
