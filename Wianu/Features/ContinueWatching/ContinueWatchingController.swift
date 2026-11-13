@@ -49,13 +49,18 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
     }
 
     private let fileStore: JSONFileStore<ContinueWatchingSnapshot?>?
+    private let refreshTimeout: Duration
+    @ObservationIgnored
+    private var refreshTask: Task<Void, Never>?
 
     init(
         adapter: ContinueWatchingAdapter,
-        fileStore: JSONFileStore<ContinueWatchingSnapshot?>? = nil
+        fileStore: JSONFileStore<ContinueWatchingSnapshot?>? = nil,
+        refreshTimeout: Duration = .seconds(20)
     ) {
         self.adapter = adapter
         self.fileStore = fileStore
+        self.refreshTimeout = refreshTimeout
         super.init()
 
         do {
@@ -79,15 +84,32 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
     }
 
     func beginRefresh() {
+        refreshTask?.cancel()
         responseError = false
-        refreshID = UUID()
+        let id = UUID()
+        refreshID = id
+        let timeout = refreshTimeout
+
+        refreshTask = Task { [weak self] in
+            do {
+                try await Task.sleep(for: timeout)
+            } catch { return }
+
+            self?.finishRefreshIfWaiting(id)
+        }
     }
 
     func finishRefreshIfWaiting(_ id: UUID) {
         guard refreshID == id else { return }
 
-        refreshID = nil
+        endRefresh()
         responseError = true
+    }
+
+    private func endRefresh() {
+        refreshTask?.cancel()
+        refreshTask = nil
+        refreshID = nil
     }
 
     func clear() {
@@ -95,7 +117,7 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
         diagnostics = nil
         updatedAt = nil
         responseError = false
-        refreshID = nil
+        endRefresh()
 
         saveSnapshot(nil)
     }
@@ -119,7 +141,7 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
 
         guard let received = decodeEntries(from: data) else {
             responseError = true
-            refreshID = nil
+            endRefresh()
             return
         }
 
@@ -130,7 +152,7 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
         let receivedAt = Date.now
         updatedAt = receivedAt
         responseError = false
-        refreshID = nil
+        endRefresh()
 
         saveSnapshot(ContinueWatchingSnapshot(entries: received, updatedAt: receivedAt))
     }

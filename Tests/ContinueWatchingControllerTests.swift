@@ -5,6 +5,43 @@ import Testing
 @MainActor
 struct ContinueWatchingControllerTests {
     @Test
+    func `Refresh times out without a sidebar view`() async throws {
+        let controller = ContinueWatchingController(adapter: .netflix, refreshTimeout: .zero)
+        controller.beginRefresh()
+
+        for _ in 0 ..< 100 {
+            if controller.refreshID == nil {
+                break
+            }
+
+            try await Task.sleep(for: .milliseconds(10))
+        }
+
+        #expect(controller.refreshID == nil)
+        #expect(controller.responseError)
+    }
+
+    @Test
+    func `Successful responses and clearing cancel pending refresh timeouts`() async throws {
+        let controller = ContinueWatchingController(adapter: .netflix, refreshTimeout: .zero)
+        let url = try #require(URL(string: "https://www.netflix.com/browse"))
+
+        controller.beginRefresh()
+        controller.receive(json: "[]", from: url)
+        try await Task.sleep(for: .milliseconds(10))
+
+        #expect(controller.refreshID == nil)
+        #expect(!controller.responseError)
+
+        controller.beginRefresh()
+        controller.clear()
+        try await Task.sleep(for: .milliseconds(10))
+
+        #expect(controller.refreshID == nil)
+        #expect(!controller.responseError)
+    }
+
+    @Test
     func `Saved queues survive restart and failed refreshes`() throws {
         let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ContinueWatchingSidebarSection: View {
     @Bindable var model: AppModel
-    @State private var isExpanded = true
+    @AppStorage("continueWatching.sectionExpanded") private var isExpanded = true
 
     var body: some View {
         let queues = model.sidebarContinueWatchingQueues
@@ -20,14 +20,17 @@ struct ContinueWatchingSidebarSection: View {
 private struct ContinueWatchingGroup: View {
     @Bindable var model: AppModel
     @Bindable var queue: ContinueWatchingController
-    @State private var isExpanded: Bool
+    @AppStorage private var isExpanded: Bool
     @State private var isHovered = false
     @FocusState private var isRefreshFocused: Bool
 
     init(model: AppModel, queue: ContinueWatchingController) {
         self.model = model
         self.queue = queue
-        _isExpanded = State(initialValue: !queue.entries.isEmpty)
+        _isExpanded = AppStorage(
+            wrappedValue: !queue.entries.isEmpty,
+            "continueWatching.\(queue.id.rawValue).expanded"
+        )
     }
 
     var body: some View {
@@ -44,21 +47,53 @@ private struct ContinueWatchingGroup: View {
 
                 Spacer()
 
+                if queue.responseError || queue.storageError {
+                    Image(systemName: "exclamationmark.triangle")
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel(queue.responseError ? "Refresh failed" : "Queue could not be saved")
+                }
+
+                if !isExpanded, !queue.entries.isEmpty {
+                    Text(queue.entries.count, format: .number)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel("\(queue.entries.count) titles")
+                }
+
                 refreshButton
                     .opacity(isHovered || isRefreshFocused || queue.refreshID != nil ? 1 : 0)
             }
             .contentShape(.rect)
             .onHover { isHovered = $0 }
         }
-        .task(id: queue.refreshID) {
-            guard let id = queue.refreshID else { return }
+        .help(serviceHelp)
+        .contextMenu {
+            Button("Refresh") {
+                model.refreshContinueWatching(queue.id)
+            }
+            .disabled(model.continueWatchingSite(for: queue.id) == nil || queue.refreshID != nil)
 
-            do {
-                try await Task.sleep(for: .seconds(20))
-            } catch { return }
-
-            queue.finishRefreshIfWaiting(id)
+            Button("Open Service") {
+                if let site = model.continueWatchingSite(for: queue.id) {
+                    model.select(.site(site.id))
+                }
+            }
+            .disabled(model.continueWatchingSite(for: queue.id) == nil)
         }
+    }
+
+    private var serviceHelp: String {
+        if queue.responseError {
+            return "Couldn’t refresh. Open \(queue.adapter.name) and select your profile."
+        }
+
+        if queue.storageError {
+            return "Local storage is unavailable. This queue may not be saved."
+        }
+
+        guard let updatedAt = queue.updatedAt else { return "Refresh to load your queue." }
+
+        return "Last updated \(updatedAt.formatted(date: .abbreviated, time: .shortened))"
     }
 
     @ViewBuilder
