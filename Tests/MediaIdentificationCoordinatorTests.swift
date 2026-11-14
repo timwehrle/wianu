@@ -78,12 +78,12 @@ struct MediaIdentificationCoordinatorTests {
     }
 
     private func waitUntil(_ condition: () -> Bool) async throws {
-        for _ in 0 ..< 100 {
-            if condition() {
-                return
-            }
+        let deadline = ContinuousClock.now + .seconds(5)
+
+        while !condition() {
+            try #require(ContinuousClock.now < deadline, "Identification did not complete in time")
+
             try await Task.sleep(for: .milliseconds(20))
         }
-        Issue.record("Identification did not complete in time")
     }
 }

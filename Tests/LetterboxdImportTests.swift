@@ -86,11 +86,21 @@ struct LetterboxdImportTests {
         let session = LetterboxdTestSession(pages: [LetterboxdTestFixtures.enemy], statuses: [429])
         let model = LetterboxdImportModel()
         let task = Task { await model.load(from: url, existingItems: [], client: TMDBClient(session: session)) }
-        try await Task.sleep(for: .milliseconds(450))
+        defer { task.cancel() }
+
+        let deadline = ContinuousClock.now + .seconds(5)
+
+        while await session.requests.isEmpty {
+            try #require(ContinuousClock.now < deadline, "The import request did not start")
+
+            try await Task.sleep(for: .milliseconds(10))
+        }
+
         task.cancel()
         await task.value
 
         #expect(model.entries.isEmpty && model.message == nil && !model.isLoading)
+        #expect(await session.requests.count == 1)
     }
 
     private func temporaryCSV() throws -> URL {
