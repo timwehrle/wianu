@@ -70,7 +70,11 @@ final class AppModel {
         siteStore = SiteStore()
         watchlistStore = WatchlistStore()
         userDefaults = .standard
-        let analytics = AnalyticsClient(userDefaults: userDefaults)
+        #if DEBUG
+            let analytics = DisabledAnalyticsTracker()
+        #else
+            let analytics = AnalyticsClient(userDefaults: userDefaults)
+        #endif
         self.analytics = analytics
         let client = TMDBClient()
         mediaIdentification = MediaIdentificationCoordinator(
