@@ -50,15 +50,25 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Show runner Xcode version
+        id: xcode
         run: |
           xcode-select --print-path
           xcodebuild -version
+          echo "build=$(xcodebuild -version | awk '/Build version/ {print $3}')" >> "$GITHUB_OUTPUT"
 
       - name: Cache Swift packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .build/SourcePackages
           key: ${{ runner.os }}-${{ runner.arch }}-swift-packages-${{ hashFiles('Wianu.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+
+      - name: Cache compilation results
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: DerivedData/CompilationCache.noindex
+          key: ${{ runner.os }}-${{ runner.arch }}-xcode-${{ steps.xcode.outputs.build }}-compilation-v1-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-xcode-${{ steps.xcode.outputs.build }}-compilation-v1-
 
       - name: Run tests
         run: |
@@ -68,8 +78,11 @@ jobs:
             -scheme "$SCHEME" \
             -configuration Debug \
             -destination "platform=macOS" \
+            -derivedDataPath DerivedData \
             -clonedSourcePackagesDirPath .build/SourcePackages \
             -onlyUsePackageVersionsFromResolvedFile \
             -showBuildTimingSummary \
+            COMPILATION_CACHE_ENABLE_CACHING=YES \
+            COMPILATION_CACHE_ENABLE_DIAGNOSTIC_REMARKS=YES \
             COMPILER_INDEX_STORE_ENABLE=NO \
             CODE_SIGNING_ALLOWED=NO
