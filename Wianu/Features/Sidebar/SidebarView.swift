@@ -120,6 +120,8 @@ struct SidebarView: View {
             model.showCommandPalette()
         } label: {
             Label("Search", systemImage: "magnifyingglass")
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
