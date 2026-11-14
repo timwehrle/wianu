@@ -18,17 +18,26 @@ private struct GeneralSettingsView: View {
 
     var body: some View {
         Form {
-            Toggle(
-                "Send Anonymous Usage Analytics",
-                isOn: $analyticsEnabled
-            )
+            Section {
+                Toggle(
+                    "Send Anonymous Usage Analytics",
+                    isOn: $analyticsEnabled
+                )
 
-            Text(
-                "Share feature usage. "
-                    + "Titles, searches, and URLs aren’t sent."
-            )
-            .font(.callout)
-            .foregroundStyle(.secondary)
+                Text(
+                    "Share feature usage. "
+                        + "Titles, searches, and URLs aren’t sent."
+                )
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            } footer: {
+                Link(destination: SupportPromptModel.supportURL) {
+                    Label("Support Wianu", systemImage: "heart")
+                }
+                .buttonStyle(.plain)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .padding()
@@ -62,7 +71,7 @@ struct AboutView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Link(destination: URL(string: "https://ko-fi.com/timwehrle")!) {
+            Link(destination: SupportPromptModel.supportURL) {
                 Label("Support My Work", systemImage: "heart")
             }
             .buttonStyle(.bordered)

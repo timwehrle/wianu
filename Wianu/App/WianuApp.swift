@@ -6,10 +6,11 @@ struct WianuApp: App {
     @StateObject private var updateService = UpdateService()
     @State private var model = AppModel()
     @State private var releaseNotes = ReleaseNotesModel()
+    @State private var supportPrompt = SupportPromptModel()
 
     var body: some Scene {
         WindowGroup {
-            ContentView(model: model, releaseNotes: releaseNotes)
+            ContentView(model: model, releaseNotes: releaseNotes, supportPrompt: supportPrompt)
         }
         .windowToolbarStyle(.unified(showsTitle: true))
         .defaultSize(width: 1200, height: 800)
