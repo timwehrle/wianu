@@ -22,20 +22,22 @@ struct ContinueWatchingControllerTests {
     }
 
     @Test
-    func `Successful responses and clearing cancel pending refresh timeouts`() async throws {
-        let controller = ContinueWatchingController(adapter: .netflix, refreshTimeout: .zero)
+    func `Successful responses and clearing ignore stale refresh timeouts`() throws {
+        let controller = ContinueWatchingController(adapter: .netflix)
         let url = try #require(URL(string: "https://www.netflix.com/browse"))
 
         controller.beginRefresh()
+        let completedRefresh = try #require(controller.refreshID)
         controller.receive(json: "[]", from: url)
-        try await Task.sleep(for: .milliseconds(10))
+        controller.finishRefreshIfWaiting(completedRefresh)
 
         #expect(controller.refreshID == nil)
         #expect(!controller.responseError)
 
         controller.beginRefresh()
+        let clearedRefresh = try #require(controller.refreshID)
         controller.clear()
-        try await Task.sleep(for: .milliseconds(10))
+        controller.finishRefreshIfWaiting(clearedRefresh)
 
         #expect(controller.refreshID == nil)
         #expect(!controller.responseError)

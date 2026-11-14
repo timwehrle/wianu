@@ -147,13 +147,13 @@ struct AnalyticsClientTests {
     private func waitForRequest(
         in session: AnalyticsFixtureSession
     ) async throws {
-        for _ in 0 ..< 20 {
-            if await !session.capturedRequests().isEmpty {
-                return
-            }
+        let deadline = ContinuousClock.now + .seconds(5)
+
+        while await session.capturedRequests().isEmpty {
+            try #require(ContinuousClock.now < deadline, "Expected an analytics request")
+
             try await Task.sleep(for: .milliseconds(10))
         }
-        Issue.record("Expected an analytics request")
     }
 }
 
