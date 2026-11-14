@@ -5,16 +5,18 @@ struct WianuApp: App {
     @Environment(\.openWindow) private var openWindow
     @StateObject private var updateService = UpdateService()
     @State private var model = AppModel()
+    @State private var releaseNotes = ReleaseNotesModel()
 
     var body: some Scene {
         WindowGroup {
-            ContentView(model: model)
+            ContentView(model: model, releaseNotes: releaseNotes)
         }
         .windowToolbarStyle(.unified(showsTitle: true))
         .defaultSize(width: 1200, height: 800)
         .commands {
             VideoInformationCommands()
             SearchCommands()
+            WhatsNewCommands()
 
             CommandGroup(replacing: .appInfo) {
                 Button("About Wianu") {
@@ -100,6 +102,28 @@ private struct VideoInformationCommands: Commands {
                 showVideoInformation?()
             }
             .disabled(showVideoInformation == nil)
+        }
+    }
+}
+
+struct ShowWhatsNewKey: FocusedValueKey {
+    typealias Value = @MainActor () -> Void
+}
+
+extension FocusedValues {
+    var showWhatsNew: ShowWhatsNewKey.Value? {
+        get { self[ShowWhatsNewKey.self] }
+        set { self[ShowWhatsNewKey.self] = newValue }
+    }
+}
+
+private struct WhatsNewCommands: Commands {
+    @FocusedValue(\.showWhatsNew) private var showWhatsNew
+
+    var body: some Commands {
+        CommandGroup(before: .help) {
+            Button("What's New…") { showWhatsNew?() }
+                .disabled(showWhatsNew == nil)
         }
     }
 }
