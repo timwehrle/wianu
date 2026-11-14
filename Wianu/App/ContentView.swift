@@ -3,6 +3,8 @@ import SwiftUI
 struct ContentView: View {
     @Bindable var model: AppModel
     let releaseNotes: ReleaseNotesModel
+    let supportPrompt: SupportPromptModel
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openSettings) private var openSettings
     @State private var showingAddSite = false
     @State private var windowID = UUID()
@@ -10,6 +12,7 @@ struct ContentView: View {
 
     private var canShowReleaseNotes: Bool {
         !showingAddSite && !model.isCommandPalettePresented
+            && supportPrompt.presentingWindowID == nil
             && (hasDismissedWelcome || !model.siteStore.sites.isEmpty)
     }
 
@@ -19,6 +22,22 @@ struct ContentView: View {
             set: {
                 if !$0 {
                     releaseNotes.dismiss(in: windowID)
+                }
+            }
+        )
+    }
+
+    private var canShowSupportPrompt: Bool {
+        scenePhase == .active && model.selection == .home && canShowReleaseNotes
+            && releaseNotes.presentingWindowID == nil
+    }
+
+    private var showingSupportPrompt: Binding<Bool> {
+        Binding(
+            get: { supportPrompt.presentingWindowID == windowID },
+            set: {
+                if !$0 {
+                    supportPrompt.dismiss(in: windowID)
                 }
             }
         )
@@ -56,25 +75,51 @@ struct ContentView: View {
         .task {
             releaseNotes.prepare(isExistingUser: hasDismissedWelcome || !model.siteStore.sites.isEmpty)
             presentReleaseNotesIfNeeded()
+            presentSupportPromptIfNeeded()
         }
-        .onDisappear { releaseNotes.dismiss(in: windowID) }
+        .onDisappear {
+            releaseNotes.dismiss(in: windowID)
+            supportPrompt.dismiss(in: windowID)
+        }
+        .onChange(of: scenePhase) { _, _ in presentSupportPromptIfNeeded() }
+        .onChange(of: model.selection) { _, _ in presentSupportPromptIfNeeded() }
+        .sheet(isPresented: showingSupportPrompt) {
+            SupportPromptView { permanently in
+                supportPrompt.dismiss(in: windowID, permanently: permanently)
+            }
+        }
+        .onChange(of: model.isCommandPalettePresented) { _, isPresented in
+            if !isPresented {
+                presentReleaseNotesIfNeeded()
+                presentSupportPromptIfNeeded()
+            }
+        }
         .onChange(of: canShowReleaseNotes) { _, _ in presentReleaseNotesIfNeeded() }
         .focusedSceneValue(\.showWhatsNew, canShowReleaseNotes && releaseNotes.hasNotes ? {
             releaseNotes.present(in: windowID, automatically: false)
         } : nil)
-        .sheet(isPresented: showingReleaseNotes) {
+        .sheet(isPresented: showingReleaseNotes, onDismiss: presentSupportPromptIfNeeded) {
             WhatsNewView(notes: releaseNotes.presentedNotes)
         }
         .navigationTitle(model.selection == .home ? "Home" : "Wianu")
         .focusedSceneValue(\.searchWianu) {
             model.showCommandPalette()
         }
-        .sheet(isPresented: $showingAddSite) {
+        .sheet(isPresented: $showingAddSite, onDismiss: presentSupportPromptIfNeeded) {
             SiteEditorView(
                 model: model,
                 mode: .add
             )
         }
+    }
+
+    private func presentSupportPromptIfNeeded() {
+        guard scenePhase == .active else { return }
+
+        supportPrompt.recordSession()
+        guard canShowSupportPrompt else { return }
+
+        supportPrompt.presentIfNeeded(in: windowID)
     }
 
     private func presentReleaseNotesIfNeeded() {
