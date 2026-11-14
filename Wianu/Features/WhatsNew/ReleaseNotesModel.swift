@@ -13,8 +13,12 @@ final class ReleaseNotesModel {
     private var prepared = false
     private static let acknowledgedVersionKey = "releaseNotesAcknowledgedVersion"
 
+    convenience init() {
+        self.init(notes: ReleaseNote.load())
+    }
+
     init(
-        notes: [ReleaseNote] = ReleaseNote.load(),
+        notes: [ReleaseNote],
         currentVersion: String = Bundle.main
             .object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0",
         defaults: UserDefaults = .standard
