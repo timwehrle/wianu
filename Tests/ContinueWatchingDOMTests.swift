@@ -199,14 +199,68 @@ extension WebKitIntegrationTests {
                 .path == "/de-de/play/0de850bd-a343-4dd7-86c4-c008cdaca86f")
         }
 
+        @Test(arguments: ["Noch 1&nbsp;Std. 40&nbsp;Min.", "1 hr 40 min left", "Il reste 1 h 40 min", "残り1時間40分"])
+        func `Disney film badges and localized time labels do not replace titles`(timeLabel: String) async throws {
+            let fixture = VideoObserverFixture(pages: ["/": """
+            <base href="https://www.disneyplus.com/"><title>Disney+</title>
+            <div data-testid="set-shelf-item"><span data-testid="cw-set-item-wrapper">
+            <a data-testid="set-item" data-item-id="ddbf02a4-a0c2-48f1-9e1a-5055fe864dec"
+                aria-label="Dieses Label weist auf neu hinzugefügte Inhalte hin.
+                    Im Rausch der Sterne Noch Noch 1 Stunde"
+                href="/de-de/play/ddbf02a4-a0c2-48f1-9e1a-5055fe864dec"><img alt="">
+                <span data-testid="badge-slot-2">Neu</span><progress value="3" max="100"></progress></a>
+            <a data-testid="cw-set-item-metadata" href="/de-de/browse/entity-ddbf02a4-a0c2-48f1-9e1a-5055fe864dec">
+                <div>\(timeLabel)</div><div>Im Rausch der Sterne</div>
+                <div><div data-testid="set-item-rating"><img alt="6" src="data:,"></div>
+                    <span>2015<span aria-hidden="true">•</span>Drama, Comedy</span></div>
+            </a></span></div>
+            """], host: "www.disneyplus.com", adapter: .disneyPlus)
+            defer { fixture.stop() }
+
+            try await fixture.load("/")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.updatedAt != nil }
+
+            let entry = try #require(fixture.continueWatchingQueue.entries.first)
+            #expect(entry.title == "Im Rausch der Sterne")
+            #expect(entry.id == "ddbf02a4-a0c2-48f1-9e1a-5055fe864dec")
+            #expect(entry.url.path == "/de-de/play/ddbf02a4-a0c2-48f1-9e1a-5055fe864dec")
+        }
+
         @Test
-        func `Disney year and genre descriptions cannot be used as film titles`() async throws {
+        func `Disney mixed movie and episode shelves work without accessible play titles`() async throws {
+            let fixture = VideoObserverFixture(pages: ["/": """
+            <base href="https://www.disneyplus.com/"><title>Disney+</title>
+            <div><a data-testid="set-item" data-item-id="film-one" href="/de-de/play/film-one"><img alt=""></a>
+            <a data-testid="cw-set-item-metadata"><div>Noch 1&nbsp;Std. 40&nbsp;Min.</div>
+                <div>Im Rausch der Sterne</div><div>2015•Drama, Comedy</div></a></div>
+            <div><a data-testid="set-item" data-item-id="film-two" href="/de-de/play/film-two"><img alt=""></a>
+            <a data-testid="cw-set-item-metadata"><div>Noch 3&nbsp;Std. 7&nbsp;Min.</div>
+                <div>Avatar: The Way of Water</div><div>2022•Action und Abenteuer, Science-Fiction</div></a></div>
+            <div><a data-testid="set-item" data-item-id="episode" href="/de-de/play/episode"><img alt=""></a>
+            <a data-testid="cw-set-item-metadata"><div>Noch 23&nbsp;Min.</div>
+                <div>The Bear: King of the Kitchen</div><div>S3:F9 Entschuldigungen</div></a></div>
+            """], host: "www.disneyplus.com", adapter: .disneyPlus)
+            defer { fixture.stop() }
+
+            try await fixture.load("/")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.updatedAt != nil }
+
+            #expect(fixture.continueWatchingQueue.entries.map(\.title) == [
+                "Im Rausch der Sterne", "Avatar: The Way of Water", "The Bear: King of the Kitchen"
+            ])
+            #expect(fixture.continueWatchingQueue.entries.map(\.id) == ["film-one", "film-two", "episode"])
+            #expect(fixture.continueWatchingQueue.entries.last?.season == 3)
+            #expect(fixture.continueWatchingQueue.entries.last?.episode == 9)
+        }
+
+        @Test(arguments: ["16 min", "Noch 16 Min.", "Il reste 16 min", "残り16分"])
+        func `Disney year and genre descriptions cannot be used as film titles`(timeLabel: String) async throws {
             let fixture = VideoObserverFixture(pages: ["/": """
             <title>Disney+</title>
             <div><a data-testid="set-item" data-item-id="film-id"
                 href="https://www.disneyplus.com/play/film-id">Play</a>
             <a data-testid="cw-set-item-metadata">
-                <div>16 min</div><div>2010•Drama, Tanz</div><div><img alt="16" src="data:,"></div>
+                <div>\(timeLabel)</div><div>2010•Drama, Tanz</div><div><img alt="16" src="data:,"></div>
             </a></div>
             """], host: "www.disneyplus.com", adapter: .disneyPlus)
             defer { fixture.stop() }
@@ -217,6 +271,10 @@ extension WebKitIntegrationTests {
             #expect(fixture.continueWatchingQueue.entries.isEmpty)
             #expect(fixture.continueWatchingQueue.updatedAt == nil)
             #expect(fixture.continueWatchingQueue.diagnostics?.contains("2010•Drama, Tanz") == true)
+            let report = try #require(fixture.continueWatchingQueue.diagnostics?.data(using: .utf8))
+            let diagnostics = try #require(JSONSerialization.jsonObject(with: report) as? [String: Any])
+            let unreadable = try #require(diagnostics["unreadableCards"] as? [[String: Any]])
+            #expect(unreadable.first?["missing"] as? [String] == ["title"])
         }
 
         @Test

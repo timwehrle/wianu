@@ -53,7 +53,7 @@ function observeContinueWatching(configuration, createReader) {
             });
     };
 
-    const diagnose = (reason) => {
+    const diagnose = (reason, unreadableCards) => {
         const headings = Array.from(document.querySelectorAll('h1,h2,h3,[role="heading"]')).slice(0, 25);
         const details = headings.map((heading) => {
             const containers = [];
@@ -93,6 +93,7 @@ function observeContinueWatching(configuration, createReader) {
                 provider: configuration.name,
                 page: location.hostname + location.pathname,
                 reason,
+                unreadableCards,
                 samples,
                 headings: details,
                 shelves
@@ -124,7 +125,14 @@ function observeContinueWatching(configuration, createReader) {
 
             if (entries.length !== cards.length) {
                 resetEmptyState();
-                diagnose('Shelf found, but titles or destinations are missing');
+                const unreadableCards = cards.flatMap((entry, index) => {
+                    const missing = ['id', 'title', 'url'].filter((key) =>
+                        !entry[key] || (typeof entry[key] === 'string' && !entry[key].trim())
+                    );
+
+                    return missing.length ? [{ index, missing }] : [];
+                }).slice(0, 10);
+                diagnose('Shelf found, but titles or destinations are missing', unreadableCards);
                 return;
             }
 
