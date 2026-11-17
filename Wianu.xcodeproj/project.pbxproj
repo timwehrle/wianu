@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E3C000013040000000000001 /* SiteStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C000023040000000000002 /* SiteStoreTests.swift */; };
 		21392BB5A368A104286329C5 /* TMDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4864F4CC291E958A50456E1F /* TMDBClient.swift */; };
 		2A8A8308E06AA024385EF725 /* TMDBResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2779DA82DAB320184F2669D1 /* TMDBResponses.swift */; };
 		3B696CC64A0307E645BFBE56 /* LetterboxdImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AB648782105E118BE086F8 /* LetterboxdImportView.swift */; };
@@ -121,6 +122,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E3C000023040000000000002 /* SiteStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStoreTests.swift; sourceTree = "<group>"; };
 		1EFF6F7118F05B89732A32C3 /* LetterboxdTestSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdTestSession.swift; sourceTree = "<group>"; };
 		2779DA82DAB320184F2669D1 /* TMDBResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBResponses.swift; sourceTree = "<group>"; };
 		297D70DC28BF39EC09DA4C62 /* LetterboxdImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportTests.swift; sourceTree = "<group>"; };
@@ -557,6 +559,7 @@
 		D1C100043020000000000104 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E3C000023040000000000002 /* SiteStoreTests.swift */,
 				AC7700000000000000000004 /* ReleaseNotesTests.swift */,
 				AF9900000000000000000003 /* SupportPromptTests.swift */,
 				7E1C8BC3BE1F06774A417B24 /* MediaIdentificationPersistenceTests.swift */,
@@ -792,6 +795,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E3C000013040000000000001 /* SiteStoreTests.swift in Sources */,
 				AC7800000000000000000004 /* ReleaseNotesTests.swift in Sources */,
 				AF9800000000000000000003 /* SupportPromptTests.swift in Sources */,
 				7A4E303EB388AE9949E944FA /* MediaIdentificationPersistenceTests.swift in Sources */,

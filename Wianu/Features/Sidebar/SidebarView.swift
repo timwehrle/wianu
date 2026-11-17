@@ -139,6 +139,7 @@ struct SidebarView: View {
                         }
                     }
             }
+            .onMove(perform: model.siteStore.moveSites)
 
             Button {
                 showingAddSite = true
