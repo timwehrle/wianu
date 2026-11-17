@@ -64,8 +64,8 @@ Run the checks before submitting a change:
 make check
 ```
 
-This runs SwiftFormat, SwiftLint, and the tests. Install the formatting tools
-with Homebrew:
+This runs SwiftFormat, SwiftLint, Prettier, ESLint, and the tests. Install the
+Swift formatting tools with Homebrew:
 
 ```bash
 brew install swiftformat swiftlint
