@@ -2,3 +2,4 @@
 DerivedData/
 *.xcuserstate
 xcuserdata/
+/node_modules/

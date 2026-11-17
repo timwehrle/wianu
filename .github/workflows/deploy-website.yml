@@ -24,15 +24,17 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
 
-      - name: Install pnpm
-        run: npm install --global pnpm@12
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          cache: true
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm --filter website... install --frozen-lockfile
 
       - name: Check website
         run: |
@@ -44,7 +46,8 @@ jobs:
 
       - name: Package release
         run: |
-          tar -czf "$RUNNER_TEMP/website.tar.gz" build package.json pnpm-lock.yaml pnpm-workspace.yaml
+          pnpm --filter website --prod --ignore-scripts deploy "$RUNNER_TEMP/website-release"
+          tar -czf "$RUNNER_TEMP/website.tar.gz" -C "$RUNNER_TEMP/website-release" build package.json pnpm-lock.yaml pnpm-workspace.yaml
 
       - name: Deploy and restart production
         env:

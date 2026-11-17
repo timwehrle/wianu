@@ -6,8 +6,8 @@ DERIVED_DATA ?= DerivedData
 
 XCODEBUILD := xcodebuild -project $(PROJECT) -scheme $(SCHEME)
 APP_JAVASCRIPT := Wianu/Features/Browser/Scripts Wianu/Features/ContinueWatching/Scripts
-PRETTIER := Website/node_modules/.bin/prettier
-ESLINT := Website/node_modules/.bin/eslint
+PRETTIER := node_modules/.bin/prettier
+ESLINT := node_modules/.bin/eslint
 
 .DEFAULT_GOAL := help
 
@@ -46,13 +46,13 @@ lint: js-lint ## Lint Swift and bundled JavaScript
 	swiftlint lint --strict
 
 js-tools:
-	@test -x "$(PRETTIER)" -a -x "$(ESLINT)" || { echo "Install JS tools: pnpm --dir Website install --frozen-lockfile" >&2; exit 1; }
+	@test -x "$(PRETTIER)" -a -x "$(ESLINT)" || { echo "Install JS tools: pnpm install --frozen-lockfile" >&2; exit 1; }
 
 js-format: js-tools ## Format bundled JavaScript using the website's Prettier style
-	$(PRETTIER) --config prettier.config.mjs --write $(APP_JAVASCRIPT) prettier.config.mjs eslint.config.mjs Website/eslint.app.config.js
+	$(PRETTIER) --config prettier.config.mjs --write $(APP_JAVASCRIPT) prettier.config.mjs eslint.config.mjs package.json pnpm-workspace.yaml
 
 js-format-check: js-tools ## Check bundled JavaScript formatting
-	$(PRETTIER) --config prettier.config.mjs --check $(APP_JAVASCRIPT) prettier.config.mjs eslint.config.mjs Website/eslint.app.config.js
+	$(PRETTIER) --config prettier.config.mjs --check $(APP_JAVASCRIPT) prettier.config.mjs eslint.config.mjs package.json pnpm-workspace.yaml
 
 js-lint: js-tools ## Lint bundled browser JavaScript
 	$(ESLINT) --max-warnings 0 $(APP_JAVASCRIPT)
