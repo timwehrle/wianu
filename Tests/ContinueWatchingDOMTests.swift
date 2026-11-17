@@ -312,3 +312,190 @@ extension WebKitIntegrationTests {
         }
     }
 }
+
+extension WebKitIntegrationTests {
+    @MainActor
+    struct DisneyContinueWatchingResponseTests {
+        private static let endpoint = "https://disney.api.edge.bamgrid.com/explore/v1.21/set/"
+            + "76aed686-1837-49bd-b4f5-5d2a27c0c8d4?setStyle=continue_watching&limit=15"
+        private static let payload = """
+        {"data":{"set":{"type":"set","id":"76aed686-1837-49bd-b4f5-5d2a27c0c8d4","items":[
+          {"type":"view","id":"ddbf02a4-a0c2-48f1-9e1a-5055fe864dec",
+           "actions":[{"type":"browse","deeplinkId":"entity-film"},
+                      {"type":"playback","deeplinkId":"ddbf02a4-a0c2-48f1-9e1a-5055fe864dec"}],
+           "visuals":{"title":"Im Rausch der Sterne","badges":{"slot2":{"brief":"Neu"}}}},
+          {"type":"view","id":"ae249b50-fc62-4fad-8ad4-8a34f4d03a65",
+           "actions":[{"type":"browse","deeplinkId":"entity-05eb6a8e-90ed-4947-8c0b-e6536cbddd5f"},
+                      {"type":"playback","deeplinkId":"ae249b50-fc62-4fad-8ad4-8a34f4d03a65"}],
+           "visuals":{"title":"The Bear: King of the Kitchen","episodeTitle":"Entschuldigungen",
+                      "seasonNumber":"3","episodeNumber":"9"}}
+        ],"pagination":{"hasMore":false,"hasPrev":false,"currentOffset":0,"totalCount":2}}}}
+        """
+
+        @Test(arguments: ["fetch", "xhr", "xhr-json", "dynamic-set"])
+        func `Disney responses provide ordered playback entries without HTML parsing`(transport: String) async throws {
+            let setID = transport == "dynamic-set" ? "future-set" : "76aed686-1837-49bd-b4f5-5d2a27c0c8d4"
+            let endpoint = Self.endpoint.replacingOccurrences(of: "76aed686-1837-49bd-b4f5-5d2a27c0c8d4", with: setID)
+            let fixture = VideoObserverFixture(pages: ["/de-de/home": """
+            <script>
+            if (!'\(transport)'.startsWith('xhr')) {
+                fetch('\(endpoint)').then(r => r.json()).then(data => {
+                    document.title = data.data.set.items[0].visuals.title;
+                });
+            } else {
+                const request = new XMLHttpRequest();
+                request.open('GET', '\(endpoint)');
+                if ('\(transport)' === 'xhr-json') request.responseType = 'json';
+                request.addEventListener('load', () => {
+                    const data = request.responseType === 'json' ? request.response : JSON.parse(request.responseText);
+                    document.title = data.data.set.items[0].visuals.title;
+                });
+                request.send();
+            }
+            </script>
+            """], host: "www.disneyplus.com", pageScript: """
+            const payload = \(Self.payload);
+            payload.data.set.id = '\(setID)';
+            globalThis.fetch = async () => new Response(JSON.stringify(payload));
+            XMLHttpRequest.prototype.send = function() {
+                Object.defineProperties(this, {
+                    status: { value: 200 }, responseURL: { value: '\(endpoint)' },
+                    responseText: { value: JSON.stringify(payload) }, response: { value: payload }
+                });
+                this.dispatchEvent(new Event('load'));
+            };
+            """, adapter: .disneyPlus)
+            defer { fixture.stop() }
+
+            try await fixture.load("/de-de/home")
+            try await fixture.waitUntil {
+                fixture.continueWatchingQueue.entries.count == 2
+                    && fixture.diagnostics.pageTitle == "Im Rausch der Sterne"
+            }
+
+            let entries = fixture.continueWatchingQueue.entries
+            #expect(entries.map(\.title) == ["Im Rausch der Sterne", "The Bear: King of the Kitchen"])
+            #expect(entries.first?.url.path == "/de-de/play/ddbf02a4-a0c2-48f1-9e1a-5055fe864dec")
+            #expect(entries.last?.url.path == "/de-de/play/ae249b50-fc62-4fad-8ad4-8a34f4d03a65")
+            #expect(entries.last?.episodeTitle == "Entschuldigungen")
+            #expect(entries.last?.season == 3)
+            #expect(entries.last?.episode == 9)
+            #expect(fixture.continueWatchingQueue.diagnostics?.contains("\"source\": \"response\"") == true)
+        }
+
+        @Test(arguments: ["partial", "offset", "count", "title", "set", "host", "style", "status", "json"])
+        func `Incomplete or unrelated Disney responses preserve saved entries`(reason: String) async throws {
+            var endpoint = Self.endpoint
+            if reason == "host" {
+                endpoint = endpoint.replacingOccurrences(of: "disney.api.edge.bamgrid.com", with: "other.example")
+            } else if reason == "style" {
+                endpoint = endpoint.replacingOccurrences(of: "continue_watching", with: "recommendations")
+            }
+            let fixture = VideoObserverFixture(pages: ["/de-de/home": """
+            <script>
+            fetch('\(endpoint)').then(r => r.text()).then(() => {
+                setTimeout(() => document.title = 'Response processed', 750);
+            });
+            </script>
+            """], host: "www.disneyplus.com", pageScript: """
+            const payload = \(Self.payload);
+            const set = payload.data.set;
+            if ('\(reason)' === 'partial') set.pagination.hasMore = true;
+            if ('\(reason)' === 'offset') set.pagination.currentOffset = 15;
+            if ('\(reason)' === 'count') set.pagination.totalCount = 10;
+            if ('\(reason)' === 'title') delete set.items[0].visuals.title;
+            if ('\(reason)' === 'set') set.id = 'recommendations';
+            globalThis.fetch = async () => new Response('\(reason)' === 'json' ? '{' : JSON.stringify(payload),
+                { status: '\(reason)' === 'status' ? 403 : 200 });
+            """, adapter: .disneyPlus)
+            defer { fixture.stop() }
+
+            try fixture.continueWatchingQueue.receive(json: """
+            [{"id":"saved","title":"Saved Show","url":"https://www.disneyplus.com/play/saved"}]
+            """, from: #require(URL(string: "https://www.disneyplus.com/")))
+            try await fixture.load("/de-de/home")
+            try await fixture.waitUntil { fixture.diagnostics.pageTitle == "Response processed" }
+
+            #expect(fixture.continueWatchingQueue.entries.map(\.title) == ["Saved Show"])
+        }
+
+        @Test func `A complete empty Disney response clears saved entries`() async throws {
+            let fixture = VideoObserverFixture(pages: ["/de-de/home": """
+            <script>fetch('\(Self.endpoint)');</script>
+            """], host: "www.disneyplus.com", pageScript: """
+            const payload = \(Self.payload);
+            payload.data.set.items = [];
+            payload.data.set.pagination.totalCount = 0;
+            globalThis.fetch = async () => new Response(JSON.stringify(payload));
+            """, adapter: .disneyPlus)
+            defer { fixture.stop() }
+
+            try fixture.continueWatchingQueue.receive(json: """
+            [{"id":"saved","title":"Saved Show","url":"https://www.disneyplus.com/play/saved"}]
+            """, from: #require(URL(string: "https://www.disneyplus.com/")))
+            try await fixture.load("/de-de/home")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.isEmpty }
+
+            #expect(fixture.continueWatchingQueue.updatedAt != nil)
+        }
+
+        @Test func `A late Disney response cannot overwrite a newer request`() async throws {
+            let fixture = VideoObserverFixture(pages: ["/de-de/home": """
+            <script>
+            const older = fetch('\(Self.endpoint)');
+            const newer = fetch('\(Self.endpoint)');
+            releaseOlder();
+            Promise.all([older, newer]).then(() => {
+                setTimeout(() => document.title = 'Responses processed', 750);
+            });
+            </script>
+            """], host: "www.disneyplus.com", pageScript: """
+            const payload = \(Self.payload);
+            let releaseOlder;
+            let requests = 0;
+            globalThis.fetch = () => {
+                if (++requests === 1) return new Promise(resolve => {
+                    releaseOlder = () => resolve(new Response(JSON.stringify(payload)));
+                });
+                const newer = JSON.parse(JSON.stringify(payload));
+                newer.data.set.items[0].visuals.title = 'Newer title';
+                return Promise.resolve(new Response(JSON.stringify(newer)));
+            };
+            """, adapter: .disneyPlus)
+            defer { fixture.stop() }
+
+            try await fixture.load("/de-de/home")
+            try await fixture.waitUntil {
+                fixture.diagnostics.pageTitle == "Responses processed" && fixture.continueWatchingQueue.entries
+                    .count == 2
+            }
+
+            #expect(fixture.continueWatchingQueue.entries.first?.title == "Newer title")
+        }
+
+        @Test func `A Disney response from a previous page cannot replace the saved queue`() async throws {
+            let fixture = VideoObserverFixture(pages: ["/de-de/home": """
+            <script>
+            const pending = fetch('\(Self.endpoint)');
+            pending.then(() => setTimeout(() => document.title = 'Response processed', 750));
+            </script>
+            """], host: "www.disneyplus.com", pageScript: """
+            const payload = \(Self.payload);
+            let releaseResponse;
+            globalThis.fetch = () => new Promise(resolve => {
+                releaseResponse = () => resolve(new Response(JSON.stringify(payload)));
+            });
+            """, adapter: .disneyPlus)
+            defer { fixture.stop() }
+
+            try fixture.continueWatchingQueue.receive(json: """
+            [{"id":"saved","title":"Saved Show","url":"https://www.disneyplus.com/play/saved"}]
+            """, from: #require(URL(string: "https://www.disneyplus.com/")))
+            try await fixture.load("/de-de/home")
+            _ = try await fixture.webView.evaluateJavaScript("location.hash = 'another-page'; releaseResponse();")
+            try await fixture.waitUntil { fixture.diagnostics.pageTitle == "Response processed" }
+
+            #expect(fixture.continueWatchingQueue.entries.first?.title == "Saved Show")
+        }
+    }
+}

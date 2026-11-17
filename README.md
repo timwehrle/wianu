@@ -28,29 +28,30 @@ Playback depends on the provider, your subscription and your region.
 
 1. Open Wianu and select **Add Site** in the sidebar.
 2. Enter the site's name and URL.
-3. Add a search URL containing `{query}` if you want to search the site from
-   Wianu, for example `https://example.com/search?q={query}`. Known sites may
-   receive a suggestion automatically.
+3. Optionally add a search URL, such as `https://example.com/search?q={query}`.
+   Wianu suggests one for known sites.
 4. Sign in and use the site as you would in a browser.
 
 ## Continue Watching
 
-Continue Watching loads directly from supported services into the sidebar.
-Use the refresh button to reload a queue. Queues are saved locally between launches.
-Your streaming service handles resume progress across devices.
+Continue Watching shows titles from supported services in the sidebar.
+Click refresh to update them. Lists are saved on your Mac.
+Your streaming service syncs playback progress across devices.
 
 ## Watchlist
 
-Use the bookmark button to save a movie from its page, or select **Add Movie**
-in the sidebar to enter it manually.
+Click the bookmark button to save a movie.
+Use **Add Movie** in the sidebar to enter one manually.
 
-To import a Letterboxd watchlist, export your data from Letterboxd, select
-**Import Letterboxd CSV…** under Watchlist, and choose the watchlist CSV file.
+To import from Letterboxd:
+
+1. Export your Letterboxd data.
+2. Select **Import Letterboxd CSV…** under Watchlist.
+3. Choose your watchlist CSV file.
 
 ## Development
 
-Open `Wianu.xcodeproj` in Xcode and build the **Wianu** scheme. Swift Package
-Manager resolves dependencies automatically.
+Open `Wianu.xcodeproj` in Xcode. Build the **Wianu** scheme.
 
 Or build from the command line:
 
@@ -58,29 +59,36 @@ Or build from the command line:
 make build
 ```
 
-Run the checks before submitting a change:
+Install the development tools:
+
+```bash
+brew install swiftformat swiftlint
+pnpm install --frozen-lockfile
+```
+
+Run checks before submitting a change:
 
 ```bash
 make check
 ```
 
-This runs SwiftFormat, SwiftLint, and the tests. Install the formatting tools
-with Homebrew:
+This checks formatting, lint, and tests.
+Use `make js-format` to format JavaScript.
+Use `make js-check` to check it.
 
-```bash
-brew install swiftformat swiftlint
-```
+The app tools and `Website` share one pnpm workspace and lockfile.
+Start the website with `pnpm --filter website dev`.
 
-Run `make help` for all available commands.
+Run `make help` to see all commands.
 
 ## Privacy
 
-Sites, Continue Watching links, and watchlist items are stored locally on your
-Mac. Sign-in and playback happen in the embedded browser. Movie and TV metadata
-comes from Wianu's backend.
+Your sites, Continue Watching lists, and watchlist stay on your Mac.
+Sign-in and playback happen in the embedded browser.
+Movie and TV metadata comes from Wianu's backend.
 
-Wianu sends anonymous feature events to a self-hosted Umami instance. You can
-turn analytics off in **Settings → General**.
+Wianu sends anonymous usage events to self-hosted Umami.
+Turn analytics off in **Settings → General**.
 
 ## Feature requests
 

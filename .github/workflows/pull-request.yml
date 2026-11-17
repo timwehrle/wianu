@@ -2,8 +2,10 @@ name: Pull Request Checks
 
 on:
   pull_request:
-    paths-ignore:
-      - "Website/**"
+    paths:
+      - "**"
+      - "!Website/**"
+      - "Website/prettier.config.js"
 
 permissions:
   contents: read
@@ -17,6 +19,31 @@ env:
   PROJECT_PATH: Wianu.xcodeproj
 
 jobs:
+  javascript:
+    name: JavaScript format and lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          cache: true
+
+      - name: Install JavaScript tools
+        run: pnpm --filter wianu-js-tools install --frozen-lockfile --ignore-scripts
+
+      - name: Check bundled JavaScript
+        run: make js-check
+
   quality:
     name: Format and lint
     runs-on: xcode-27
