@@ -34,16 +34,9 @@ private struct GeneralSettingsView: View {
                 )
 
                 Text(
-                    "Share feature usage. "
-                        + "Titles, searches, and URLs aren’t sent."
+                    "Help improve Wianu by sharing feature usage and service choices. "
+                        + "Titles, searches, playback history and streaming URLs stay private."
                 )
-                .font(.callout)
-                .foregroundStyle(.secondary)
-            } footer: {
-                Link(destination: SupportPromptModel.supportURL) {
-                    Label("Support Wianu", systemImage: "heart")
-                }
-                .buttonStyle(.plain)
                 .font(.callout)
                 .foregroundStyle(.secondary)
             }
