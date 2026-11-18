@@ -4,15 +4,18 @@ struct SettingsView: View {
     @Bindable var model: AppModel
 
     var body: some View {
-        GeneralSettingsView()
+        GeneralSettingsView(model: model)
             .frame(width: 560, height: 340)
             .onAppear {
                 model.settingsOpened()
             }
+            .onDisappear { model.settingsClosed() }
     }
 }
 
 private struct GeneralSettingsView: View {
+    let model: AppModel
+
     @AppStorage(AnalyticsPreference.enabledKey)
     private var analyticsEnabled = true
 
@@ -20,8 +23,14 @@ private struct GeneralSettingsView: View {
         Form {
             Section {
                 Toggle(
-                    "Send Anonymous Usage Analytics",
-                    isOn: $analyticsEnabled
+                    "Share Usage Analytics",
+                    isOn: Binding(
+                        get: { analyticsEnabled },
+                        set: { enabled in
+                            analyticsEnabled = enabled
+                            model.setAnalyticsEnabled(enabled)
+                        }
+                    )
                 )
 
                 Text(
