@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import SwiftUI
 
 @MainActor
 @Observable
@@ -54,6 +55,15 @@ final class SiteStore {
     func deleteSite(id: SavedSite.ID) {
         sites.removeAll { $0.id == id }
         persist(sites)
+    }
+
+    func moveSites(fromOffsets source: IndexSet, toOffset destination: Int) {
+        var updatedSites = sites
+        updatedSites.move(fromOffsets: source, toOffset: destination)
+
+        guard updatedSites != sites else { return }
+
+        persist(updatedSites)
     }
 
     private func load() {
