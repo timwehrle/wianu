@@ -1,22 +1,37 @@
 [
-  {
-    "version": "1.9.0",
-    "changes": [
-      {
-        "title": "Automatic Continue Watching",
-        "description": "Start watching on Netflix, HBO Max, Disney+, Prime Video, or Apple TV in Wianu. Your videos appear automatically in Continue Watching in the sidebar, so you can return to them later.",
-        "symbol": "play.circle"
-      },
-      {
-        "title": "What's New",
-        "description": "See the latest changes after updating Wianu. Reopen these notes anytime from the Help menu.",
-        "symbol": "sparkles"
-      },
-      {
-        "title": "Support Wianu",
-        "description": "Enjoying Wianu? A new optional reminder lets you support its development. You can dismiss it or turn off future reminders.",
-        "symbol": "heart"
-      }
-    ]
-  }
+	{
+		"version": "1.9.1",
+		"changes": [
+			{
+				"title": "Disney+ Continue Watching Fixes",
+				"description": "Movies and shows from Disney+ now appear more reliably in Continue Watching.",
+				"symbol": "play.circle"
+			},
+			{
+				"title": "Reorder Your Sites",
+				"description": "Drag sites in the sidebar to change their order. Your order is saved for the next time you open Wianu.",
+				"symbol": "arrow.up.arrow.down"
+			}
+		]
+	},
+	{
+		"version": "1.9.0",
+		"changes": [
+			{
+				"title": "Automatic Continue Watching",
+				"description": "Start watching on Netflix, HBO Max, Disney+, Prime Video, or Apple TV in Wianu. Your videos appear automatically in Continue Watching in the sidebar, so you can return to them later.",
+				"symbol": "play.circle"
+			},
+			{
+				"title": "What's New",
+				"description": "See the latest changes after updating Wianu. Reopen these notes anytime from the Help menu.",
+				"symbol": "sparkles"
+			},
+			{
+				"title": "Support Wianu",
+				"description": "Enjoying Wianu? A new optional reminder lets you support its development. You can dismiss it or turn off future reminders.",
+				"symbol": "heart"
+			}
+		]
+	}
 ]
