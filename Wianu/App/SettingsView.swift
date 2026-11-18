@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Bindable var model: AppModel
+    let model: AppModel
 
     var body: some View {
         GeneralSettingsView(model: model)

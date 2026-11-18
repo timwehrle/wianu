@@ -295,7 +295,7 @@ extension AppModel {
             return
         }
 
-        analytics.track(.providerSelected, properties: ["provider_id": String(provider.id), "status": "success"])
+        analytics.track(.providerSelected, properties: ["provider_id": String(provider.id)])
         search(media.title, in: site)
     }
 
@@ -319,13 +319,11 @@ extension AppModel {
             analytics.track(.siteOpened, properties: serviceProperties(
                 url: selectedSite?.url, providers: selectedSite?.tmdbProviders ?? []
             ))
-        case .continueWatching where navigationRequest != nil:
-            if case let .continueWatching(service, _) = newSelection {
-                analytics.track(
-                    .continueWatchingOpened,
-                    properties: ["provider": service.rawValue, "status": "success"]
-                )
-            }
+        case let .continueWatching(service, _) where navigationRequest != nil:
+            analytics.track(
+                .continueWatchingOpened,
+                properties: ["provider": service.rawValue, "status": "success"]
+            )
         default:
             break
         }

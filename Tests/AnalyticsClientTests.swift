@@ -153,7 +153,7 @@ struct AnalyticsClientTests {
         #expect(defaults.object(forKey: AnalyticsPreference.distinctIDKey) == nil)
     }
 
-    @Test @MainActor func `pageviews omit event names and deduplicate consecutive destinations`() async throws {
+    @Test @MainActor func `pageviews omit event metadata and deduplicate navigation`() async throws {
         let defaults = try #require(UserDefaults(suiteName: "Analytics.pages.\(UUID().uuidString)"))
         let session = AnalyticsFixtureSession()
         let client = AnalyticsClient(
@@ -186,8 +186,10 @@ struct AnalyticsClientTests {
         #expect(payloads.compactMap { $0["url"] as? String } == [
             "/app/home", "/app/search", "/app/search", "/app/home"
         ])
-        #expect(payloads[0]["name"] == nil)
-        #expect(payloads[1]["name"] == nil)
+        for index in [0, 1, 3] {
+            #expect(payloads[index]["name"] == nil)
+            #expect(payloads[index]["data"] == nil)
+        }
         #expect(payloads[2]["name"] as? String == "search-opened")
         #expect((payloads[2]["data"] as? [String: String])?["provider_id"] == "8")
         #expect((payloads[2]["data"] as? [String: String])?["service"] == "netflix")

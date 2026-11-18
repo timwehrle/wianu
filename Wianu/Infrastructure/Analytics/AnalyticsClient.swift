@@ -35,7 +35,6 @@ enum AnalyticsPage: String, Sendable {
 }
 
 enum AnalyticsService {
-    /// Only these fixed labels leave the app. Keep specific subdomains before parent domains.
     private static let services: [(name: String, domains: [String])] = [
         ("netflix", ["netflix.com"]),
         ("primeVideo", [
@@ -331,7 +330,7 @@ final class AnalyticsClient: AnalyticsTracking {
                 url: (page ?? currentPage)?.path ?? "/app",
                 website: websiteID,
                 name: event?.rawValue,
-                data: safeProperties(properties).merging([
+                data: event == nil ? nil : safeProperties(properties).merging([
                     "app_version": appVersion,
                     "build": build,
                     "macos_version": macOSVersion
@@ -470,7 +469,7 @@ final class AnalyticsClient: AnalyticsTracking {
         let url: String
         let website: String
         let name: String?
-        let data: [String: String]
+        let data: [String: String]?
     }
 }
 
