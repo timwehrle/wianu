@@ -11,6 +11,7 @@ struct AnalyticsClientTests {
         .weeklyPickOpened,
         .continueWatchingOpened,
         .providerSelected,
+        .providerSelectionFailed,
         .onboardingStarted,
         .onboardingServicesOpened,
         .onboardingCompleted,
@@ -57,12 +58,20 @@ struct AnalyticsClientTests {
         let id = try #require(payload["id"] as? String)
         #expect(UUID(uuidString: id) != nil)
         #expect(defaults.string(forKey: AnalyticsPreference.distinctIDKey) == id)
-        #expect(data == [
+        var expectedData = [
             "app_version": "1.5.0",
             "build": "16",
+            "macos_version": ProcessInfo.processInfo.operatingSystemVersionString,
             "source": "getting-started",
             "onboarding_version": "1"
-        ])
+        ]
+        if [.providerSelected, .onboardingCompleted].contains(event) {
+            expectedData["status"] = "success"
+        }
+        if event == .providerSelectionFailed {
+            expectedData["status"] = "failure"
+        }
+        #expect(data == expectedData)
 
         let bodyString = try #require(String(bytes: body, encoding: .utf8))
         #expect(!bodyString.contains("query"))
@@ -144,6 +153,48 @@ struct AnalyticsClientTests {
         #expect(defaults.object(forKey: AnalyticsPreference.distinctIDKey) == nil)
     }
 
+    @Test @MainActor func `pageviews omit event metadata and deduplicate navigation`() async throws {
+        let defaults = try #require(UserDefaults(suiteName: "Analytics.pages.\(UUID().uuidString)"))
+        let session = AnalyticsFixtureSession()
+        let client = AnalyticsClient(
+            session: session, endpoint: URL(string: "https://analytics.example/api/send"),
+            websiteID: "website-id", userDefaults: defaults, appVersion: "1", build: "1"
+        )
+
+        client.pageview(.home)
+        client.pageview(.home)
+        client.pageview(.search)
+        client.track(.searchOpened, properties: [
+            "query": "Private Search", "title": "Private Title", "url": "https://private.example",
+            "provider_id": "8", "service": "netflix", "status": "success", "source": "Private Source"
+        ])
+        client.pageview(.home)
+
+        let deadline = ContinuousClock.now + .seconds(5)
+        while await session.completedRequests < 4 {
+            try #require(ContinuousClock.now < deadline)
+            try await Task.sleep(for: .milliseconds(10))
+        }
+
+        let payloads = try await session.capturedRequests().map { request in
+            let body = try #require(request.httpBody)
+            let bodyString = try #require(String(bytes: body, encoding: .utf8))
+            #expect(!bodyString.contains("Private"))
+            let json = try #require(JSONSerialization.jsonObject(with: body) as? [String: Any])
+            return try #require(json["payload"] as? [String: Any])
+        }
+        #expect(payloads.compactMap { $0["url"] as? String } == [
+            "/app/home", "/app/search", "/app/search", "/app/home"
+        ])
+        for index in [0, 1, 3] {
+            #expect(payloads[index]["name"] == nil)
+            #expect(payloads[index]["data"] == nil)
+        }
+        #expect(payloads[2]["name"] as? String == "search-opened")
+        #expect((payloads[2]["data"] as? [String: String])?["provider_id"] == "8")
+        #expect((payloads[2]["data"] as? [String: String])?["service"] == "netflix")
+    }
+
     private func waitForRequest(
         in session: AnalyticsFixtureSession
     ) async throws {
@@ -159,7 +210,15 @@ struct AnalyticsClientTests {
 
 @MainActor
 private final class RecordingAnalyticsTracker: AnalyticsTracking {
+    func setEnabled(_ enabled: Bool) {}
+
     private(set) var events: [AnalyticsEvent] = []
+    private(set) var pages: [AnalyticsPage] = []
+
+    func pageview(_ page: AnalyticsPage) {
+        pages.append(page)
+    }
+
     private(set) var properties: [[String: String]] = []
 
     func track(_ event: AnalyticsEvent, properties: [String: String]) {
@@ -171,6 +230,53 @@ private final class RecordingAnalyticsTracker: AnalyticsTracking {
 @MainActor
 @Suite("Site opening analytics")
 struct SiteOpeningAnalyticsTests {
+    @Test func `navigation records fixed pages and ignores repeated search and settings presentation`() throws {
+        let fixture = try AnalyticsAppFixture(hasSites: false)
+        defer { fixture.cleanup() }
+
+        fixture.model.showCommandPalette()
+        fixture.model.showCommandPalette(query: "Private Search")
+        fixture.model.dismissCommandPalette()
+        fixture.model.settingsOpened()
+        fixture.model.settingsOpened()
+        fixture.model.settingsClosed()
+
+        #expect(fixture.tracker.pages == [.home, .search, .home, .settings, .home])
+        #expect(fixture.tracker.events == [.appLaunched, .searchOpened, .settingsOpened])
+    }
+
+    @Test func `service additions edits and opens identify the service without saved names or URLs`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        var draft = SiteDraft(
+            name: "Private Account Name", address: "https://www.netflix.com/browse?private=value",
+            tmdbProviders: [TMDBProviderReference(id: 8, name: "Private Provider Name")]
+        )
+        #expect(fixture.model.addSite(draft))
+        #expect(fixture.tracker.properties.last == ["service": "netflix", "provider_id": "8"])
+        let site = try #require(fixture.model.siteStore.sites.last)
+        fixture.model.select(.site(site.id))
+        #expect(fixture.tracker.properties.last == ["service": "netflix", "provider_id": "8"])
+
+        draft.address = "https://private.example/my/history"
+        draft.tmdbProviders = []
+        #expect(fixture.model.updateSite(site, with: draft))
+        #expect(fixture.tracker.properties.last == ["service": "other"])
+        fixture.model.select(.site(site.id))
+        #expect(fixture.tracker.properties.last == ["service": "other"])
+    }
+
+    @Test func `search navigation does not insert an intermediate pageview`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        fixture.model.showCommandPalette(query: "Private Search")
+        fixture.model.search("Private Search", in: fixture.site)
+
+        #expect(fixture.tracker.pages == [.service, .search, .service])
+    }
+
     @Test(arguments: [false, true])
     func `failed site writes preserve saved state and can be retried`(isEditing: Bool) throws {
         let fixture = try AnalyticsAppFixture()
@@ -415,6 +521,7 @@ struct SiteOpeningAnalyticsTests {
 
         fixture.model.select(.continueWatching(.netflix, "123"))
 
+        #expect(fixture.tracker.pages.last == .continueWatching)
         #expect(fixture.model.destinationURL?.absoluteString == "https://www.netflix.com/watch/123")
         #expect(fixture.tracker.events == [.appLaunched, .continueWatchingOpened])
 
@@ -440,7 +547,7 @@ struct SiteOpeningAnalyticsTests {
         #expect(fixture.model.tmdbSearch.selectedMedia == media)
     }
 
-    @Test func `unavailable providers do not record selections or site opens`() throws {
+    @Test func `unavailable providers record a failed attempt without a site open`() throws {
         let fixture = try AnalyticsAppFixture()
         defer { fixture.cleanup() }
         let media = TMDBMediaResult(
@@ -452,7 +559,8 @@ struct SiteOpeningAnalyticsTests {
             releaseDate: nil
         )
         fixture.model.openProvider(TMDBProvider(id: 999, name: "Unconfigured Provider", logoPath: nil), for: media)
-        #expect(fixture.tracker.events == [.appLaunched])
+        #expect(fixture.tracker.events == [.appLaunched, .providerSelectionFailed])
+        #expect(fixture.tracker.properties.last == ["provider_id": "999"])
     }
 }
 

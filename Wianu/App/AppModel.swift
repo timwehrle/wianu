@@ -19,6 +19,7 @@ final class AppModel {
 
     private(set) var selection: SidebarSelection?
     private(set) var navigationRequest: NavigationRequest?
+    private var isSettingsOpen = false
     @ObservationIgnored
     private let userDefaults: UserDefaults
     @ObservationIgnored
@@ -88,6 +89,7 @@ final class AppModel {
         )
         restoreSelection()
         analytics.track(.appLaunched)
+        trackSelectedPage()
     }
 
     init(
@@ -114,6 +116,7 @@ final class AppModel {
         )
         restoreSelection()
         analytics.track(.appLaunched)
+        trackSelectedPage()
     }
 }
 
@@ -145,12 +148,13 @@ extension AppModel {
     func search(_ query: String, in site: SavedSite) {
         guard let searchURL = site.searchURL(for: query) else { return }
 
-        dismissCommandPalette()
         select(.site(site.id))
         navigate(to: searchURL)
     }
 
     func showCommandPalette(query: String? = nil) {
+        let wasPresented = isCommandPalettePresented
+
         tmdbSearch.clearSelection()
         if let query {
             tmdbSearch.query = query
@@ -160,7 +164,10 @@ extension AppModel {
         tmdbSearch.queryChanged()
         isCommandPalettePresented = true
         tmdbSearch.requestFocus()
-        analytics.track(.searchOpened)
+        if !wasPresented {
+            analytics.pageview(.search)
+            analytics.track(.searchOpened)
+        }
     }
 
     func onboardingStarted(source: OnboardingSource) {
@@ -197,7 +204,36 @@ extension AppModel {
     }
 
     func settingsOpened() {
+        guard !isSettingsOpen else { return }
+
+        isSettingsOpen = true
+        analytics.pageview(.settings)
         analytics.track(.settingsOpened)
+    }
+
+    func settingsClosed() {
+        guard isSettingsOpen else { return }
+
+        isSettingsOpen = false
+        if isCommandPalettePresented {
+            analytics.pageview(.search)
+        } else {
+            trackSelectedPage()
+        }
+    }
+
+    func setAnalyticsEnabled(_ enabled: Bool) {
+        analytics.setEnabled(enabled)
+    }
+
+    private func trackSelectedPage() {
+        switch selection {
+        case .home: analytics.pageview(.home)
+        case .site where navigationRequest != nil: analytics.pageview(.service)
+        case .continueWatching where navigationRequest != nil: analytics.pageview(.continueWatching)
+        case .watchlistItem: analytics.pageview(.watchlist)
+        default: break
+        }
     }
 
     func updateCheckStarted() {
@@ -208,7 +244,9 @@ extension AppModel {
     func addSite(_ draft: SiteDraft) -> Bool {
         guard siteStore.addSite(draft) else { return false }
 
-        analytics.track(.siteAdded)
+        analytics.track(.siteAdded, properties: serviceProperties(
+            url: draft.validatedValues?.url, providers: draft.tmdbProviders
+        ))
         return true
     }
 
@@ -216,12 +254,29 @@ extension AppModel {
     func updateSite(_ site: SavedSite, with draft: SiteDraft) -> Bool {
         guard siteStore.updateSite(id: site.id, with: draft) else { return false }
 
-        analytics.track(.siteEdited)
+        analytics.track(.siteEdited, properties: serviceProperties(
+            url: draft.validatedValues?.url, providers: draft.tmdbProviders
+        ))
         return true
     }
 
+    private func serviceProperties(url: URL?, providers: [TMDBProviderReference]) -> [String: String] {
+        // Recognize services locally; never send a saved name or hostname.
+        let service = AnalyticsService.name(for: url)
+        var properties = ["service": service]
+
+        if providers.count == 1, let provider = providers.first {
+            properties["provider_id"] = String(provider.id)
+        }
+
+        return properties
+    }
+
     func dismissCommandPalette() {
+        guard isCommandPalettePresented else { return }
+
         isCommandPalettePresented = false
+        trackSelectedPage()
     }
 
     func openWeeklyPick(_ media: TMDBMediaResult) {
@@ -235,8 +290,12 @@ extension AppModel {
             $0.tmdbProviders.contains(where: { $0.matches(provider) })
                 && $0.isTMDBProviderActionable
         }), site.searchURL(for: media.title) != nil
-        else { return }
-        analytics.track(.providerSelected)
+        else {
+            analytics.track(.providerSelectionFailed, properties: ["provider_id": String(provider.id)])
+            return
+        }
+
+        analytics.track(.providerSelected, properties: ["provider_id": String(provider.id)])
         search(media.title, in: site)
     }
 
@@ -251,13 +310,20 @@ extension AppModel {
         selection = newSelection
         navigate(to: destination(for: newSelection))
 
+        trackSelectedPage()
+
         switch newSelection {
         case .home:
             analytics.track(.homeOpened)
         case .site where navigationRequest != nil:
-            analytics.track(.siteOpened)
-        case .continueWatching where navigationRequest != nil:
-            analytics.track(.continueWatchingOpened)
+            analytics.track(.siteOpened, properties: serviceProperties(
+                url: selectedSite?.url, providers: selectedSite?.tmdbProviders ?? []
+            ))
+        case let .continueWatching(service, _) where navigationRequest != nil:
+            analytics.track(
+                .continueWatchingOpened,
+                properties: ["provider": service.rawValue, "status": "success"]
+            )
         default:
             break
         }

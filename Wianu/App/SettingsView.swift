@@ -1,18 +1,21 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Bindable var model: AppModel
+    let model: AppModel
 
     var body: some View {
-        GeneralSettingsView()
+        GeneralSettingsView(model: model)
             .frame(width: 560, height: 340)
             .onAppear {
                 model.settingsOpened()
             }
+            .onDisappear { model.settingsClosed() }
     }
 }
 
 private struct GeneralSettingsView: View {
+    let model: AppModel
+
     @AppStorage(AnalyticsPreference.enabledKey)
     private var analyticsEnabled = true
 
@@ -20,21 +23,20 @@ private struct GeneralSettingsView: View {
         Form {
             Section {
                 Toggle(
-                    "Send Anonymous Usage Analytics",
-                    isOn: $analyticsEnabled
+                    "Share Usage Analytics",
+                    isOn: Binding(
+                        get: { analyticsEnabled },
+                        set: { enabled in
+                            analyticsEnabled = enabled
+                            model.setAnalyticsEnabled(enabled)
+                        }
+                    )
                 )
 
                 Text(
-                    "Share feature usage. "
-                        + "Titles, searches, and URLs aren’t sent."
+                    "Help improve Wianu by sharing feature usage and service choices. "
+                        + "Titles, searches, playback history and streaming URLs stay private."
                 )
-                .font(.callout)
-                .foregroundStyle(.secondary)
-            } footer: {
-                Link(destination: SupportPromptModel.supportURL) {
-                    Label("Support Wianu", systemImage: "heart")
-                }
-                .buttonStyle(.plain)
                 .font(.callout)
                 .foregroundStyle(.secondary)
             }
