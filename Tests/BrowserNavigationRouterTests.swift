@@ -150,3 +150,57 @@ struct BrowserNavigationRouterTests {
         }
     }
 }
+
+@MainActor
+@Suite("Browser session retention")
+struct BrowserSessionRetentionTests {
+    @Test func `retains recent sites and evicts the least recently used`() throws {
+        let sessions = BrowserSessions(continueWatchingQueues: [])
+        let sites = (1 ... 4).map { SavedSite(name: "Site \($0)", urlString: "https://site\($0).invalid") }
+
+        func open(_ site: SavedSite, intent: AppModel.NavigationRequest.Intent = .restoreSite) throws {
+            let url = try #require(site.url)
+            sessions.open(.init(url: url, siteID: site.id, intent: intent), site: site)
+        }
+
+        try open(sites[0])
+        let first = sessions.active
+        let originalRequest = first.router.request?.id
+        try open(sites[1])
+        let second = sessions.active
+        try open(sites[2])
+        try open(sites[0])
+        #expect(sessions.active === first)
+        #expect(first.router.request?.id == originalRequest)
+
+        try open(sites[3])
+        try open(sites[1])
+        #expect(sessions.active !== second)
+        sessions.cancelNavigation()
+    }
+
+    @Test func `explicit destinations navigate in a retained session`() throws {
+        let sessions = BrowserSessions(continueWatchingQueues: [])
+        let site = SavedSite(name: "Site", urlString: "https://site.invalid")
+        let home = try #require(site.url)
+        let destination = try #require(URL(string: "https://site.invalid/movie"))
+        sessions.open(.init(url: home, siteID: site.id, intent: .restoreSite), site: site)
+        let session = sessions.active
+        let originalRequest = session.router.request?.id
+        sessions.open(.init(url: destination, siteID: site.id, intent: .navigate), site: site)
+        #expect(sessions.active === session)
+        #expect(session.router.request?.id != originalRequest)
+        sessions.cancelNavigation()
+    }
+
+    @Test func `removed sites release their active session`() throws {
+        let sessions = BrowserSessions(continueWatchingQueues: [])
+        let site = SavedSite(name: "Site", urlString: "https://site.invalid")
+        let url = try #require(site.url)
+        sessions.open(.init(url: url, siteID: site.id, intent: .restoreSite), site: site)
+        let original = sessions.active
+        sessions.removeChangedSites([])
+        #expect(sessions.active !== original)
+        sessions.cancelNavigation()
+    }
+}

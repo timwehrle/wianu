@@ -67,7 +67,11 @@ final class BrowserNavigationRouter {
         case reload
     }
 
-    private(set) var request: Request?
+    var onRequest: (() -> Void)?
+    private(set) var request: Request? {
+        didSet { onRequest?() }
+    }
+
     private(set) var blockedNavigationMessage: String?
     private var protectedDestinationRequestID: Request.ID?
     private var activeLoadRequestID: Request.ID?
