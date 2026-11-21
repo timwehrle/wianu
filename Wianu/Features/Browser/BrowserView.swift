@@ -133,6 +133,7 @@ final class BrowserSessions {
 
     private let continueWatchingQueues: [ContinueWatchingController]
     private var entries: [Entry] = []
+    private var hasPlaceholderSession = true
     private(set) var active: BrowserSession
     private var memoryPressureSource: DispatchSourceMemoryPressure?
 
@@ -160,7 +161,7 @@ final class BrowserSessions {
         if let existingIndex {
             entry = entries.remove(at: existingIndex)
         } else {
-            let session = entries.isEmpty && active.router.request == nil
+            let session = hasPlaceholderSession
                 ? active : BrowserSession(continueWatchingQueues: continueWatchingQueues)
             entry = Entry(siteID: site?.id, siteURL: site?.url, session: session)
         }
@@ -169,6 +170,7 @@ final class BrowserSessions {
             active.pausePlayback()
         }
         entry.session.cancelPendingPause()
+        hasPlaceholderSession = false
         active = entry.session
         entries.append(entry)
         while entries.count > 3 {
@@ -204,6 +206,7 @@ final class BrowserSessions {
         if activeWasRemoved {
             active.pausePlayback()
             active = BrowserSession(continueWatchingQueues: continueWatchingQueues)
+            hasPlaceholderSession = true
         }
     }
 

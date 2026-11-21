@@ -193,6 +193,28 @@ struct BrowserSessionRetentionTests {
         sessions.cancelNavigation()
     }
 
+    @Test func `opening a retained site after removal does not reuse it for a new site`() throws {
+        let sessions = BrowserSessions(continueWatchingQueues: [])
+        let first = SavedSite(name: "First", urlString: "https://first.invalid")
+        let second = SavedSite(name: "Second", urlString: "https://second.invalid")
+        let third = SavedSite(name: "Third", urlString: "https://third.invalid")
+
+        func open(_ site: SavedSite) throws {
+            let url = try #require(site.url)
+            sessions.open(.init(url: url, siteID: site.id, intent: .restoreSite), site: site)
+        }
+
+        try open(first)
+        let retained = sessions.active
+        try open(second)
+        sessions.removeChangedSites([first, third])
+        try open(first)
+        #expect(sessions.active === retained)
+        try open(third)
+        #expect(sessions.active !== retained)
+        sessions.cancelNavigation()
+    }
+
     @Test func `removed sites release their active session`() throws {
         let sessions = BrowserSessions(continueWatchingQueues: [])
         let site = SavedSite(name: "Site", urlString: "https://site.invalid")
