@@ -169,6 +169,11 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
             return nil
         }
 
+        let previousProgress = id == .netflix
+            ? Dictionary(entries.compactMap { entry in
+                entry.progress.map { (entry.id, $0) }
+            }, uniquingKeysWith: { first, _ in first })
+            : [:]
         var seen: Set<String> = []
         var received: [ContinueWatchingEntry] = []
 
@@ -186,7 +191,7 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
                 season: item.season,
                 episode: item.episode,
                 storeOffer: item.storeOffer,
-                progress: item.progress.flatMap { (0 ... 1).contains($0) ? $0 : nil },
+                progress: item.progress.flatMap { (0 ... 1).contains($0) ? $0 : nil } ?? previousProgress[item.id],
                 url: destination
             ))
         }

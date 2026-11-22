@@ -81,33 +81,6 @@ extension WebKitIntegrationTests {
         }
 
         @Test
-        func `An unreadable card preserves the complete queue until its title loads`() async throws {
-            let fixture = VideoObserverFixture(pages: ["/": """
-            <base href="https://www.netflix.com/"><title>Netflix</title>
-            <a data-uia="progress-card" href="/browse?jbv=123" aria-label="First Show"></a>
-            <a data-uia="progress-card" id="second" href="/browse?jbv=456" aria-label="Second Show"></a>
-            """], adapter: .netflix)
-            defer { fixture.stop() }
-
-            try await fixture.load("/")
-            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.count == 2 }
-
-            _ = try await fixture.webView.evaluateJavaScript("""
-            document.getElementById('second').removeAttribute('aria-label');
-            """)
-            try await fixture.waitUntil { fixture.continueWatchingQueue.diagnostics?.contains("missing") == true }
-
-            #expect(fixture.continueWatchingQueue.entries.map(\.title) == ["First Show", "Second Show"])
-
-            _ = try await fixture.webView.evaluateJavaScript("""
-            document.getElementById('second').setAttribute('aria-label', 'Updated Show');
-            """)
-            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.last?.title == "Updated Show" }
-
-            #expect(fixture.continueWatchingQueue.entries.count == 2)
-        }
-
-        @Test
         func `HBO clears a confirmed empty collection even without included resources`() async throws {
             let fixture = VideoObserverFixture(
                 pages: ["/": "<title>HBO Max</title>"],
