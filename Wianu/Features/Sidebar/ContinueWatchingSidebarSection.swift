@@ -100,13 +100,29 @@ private struct ContinueWatchingGroup: View {
     private var queueContent: some View {
         ForEach(queue.entries) { entry in
             VStack(alignment: .leading, spacing: 4) {
-                Text(entry.title)
-                    .lineLimit(1)
+                HStack {
+                    Text(entry.title)
+                        .lineLimit(1)
+
+                    if entry.storeOffer == true {
+                        Image(systemName: "bag")
+                            .foregroundStyle(.secondary)
+                            .accessibilityLabel("Available in the store")
+                            .help("Available in the store; additional payment may be required.")
+                    }
+                }
 
                 if let season = entry.season, let episode = entry.episode {
                     Text("Season \(season), Episode \(episode)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                }
+
+                if let progress = entry.progress {
+                    ProgressView(value: progress)
+                        .controlSize(.mini)
+                        .accessibilityLabel("Watch progress")
+                        .accessibilityValue(progress.formatted(.percent))
                 }
             }
             .padding(.vertical, 2)
