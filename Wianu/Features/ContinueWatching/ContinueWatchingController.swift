@@ -8,6 +8,8 @@ struct ContinueWatchingEntry: Identifiable, Equatable, Codable {
     let episodeTitle: String?
     let season: Int?
     let episode: Int?
+    let storeOffer: Bool?
+    let progress: Double?
     let url: URL
 }
 
@@ -26,6 +28,8 @@ private struct ContinueWatchingPayloadItem: Decodable {
     let episodeTitle: String?
     let season: Int?
     let episode: Int?
+    let storeOffer: Bool?
+    let progress: Double?
     let url: URL?
 }
 
@@ -181,6 +185,8 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
                 episodeTitle: item.episodeTitle,
                 season: item.season,
                 episode: item.episode,
+                storeOffer: item.storeOffer,
+                progress: item.progress.flatMap { (0 ... 1).contains($0) ? $0 : nil },
                 url: destination
             ))
         }

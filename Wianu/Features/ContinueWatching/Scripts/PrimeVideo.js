@@ -1,9 +1,42 @@
 /* exported createContinueWatchingReader */
 function createContinueWatchingReader(_schedule) {
+	const hasStoreOffer = (card) =>
+		Array.from(
+			card?.querySelectorAll('[data-testid="card-overlay"] svg > title') || []
+		).some((title) => title.textContent.trim() === 'Store Filled');
+	const progressFor = (card) => {
+		const bar = card?.querySelector(
+			'[data-testid="progress-bar"][aria-valuenow][aria-valuemax]'
+		);
+
+		if (!bar) {
+			return null;
+		}
+
+		const value = Number(bar.getAttribute('aria-valuenow'));
+		const maximum = Number(bar.getAttribute('aria-valuemax'));
+
+		return Number.isFinite(value) &&
+			Number.isFinite(maximum) &&
+			maximum > 0 &&
+			value >= 0 &&
+			value <= maximum
+			? value / maximum
+			: null;
+	};
+
 	return () => {
+		const shelf = document.querySelector(
+			'[data-automation-id="continue-watching"], [data-testid="continue-watching"]'
+		);
+
 		const cards = Array.from(
 			document.querySelectorAll('article[data-card-title]')
 		).filter((card) => {
+			if (shelf) {
+				return shelf.contains(card);
+			}
+
 			const progress = card.querySelector(
 				'[data-testid="progress-bar"][aria-valuenow]'
 			);
@@ -36,14 +69,12 @@ function createContinueWatchingReader(_schedule) {
 				return {
 					id: url.pathname.match(/\/detail\/([A-Za-z0-9]+)/)?.[1],
 					title: card.getAttribute('data-card-title')?.trim().slice(0, 500),
+					storeOffer: hasStoreOffer(card),
+					progress: progressFor(card),
 					url: url.href
 				};
 			});
 		}
-
-		const shelf = document.querySelector(
-			'[data-automation-id="continue-watching"], [data-testid="continue-watching"]'
-		);
 
 		if (!shelf) {
 			const isHome =
@@ -72,6 +103,8 @@ function createContinueWatchingReader(_schedule) {
 			return {
 				id: url.pathname.match(/\/detail\/([A-Za-z0-9]+)/)?.[1],
 				title: title?.trim().slice(0, 500),
+				storeOffer: hasStoreOffer(anchor.closest('[data-card-title]')),
+				progress: progressFor(anchor.closest('[data-card-title]')),
 				url: url.href
 			};
 		});

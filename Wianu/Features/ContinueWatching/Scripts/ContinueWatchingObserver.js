@@ -249,6 +249,7 @@ function observeContinueWatching(configuration, createReader) {
 				'data-item-id',
 				'data-set-style',
 				'aria-valuenow',
+				'aria-valuemax',
 				'data-card-title'
 			]
 		});

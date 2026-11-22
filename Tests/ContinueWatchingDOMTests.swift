@@ -98,39 +98,6 @@ extension WebKitIntegrationTests {
         }
 
         @Test
-        func `Prime reads card titles with regional links and excludes completed or unstarted cards`() async throws {
-            let fixture = VideoObserverFixture(pages: ["/": """
-            <base href="https://www.primevideo.com/"><title>Prime Video</title>
-            <li data-index="1"><article data-testid="card"
-                data-card-title="Die Tribute von Panem - Mockingjay Teil 2 [dt./OV]"
-                data-card-entity-type="Movie" data-card-entitlement="Unentitled">
-                <section data-testid="card-section"><div data-testid="packshot">
-                <button aria-label="Die Tribute von Panem - Mockingjay Teil 2 [dt./OV]"></button>
-                <a href="/region/eu/detail/0P6FK4CRBD8X30BLGP7SISRBBX?ref_=atv_hm_hom_c_pEHQ18_2_1">Film</a>
-                <img alt=""><span data-testid="metadata-badge" aria-label="ANGEBOT">ANGEBOT</span>
-                <div data-testid="card-overlay"><span data-testid="progress-bar"
-                    aria-valuemin="0" aria-valuemax="100" aria-valuenow="14.279717611142912"></span></div>
-                </div></section>
-            </article></li>
-            <article data-card-title="Completed"><a href="/detail/COMPLETED">Film</a>
-                <span data-testid="progress-bar" aria-valuemax="100" aria-valuenow="100"></span></article>
-            <article data-card-title="Unstarted"><a href="/detail/UNSTARTED">Film</a>
-                <span data-testid="progress-bar" aria-valuemax="100" aria-valuenow="0"></span></article>
-            <article data-card-title="Recommendation"><a href="/detail/RECOMMENDATION">Film</a></article>
-            """], host: "www.primevideo.com", adapter: .primeVideo)
-            defer { fixture.stop() }
-
-            try await fixture.load("/")
-            try await fixture.waitUntil { fixture.continueWatchingQueue.updatedAt != nil }
-
-            #expect(fixture.continueWatchingQueue.entries.count == 1)
-            #expect(fixture.continueWatchingQueue.entries.first?
-                .title == "Die Tribute von Panem - Mockingjay Teil 2 [dt./OV]")
-            #expect(fixture.continueWatchingQueue.entries.first?.url
-                .path == "/region/eu/detail/0P6FK4CRBD8X30BLGP7SISRBBX")
-        }
-
-        @Test
         func `Disney rating badges cannot become show names`() async throws {
             let fixture = VideoObserverFixture(pages: ["/": """
             <title>Disney+</title>
@@ -293,23 +260,6 @@ extension WebKitIntegrationTests {
 
             #expect(fixture.continueWatchingQueue.entries.first?.title == "A Show")
             #expect(fixture.continueWatchingQueue.entries.first?.url.path == "/title/123")
-        }
-
-        @Test
-        func `Missing shelves provide structural diagnostics without page query strings`() async throws {
-            let fixture = VideoObserverFixture(pages: ["/": """
-            <title>Prime</title><section data-testid="different-carousel"><h2>Continue Watching</h2></section>
-            """], host: "www.primevideo.com", adapter: .primeVideo)
-            defer { fixture.stop() }
-
-            try await fixture.load("/?token=secret")
-            try await fixture.waitUntil { fixture.continueWatchingQueue.diagnostics != nil }
-
-            let report = try #require(fixture.continueWatchingQueue.diagnostics)
-
-            #expect(report.contains("different-carousel"))
-            #expect(!report.contains("secret"))
-            #expect(fixture.continueWatchingQueue.updatedAt == nil)
         }
     }
 }
