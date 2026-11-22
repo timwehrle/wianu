@@ -1,4 +1,4 @@
-name: Pull Request Checks
+name: CI
 
 on:
   push:
@@ -23,7 +23,7 @@ env:
 
 jobs:
   javascript:
-    name: JavaScript format and lint
+    name: JavaScript formatting and lint
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -49,7 +49,7 @@ jobs:
         run: make js-check
 
   quality:
-    name: Format and lint
+    name: Swift formatting and lint
     if: github.event_name == 'pull_request'
     runs-on: xcode-27
     timeout-minutes: 10
@@ -73,7 +73,7 @@ jobs:
         run: swiftlint lint --strict --reporter github-actions-logging
 
   tests:
-    name: Test
+    name: macOS tests
     runs-on: xcode-27
     timeout-minutes: 20
 
