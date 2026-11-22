@@ -122,6 +122,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		FA6900010000000000000001 /* eslint.config.mjs */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = eslint.config.mjs; sourceTree = "<group>"; };
+		FA6900010000000000000002 /* prettier.config.mjs */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = prettier.config.mjs; sourceTree = "<group>"; };
+		FA6900010000000000000003 /* package.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = package.json; sourceTree = "<group>"; };
+		FA6900010000000000000004 /* pnpm-workspace.yaml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = "pnpm-workspace.yaml"; sourceTree = "<group>"; };
+		FA6900010000000000000005 /* pnpm-lock.yaml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = "pnpm-lock.yaml"; sourceTree = "<group>"; };
+		FA6900010000000000000006 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		1EFF6F7118F05B89732A32C3 /* LetterboxdTestSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdTestSession.swift; sourceTree = "<group>"; };
 		2779DA82DAB320184F2669D1 /* TMDBResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBResponses.swift; sourceTree = "<group>"; };
 		297D70DC28BF39EC09DA4C62 /* LetterboxdImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportTests.swift; sourceTree = "<group>"; };
@@ -343,6 +349,12 @@
 		D143389A3013E5B800BA847C = {
 			isa = PBXGroup;
 			children = (
+				FA6900010000000000000001 /* eslint.config.mjs */,
+				FA6900010000000000000002 /* prettier.config.mjs */,
+				FA6900010000000000000003 /* package.json */,
+				FA6900010000000000000004 /* pnpm-workspace.yaml */,
+				FA6900010000000000000005 /* pnpm-lock.yaml */,
+				FA6900010000000000000006 /* Makefile */,
 				D145FFF8301BB60300983295 /* .swiftformat */,
 				D135CED83038A772001AB3C0 /* .swiftlint.yml */,
 				D1C100043020000000000104 /* Tests */,
