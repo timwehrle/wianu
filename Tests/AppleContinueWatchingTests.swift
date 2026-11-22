@@ -3,6 +3,7 @@ import Testing
 @testable import Wianu
 
 extension WebKitIntegrationTests {
+    @Suite(.serialized)
     @MainActor
     struct AppleContinueWatchingTests {
         private static let card = """

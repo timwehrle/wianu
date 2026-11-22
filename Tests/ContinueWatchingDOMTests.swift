@@ -3,6 +3,7 @@ import Testing
 @testable import Wianu
 
 extension WebKitIntegrationTests {
+    @Suite(.serialized)
     @MainActor
     struct ContinueWatchingDOMTests {
         @Test(arguments: ["S1:E2 Episode Two", "S 1 : E 2 Episode Two", "s1:e2 Episode Two", "S1:F2 Zweite Folge"])
@@ -314,6 +315,7 @@ extension WebKitIntegrationTests {
 }
 
 extension WebKitIntegrationTests {
+    @Suite(.serialized)
     @MainActor
     struct DisneyContinueWatchingResponseTests {
         private static let endpoint = "https://disney.api.edge.bamgrid.com/explore/v1.21/set/"

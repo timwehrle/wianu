@@ -3,6 +3,7 @@ import Testing
 @testable import Wianu
 
 extension WebKitIntegrationTests {
+    @Suite(.serialized)
     @MainActor
     struct ContinueWatchingSnapshotTests {
         @Test(arguments: ["netflix", "disneyPlus", "primeVideo", "appleTV"])
