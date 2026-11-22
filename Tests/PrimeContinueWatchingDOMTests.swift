@@ -7,6 +7,54 @@ extension WebKitIntegrationTests {
     @MainActor
     struct PrimeContinueWatchingDOMTests {
         @Test
+        func `Prime hydration includes shows without a progress bar`() async throws {
+            let fixture = VideoObserverFixture(pages: ["/": """
+            <base href="https://www.primevideo.com/"><title>Prime Video</title>
+            <script id="dv-web-page-hydration-data" type="application/json">
+            {"page":{"rows":[{"isContinueWatching":false,"entities":[]},
+            {"isContinueWatching":true,"estimatedTotal":2,"entities":[
+                {"displayTitle":"A Film","link":{"url":"/detail/FILM123"},"progress":{"percentage":25}},
+                {"displayTitle":"A Show","link":{"url":"/detail/SHOW456"},
+                 "entitlementCues":{"focusMessage":{"icon":"OFFER_ICON"}}}
+            ]}]}}
+            </script>
+            <article data-card-title="Recommendation"><a href="/detail/OTHER789">Other</a>
+                <span data-testid="progress-bar" aria-valuenow="30" aria-valuemax="100"></span>
+            </article>
+            """], host: "www.primevideo.com", adapter: .primeVideo)
+            defer { fixture.stop() }
+
+            try await fixture.load("/")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.count == 2 }
+
+            #expect(fixture.continueWatchingQueue.entries.map(\.title) == ["A Film", "A Show"])
+            #expect(fixture.continueWatchingQueue.entries.first?.progress == 0.25)
+            #expect(fixture.continueWatchingQueue.entries.last?.storeOffer == true)
+        }
+
+        @Test
+        func `Incomplete Prime hydration preserves the saved queue`() async throws {
+            let fixture = VideoObserverFixture(pages: ["/": """
+            <base href="https://www.primevideo.com/"><title>Prime Video</title>
+            <script id="dv-web-page-hydration-data" type="application/json">
+            {"isContinueWatching":true,"estimatedTotal":2,"entities":[
+                {"displayTitle":"A Film","link":{"url":"/detail/FILM123"}}
+            ]}
+            </script>
+            """], host: "www.primevideo.com", adapter: .primeVideo)
+            defer { fixture.stop() }
+
+            try fixture.continueWatchingQueue.receive(json: """
+            [{"id":"SAVED","title":"Saved Show","url":"https://www.primevideo.com/detail/SAVED"}]
+            """, from: #require(URL(string: "https://www.primevideo.com/")))
+
+            try await fixture.load("/")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.diagnostics?.contains("No readable") == true }
+
+            #expect(fixture.continueWatchingQueue.entries.map(\.title) == ["Saved Show"])
+        }
+
+        @Test
         func `Prime reads all cards in the identified Continue Watching shelf`() async throws {
             let fixture = VideoObserverFixture(pages: ["/": """
             <base href="https://www.primevideo.com/"><title>Prime Video</title>

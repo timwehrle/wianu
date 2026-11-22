@@ -1,9 +1,93 @@
 /* exported createContinueWatchingReader */
 function createContinueWatchingReader(_schedule) {
+	const initialPage = location.href;
+	let hydrationRead = false;
+	let hydrationEntries = null;
+	let navigatedAway = false;
+
+	const readHydration = (script) => {
+		try {
+			const pending = [JSON.parse(script.textContent)];
+			const shelves = [];
+
+			while (pending.length) {
+				const value = pending.pop();
+
+				if (!value || typeof value !== 'object') {
+					continue;
+				}
+
+				if (value.isContinueWatching === true) {
+					shelves.push(value);
+				} else {
+					pending.push(...Object.values(value));
+				}
+			}
+
+			if (shelves.length !== 1) {
+				return null;
+			}
+
+			const shelf = shelves[0];
+
+			if (
+				!Array.isArray(shelf.entities) ||
+				shelf.entities.length > 100 ||
+				shelf.estimatedTotal !== shelf.entities.length
+			) {
+				return null;
+			}
+
+			const entries = shelf.entities.map((item) => {
+				if (
+					typeof item.displayTitle !== 'string' ||
+					!item.displayTitle.trim() ||
+					typeof item.link?.url !== 'string'
+				) {
+					throw new Error('Incomplete Prime Video entry');
+				}
+
+				const url = new URL(item.link.url, document.baseURI);
+				const id = url.pathname.match(/\/detail\/([A-Za-z0-9]+)\/?$/)?.[1];
+
+				if (
+					url.protocol !== 'https:' ||
+					url.hostname !== location.hostname ||
+					!id
+				) {
+					throw new Error('Invalid Prime Video destination');
+				}
+
+				const percentage = item.progress?.percentage;
+
+				return {
+					id,
+					title: item.displayTitle.trim().slice(0, 500),
+					url: url.href,
+					progress:
+						typeof percentage === 'number' &&
+						Number.isFinite(percentage) &&
+						percentage >= 0 &&
+						percentage <= 100
+							? percentage / 100
+							: null,
+					storeOffer: item.entitlementCues?.focusMessage?.icon === 'OFFER_ICON'
+				};
+			});
+
+			return new Set(entries.map((entry) => entry.id)).size === entries.length
+				? entries
+				: null;
+		} catch (_) {
+			return null;
+		}
+	};
+
 	const hasStoreOffer = (card) =>
 		Array.from(
 			card?.querySelectorAll('[data-testid="card-overlay"] svg > title') || []
 		).some((title) => title.textContent.trim() === 'Store Filled');
+
 	const progressFor = (card) => {
 		const bar = card?.querySelector(
 			'[data-testid="progress-bar"][aria-valuenow][aria-valuemax]'
@@ -26,6 +110,27 @@ function createContinueWatchingReader(_schedule) {
 	};
 
 	return () => {
+		if (location.href !== initialPage) {
+			navigatedAway = true;
+		}
+
+		const script = document.querySelector(
+			'#dv-web-page-hydration-data[type="application/json"]'
+		);
+
+		if (script) {
+			if (navigatedAway) {
+				return null;
+			}
+
+			if (!hydrationRead) {
+				hydrationEntries = readHydration(script);
+				hydrationRead = true;
+			}
+
+			return hydrationEntries;
+		}
+
 		const shelf = document.querySelector(
 			'[data-automation-id="continue-watching"], [data-testid="continue-watching"]'
 		);
