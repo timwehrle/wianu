@@ -5,6 +5,22 @@ import Testing
 @MainActor
 @Suite("Browser navigation router")
 struct BrowserNavigationRouterTests {
+    @Test func `navigation handler receives each queued request`() throws {
+        let router = BrowserNavigationRouter()
+        var received: [UUID] = []
+        router.setNavigationRequestHandler {
+            if let request = router.request {
+                received.append(request.id)
+            }
+        }
+
+        try router.openDestination(#require(URL(string: "https://example.com")))
+        router.reload()
+
+        #expect(received.count == 2)
+        #expect(received.last == router.request?.id)
+    }
+
     @Test func `HTTP navigation is retried securely and downgrade loops are blocked`() throws {
         let router = BrowserNavigationRouter()
         let url = try #require(URL(string: "http://example.com:80/home?q=movie#section"))

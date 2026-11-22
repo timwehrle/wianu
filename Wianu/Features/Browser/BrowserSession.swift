@@ -37,7 +37,7 @@ final class BrowserSession {
         self.page = page
         self.videoDiagnostics = videoDiagnostics
         self.continueWatchingQueues = continueWatchingQueues
-        router.onRequest = { [weak self] in self?.startQueuedNavigation() }
+        router.setNavigationRequestHandler { [weak self] in self?.startQueuedNavigation() }
     }
 
     var backItem: WebPage.BackForwardList.Item? {
@@ -52,7 +52,7 @@ final class BrowserSession {
         page.backForwardList.forwardList.first
     }
 
-    func startQueuedNavigation() {
+    private func startQueuedNavigation() {
         guard let request = router.request,
               request.id != handledNavigationRequestID
         else { return }

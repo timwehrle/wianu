@@ -67,15 +67,20 @@ final class BrowserNavigationRouter {
         case reload
     }
 
-    var onRequest: (() -> Void)?
+    private var navigationRequestHandler: (() -> Void)?
     private(set) var request: Request? {
-        didSet { onRequest?() }
+        didSet { navigationRequestHandler?() }
     }
 
     private(set) var blockedNavigationMessage: String?
     private var protectedDestinationRequestID: Request.ID?
     private var activeLoadRequestID: Request.ID?
     private var upgradedNavigationURLs: Set<URL> = []
+
+    func setNavigationRequestHandler(_ handler: @escaping () -> Void) {
+        precondition(navigationRequestHandler == nil)
+        navigationRequestHandler = handler
+    }
 
     @discardableResult
     func openDestination(_ url: URL) -> Bool {
