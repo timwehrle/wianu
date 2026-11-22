@@ -3,11 +3,11 @@ import Testing
 import WebKit
 @testable import Wianu
 
-/// Limit concurrent WebKit processes on CI while keeping other tests parallel.
-@Suite(.serialized)
+/// Groups WebKit tests, with each nested suite limiting its own concurrency.
 struct WebKitIntegrationTests {}
 
 extension WebKitIntegrationTests {
+    @Suite(.serialized)
     @MainActor
     struct VideoObserverIntegrationTests {
         @Test(arguments: ["fetch", "xhr"])

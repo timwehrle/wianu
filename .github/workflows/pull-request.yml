@@ -1,6 +1,9 @@
 name: Pull Request Checks
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     paths:
       - "**"
@@ -11,7 +14,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: pull-request-${{ github.event.pull_request.number }}
+  group: checks-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -21,6 +24,7 @@ env:
 jobs:
   javascript:
     name: JavaScript format and lint
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -46,6 +50,7 @@ jobs:
 
   quality:
     name: Format and lint
+    if: github.event_name == 'pull_request'
     runs-on: xcode-27
     timeout-minutes: 10
 
@@ -106,6 +111,7 @@ jobs:
             -configuration Debug \
             -destination "platform=macOS" \
             -derivedDataPath DerivedData \
+            -resultBundlePath "$RUNNER_TEMP/WianuTests.xcresult" \
             -clonedSourcePackagesDirPath .build/SourcePackages \
             -onlyUsePackageVersionsFromResolvedFile \
             -showBuildTimingSummary \
@@ -117,3 +123,12 @@ jobs:
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM=""
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ${{ runner.temp }}/WianuTests.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
