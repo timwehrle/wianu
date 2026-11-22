@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F45210013070000000000001 /* BrowserSessions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F45210023070000000000002 /* BrowserSessions.swift */; };
 		21392BB5A368A104286329C5 /* TMDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4864F4CC291E958A50456E1F /* TMDBClient.swift */; };
 		2A8A8308E06AA024385EF725 /* TMDBResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2779DA82DAB320184F2669D1 /* TMDBResponses.swift */; };
 		3B696CC64A0307E645BFBE56 /* LetterboxdImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AB648782105E118BE086F8 /* LetterboxdImportView.swift */; };
@@ -122,6 +123,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F45210023070000000000002 /* BrowserSessions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserSessions.swift; sourceTree = "<group>"; };
 		1EFF6F7118F05B89732A32C3 /* LetterboxdTestSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdTestSession.swift; sourceTree = "<group>"; };
 		2779DA82DAB320184F2669D1 /* TMDBResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBResponses.swift; sourceTree = "<group>"; };
 		297D70DC28BF39EC09DA4C62 /* LetterboxdImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportTests.swift; sourceTree = "<group>"; };
@@ -242,6 +244,12 @@
 		F22FFC23CF024EE97DC8594E /* MediaMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaMatcher.swift; sourceTree = "<group>"; };
 		F39C616C5A98BDB046546184 /* LetterboxdMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdMatcher.swift; sourceTree = "<group>"; };
 		F4ABD7CF583F976CCA50316E /* LetterboxdImportReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportReviewView.swift; sourceTree = "<group>"; };
+		FA6900010000000000000001 /* eslint.config.mjs */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = eslint.config.mjs; sourceTree = "<group>"; };
+		FA6900010000000000000002 /* prettier.config.mjs */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = prettier.config.mjs; sourceTree = "<group>"; };
+		FA6900010000000000000003 /* package.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = package.json; sourceTree = "<group>"; };
+		FA6900010000000000000004 /* pnpm-workspace.yaml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = "pnpm-workspace.yaml"; sourceTree = "<group>"; };
+		FA6900010000000000000005 /* pnpm-lock.yaml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = "pnpm-lock.yaml"; sourceTree = "<group>"; };
+		FA6900010000000000000006 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -343,18 +351,24 @@
 		D143389A3013E5B800BA847C = {
 			isa = PBXGroup;
 			children = (
-				D145FFF8301BB60300983295 /* .swiftformat */,
-				D135CED83038A772001AB3C0 /* .swiftlint.yml */,
-				D1C100043020000000000104 /* Tests */,
-				D11E8241301798520092ECC8 /* .github */,
-				D11E823D3017921C0092ECC8 /* Scripts */,
-				D1B972693015341900B64B10 /* Wianu */,
-				D14338A43013E5B800BA847C /* Products */,
-				D1B9723F3015325D00B64B10 /* README.md */,
 				D13E65F03018FDFC00E58017 /* .gitignore */,
-				D1FE001C30163BD700DA12EE /* Assets */,
+				D145FFF8301BB60300983295 /* .swiftformat */,
 				D1FE0019301638DA00DA12EE /* LICENSE */,
+				FA6900010000000000000006 /* Makefile */,
+				FA6900010000000000000003 /* package.json */,
+				D1B9723F3015325D00B64B10 /* README.md */,
+				FA6900010000000000000001 /* eslint.config.mjs */,
+				FA6900010000000000000002 /* prettier.config.mjs */,
+				FA6900010000000000000005 /* pnpm-lock.yaml */,
+				FA6900010000000000000004 /* pnpm-workspace.yaml */,
+				D135CED83038A772001AB3C0 /* .swiftlint.yml */,
+				D11E8241301798520092ECC8 /* .github */,
+				D1FE001C30163BD700DA12EE /* Assets */,
 				D17633AD30A0F89100CDB46C /* Packaging */,
+				D14338A43013E5B800BA847C /* Products */,
+				D11E823D3017921C0092ECC8 /* Scripts */,
+				D1C100043020000000000104 /* Tests */,
+				D1B972693015341900B64B10 /* Wianu */,
 			);
 			sourceTree = "<group>";
 		};
@@ -414,6 +428,7 @@
 				D1B972453015341900B64B10 /* BrowserNavigationDecider.swift */,
 				D1B972463015341900B64B10 /* BrowserPaneView.swift */,
 				D1F100033070000000000003 /* BrowserSession.swift */,
+				F45210023070000000000002 /* BrowserSessions.swift */,
 				D1F100043070000000000004 /* BrowserToolbar.swift */,
 				D1B972473015341900B64B10 /* BrowserView.swift */,
 				D1B972483015341900B64B10 /* BrowserTitleView.swift */,
@@ -787,6 +802,7 @@
 				E2B100013040000000000001 /* BundledJavaScript.swift in Sources */,
 				D1F000023040000000000002 /* VideoInformationView.swift in Sources */,
 				D1F100013070000000000001 /* BrowserSession.swift in Sources */,
+				F45210013070000000000001 /* BrowserSessions.swift in Sources */,
 				D1F100023070000000000002 /* BrowserToolbar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

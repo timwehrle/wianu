@@ -13,6 +13,7 @@ final class BrowserSession {
     private(set) var historyRootID: WebPage.BackForwardList.Item.ID?
     private var navigationTask: Task<Void, Never>?
     private var handledNavigationRequestID: UUID?
+    private var pauseTask: Task<Void, Never>?
 
     init(continueWatchingQueues: [ContinueWatchingController]? = nil) {
         let continueWatchingQueues = continueWatchingQueues ?? ContinueWatchingAdapter.all.map {
@@ -36,6 +37,7 @@ final class BrowserSession {
         self.page = page
         self.videoDiagnostics = videoDiagnostics
         self.continueWatchingQueues = continueWatchingQueues
+        router.setNavigationRequestHandler { [weak self] in self?.startQueuedNavigation() }
     }
 
     var backItem: WebPage.BackForwardList.Item? {
@@ -50,7 +52,7 @@ final class BrowserSession {
         page.backForwardList.forwardList.first
     }
 
-    func startQueuedNavigation() {
+    private func startQueuedNavigation() {
         guard let request = router.request,
               request.id != handledNavigationRequestID
         else { return }
@@ -62,6 +64,30 @@ final class BrowserSession {
 
     func cancelNavigation() {
         navigationTask?.cancel()
+    }
+
+    func pausePlayback() {
+        pauseTask?.cancel()
+        let page = page
+        pauseTask = Task {
+            guard !Task.isCancelled else { return }
+
+            do {
+                _ = try await page.callJavaScript(
+                    "document.querySelectorAll('video, audio').forEach(element => element.pause())",
+                    contentWorld: .page
+                )
+            } catch {
+                BrowserNavigationLog.logger
+                    .debug("Could not pause page media: \(String(describing: error), privacy: .private)")
+            }
+            guard !Task.isCancelled else { return }
+            await page.pauseAllMediaPlayback()
+        }
+    }
+
+    func cancelPendingPause() {
+        pauseTask?.cancel()
     }
 
     func goBack() {

@@ -7,6 +7,13 @@ final class AppModel {
     struct NavigationRequest: Identifiable, Sendable {
         let id = UUID()
         let url: URL
+        enum Intent: Sendable {
+            case restoreSite
+            case navigate
+        }
+
+        let site: SavedSite?
+        let intent: Intent
     }
 
     let continueWatchingQueues: [ContinueWatchingController]
@@ -254,6 +261,10 @@ extension AppModel {
     func updateSite(_ site: SavedSite, with draft: SiteDraft) -> Bool {
         guard siteStore.updateSite(id: site.id, with: draft) else { return false }
 
+        if selectedSiteID == site.id, site.url != siteStore.sites.first(where: { $0.id == site.id })?.url {
+            navigate(to: selectedSite?.url)
+        }
+
         analytics.track(.siteEdited, properties: serviceProperties(
             url: draft.validatedValues?.url, providers: draft.tmdbProviders
         ))
@@ -308,7 +319,12 @@ extension AppModel {
     func select(_ newSelection: SidebarSelection?) {
         isCommandPalettePresented = false
         selection = newSelection
-        navigate(to: destination(for: newSelection))
+        let intent: NavigationRequest.Intent = if case .site = newSelection {
+            .restoreSite
+        } else {
+            .navigate
+        }
+        navigate(to: destination(for: newSelection), intent: intent)
 
         trackSelectedPage()
 
@@ -493,8 +509,13 @@ extension AppModel {
         navigate(to: destination(for: selection))
     }
 
-    private func navigate(to url: URL?) {
-        navigationRequest = url.map(NavigationRequest.init(url:))
+    private func navigate(to url: URL?, intent: NavigationRequest.Intent = .navigate) {
+        navigationRequest = url.map { url in
+            let site = selectedSite ?? siteStore.sites.first {
+                normalizedHost(for: $0.url) == normalizedHost(for: url)
+            }
+            return NavigationRequest(url: url, site: site, intent: intent)
+        }
     }
 
     private func normalizedHost(for url: URL?) -> String? {

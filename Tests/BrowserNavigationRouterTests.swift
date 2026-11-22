@@ -5,6 +5,22 @@ import Testing
 @MainActor
 @Suite("Browser navigation router")
 struct BrowserNavigationRouterTests {
+    @Test func `navigation handler receives each queued request`() throws {
+        let router = BrowserNavigationRouter()
+        var received: [UUID] = []
+        router.setNavigationRequestHandler {
+            if let request = router.request {
+                received.append(request.id)
+            }
+        }
+
+        try router.openDestination(#require(URL(string: "https://example.com")))
+        router.reload()
+
+        #expect(received.count == 2)
+        #expect(received.last == router.request?.id)
+    }
+
     @Test func `HTTP navigation is retried securely and downgrade loops are blocked`() throws {
         let router = BrowserNavigationRouter()
         let url = try #require(URL(string: "http://example.com:80/home?q=movie#section"))
@@ -148,5 +164,82 @@ struct BrowserNavigationRouterTests {
                 maximumBytes: 4
             )
         }
+    }
+}
+
+@MainActor
+@Suite("Browser session retention")
+struct BrowserSessionRetentionTests {
+    @Test func `retains recent sites and evicts the least recently used`() throws {
+        let sessions = BrowserSessions(continueWatchingQueues: [])
+        let sites = (1 ... 4).map { SavedSite(name: "Site \($0)", urlString: "https://site\($0).invalid") }
+
+        func open(_ site: SavedSite, intent: AppModel.NavigationRequest.Intent = .restoreSite) throws {
+            let url = try #require(site.url)
+            sessions.open(.init(url: url, site: site, intent: intent))
+        }
+
+        try open(sites[0])
+        let first = try #require(sessions.active)
+        let originalRequest = first.router.request?.id
+        try open(sites[1])
+        let second = sessions.active
+        try open(sites[2])
+        try open(sites[0])
+        #expect(sessions.active === first)
+        #expect(first.router.request?.id == originalRequest)
+
+        try open(sites[3])
+        try open(sites[1])
+        #expect(sessions.active !== second)
+        sessions.cancelNavigation()
+    }
+
+    @Test func `explicit destinations navigate in a retained session`() throws {
+        let sessions = BrowserSessions(continueWatchingQueues: [])
+        let site = SavedSite(name: "Site", urlString: "https://site.invalid")
+        let home = try #require(site.url)
+        let destination = try #require(URL(string: "https://site.invalid/movie"))
+        sessions.open(.init(url: home, site: site, intent: .restoreSite))
+        let session = try #require(sessions.active)
+        let originalRequest = session.router.request?.id
+        sessions.open(.init(url: destination, site: site, intent: .navigate))
+        #expect(sessions.active === session)
+        #expect(session.router.request?.id != originalRequest)
+        sessions.cancelNavigation()
+    }
+
+    @Test func `opening a retained site after removal does not reuse it for a new site`() throws {
+        let sessions = BrowserSessions(continueWatchingQueues: [])
+        let first = SavedSite(name: "First", urlString: "https://first.invalid")
+        let second = SavedSite(name: "Second", urlString: "https://second.invalid")
+        let third = SavedSite(name: "Third", urlString: "https://third.invalid")
+
+        func open(_ site: SavedSite) throws {
+            let url = try #require(site.url)
+            sessions.open(.init(url: url, site: site, intent: .restoreSite))
+        }
+
+        try open(first)
+        let retained = sessions.active
+        try open(second)
+        sessions.removeChangedSites([first, third])
+        try open(first)
+        #expect(sessions.active === retained)
+        try open(third)
+        #expect(sessions.active !== retained)
+        sessions.cancelNavigation()
+    }
+
+    @Test func `removed sites release their active session`() throws {
+        let sessions = BrowserSessions(continueWatchingQueues: [])
+        let site = SavedSite(name: "Site", urlString: "https://site.invalid")
+        let url = try #require(site.url)
+        #expect(sessions.active == nil)
+        sessions.open(.init(url: url, site: site, intent: .restoreSite))
+        #expect(sessions.active != nil)
+        sessions.removeChangedSites([])
+        #expect(sessions.active == nil)
+        sessions.cancelNavigation()
     }
 }

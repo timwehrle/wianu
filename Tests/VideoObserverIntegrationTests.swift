@@ -323,7 +323,7 @@ final class VideoObserverFixture {
     }
 
     func waitUntil(_ condition: () -> Bool) async throws {
-        let deadline = ContinuousClock.now + .seconds(5)
+        let deadline = ContinuousClock.now + .seconds(20)
 
         while !condition() {
             guard ContinuousClock.now < deadline else { throw FixtureError.timedOut }

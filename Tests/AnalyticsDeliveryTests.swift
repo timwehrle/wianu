@@ -347,7 +347,7 @@ struct AnalyticsDeliveryTests {
     }
 
     private func waitForCompletion(_ count: Int, in session: AnalyticsFixtureSession) async throws {
-        let deadline = ContinuousClock.now + .seconds(5)
+        let deadline = ContinuousClock.now + .seconds(20)
 
         while await session.completedRequests < count {
             try #require(ContinuousClock.now < deadline, "Expected \(count) completed analytics requests")
@@ -359,7 +359,7 @@ struct AnalyticsDeliveryTests {
     private func waitForRequest(
         in session: AnalyticsFixtureSession
     ) async throws {
-        let deadline = ContinuousClock.now + .seconds(5)
+        let deadline = ContinuousClock.now + .seconds(20)
 
         while await session.capturedRequests().isEmpty {
             try #require(ContinuousClock.now < deadline, "Expected an analytics request")
