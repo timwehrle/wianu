@@ -24,7 +24,30 @@ function createContinueWatchingReader(schedule) {
 		}
 	};
 
-	const capture = (json, requestPage) => {
+	const requestedIDs = (body) => {
+		try {
+			const request = JSON.parse(body);
+			const ids = request?.variables?.unifiedEntityIds;
+
+			if (
+				request?.operationName !== 'MiniModalQuery' ||
+				!Array.isArray(ids) ||
+				ids.length === 0 ||
+				ids.length > 100 ||
+				!ids.every(
+					(id) => typeof id === 'string' && /^Video:\d{1,20}$/.test(id)
+				)
+			) {
+				return null;
+			}
+
+			return new Set(ids);
+		} catch (_) {
+			return null;
+		}
+	};
+
+	const capture = (json, requestPage, request) => {
 		if (
 			requestPage !== location.href ||
 			!Array.isArray(json?.data?.unifiedEntities)
@@ -40,7 +63,7 @@ function createContinueWatchingReader(schedule) {
 		for (const entity of json.data.unifiedEntities.slice(0, 100)) {
 			const id = String(entity?.videoId ?? '');
 
-			if (!/^\d{1,20}$/.test(id)) {
+			if (!/^\d{1,20}$/.test(id) || !request.has('Video:' + id)) {
 				continue;
 			}
 
@@ -49,8 +72,22 @@ function createContinueWatchingReader(schedule) {
 				typeof entity.title === 'string' && entity.title.trim()
 					? entity.title.trim().slice(0, 500)
 					: previous.title;
-			const position = entity.bookmark?.position;
-			const runtime = entity.runtimeSec;
+			const episodeKnown =
+				entity.__typename === 'Movie' ||
+				(entity.__typename === 'Show' &&
+					Object.hasOwn(entity, 'currentEpisode'));
+			const episode =
+				entity.__typename === 'Show' ? entity.currentEpisode : null;
+			const episodeID = episode?.videoId;
+			const changedEpisode =
+				episodeKnown &&
+				previous.episodeKnown &&
+				episodeID !== previous.episodeID;
+			const playable = episode || entity;
+			const bookmark = playable.bookmark?.position;
+			const position =
+				typeof bookmark === 'number' ? bookmark : bookmark?.parsedValue;
+			const runtime = playable.runtimeSec;
 			const progress =
 				Number.isFinite(position) &&
 				Number.isFinite(runtime) &&
@@ -58,9 +95,39 @@ function createContinueWatchingReader(schedule) {
 				position >= 0 &&
 				position <= runtime
 					? position / runtime
-					: previous.progress;
+					: changedEpisode
+						? undefined
+						: previous.progress;
 
-			metadata.set(id, { title, progress });
+			const episodeTitle =
+				typeof episode?.title === 'string'
+					? episode.title.trim().slice(0, 500) || null
+					: episodeKnown
+						? null
+						: previous.episodeTitle;
+			const season =
+				Number.isSafeInteger(episode?.parentSeason?.number) &&
+				episode.parentSeason.number >= 0
+					? episode.parentSeason.number
+					: episodeKnown
+						? null
+						: previous.season;
+			const episodeNumber =
+				Number.isSafeInteger(episode?.number) && episode.number >= 0
+					? episode.number
+					: episodeKnown
+						? null
+						: previous.episode;
+
+			metadata.set(id, {
+				title,
+				progress,
+				episodeTitle,
+				season,
+				episode: episodeNumber,
+				episodeKnown: episodeKnown || previous.episodeKnown,
+				episodeID: episodeKnown ? episodeID : previous.episodeID
+			});
 		}
 
 		schedule();
@@ -71,20 +138,39 @@ function createContinueWatchingReader(schedule) {
 	globalThis.fetch = function (...args) {
 		const requestPage = location.href;
 		const matches = isGraphQL(args[0]?.url ?? args[0]);
+		let body;
+
+		if (matches) {
+			try {
+				if (args[1]?.body !== undefined) {
+					body =
+						typeof args[1].body === 'string'
+							? Promise.resolve(args[1].body)
+							: null;
+				} else if (args[0] instanceof Request) {
+					body = args[0].clone().text();
+				}
+			} catch (_) {}
+		}
+
 		const pending = originalFetch.apply(this, args);
 
-		if (!matches) {
+		if (!body) {
 			return pending;
 		}
 
-		return pending.then((response) => {
+		return pending.then(async (response) => {
 			if (response.ok && (!response.url || isGraphQL(response.url))) {
 				try {
-					response
-						.clone()
-						.json()
-						.then((json) => capture(json, requestPage))
-						.catch(() => {});
+					const request = requestedIDs(await body);
+
+					if (request) {
+						response
+							.clone()
+							.json()
+							.then((json) => capture(json, requestPage, request))
+							.catch(() => {});
+					}
 				} catch (_) {}
 			}
 
@@ -104,7 +190,12 @@ function createContinueWatchingReader(schedule) {
 	const originalSend = XMLHttpRequest.prototype.send;
 
 	XMLHttpRequest.prototype.send = function (...args) {
-		if (isGraphQL(requestURLs.get(this))) {
+		const request =
+			isGraphQL(requestURLs.get(this)) && typeof args[0] === 'string'
+				? requestedIDs(args[0])
+				: null;
+
+		if (request) {
 			const requestPage = location.href;
 
 			this.addEventListener(
@@ -120,7 +211,7 @@ function createContinueWatchingReader(schedule) {
 								? this.response
 								: JSON.parse(this.responseText);
 
-						capture(json, requestPage);
+						capture(json, requestPage, request);
 					} catch (_) {}
 				},
 				{ once: true }
@@ -130,7 +221,7 @@ function createContinueWatchingReader(schedule) {
 		return originalSend.apply(this, args);
 	};
 
-	return () => {
+	const readQueue = () => {
 		if (page !== pageKey()) {
 			metadata.clear();
 			page = pageKey();
@@ -150,17 +241,10 @@ function createContinueWatchingReader(schedule) {
 				);
 
 		if (!anchors.length) {
-			const isHome =
-				/^\/browse\/?$/.test(location.pathname) &&
-				!new URL(location.href).searchParams.has('jbv');
-			const hasRecommendations = document.querySelector(
-				'a[href*="/title/"], a[href*="/browse?jbv="]'
-			);
-
-			return isHome && hasRecommendations && !shelf ? [] : null;
+			return null;
 		}
 
-		return anchors.slice(0, 100).map((anchor) => {
+		const entries = anchors.slice(0, 100).map((anchor) => {
 			const tile = anchor.closest('.title-card, .slider-item') || anchor;
 			const title =
 				anchor.getAttribute('aria-label') ||
@@ -176,8 +260,18 @@ function createContinueWatchingReader(schedule) {
 				id,
 				title: metadata.get(id)?.title || title?.trim().slice(0, 500),
 				progress: metadata.get(id)?.progress,
+				episodeTitle: metadata.get(id)?.episodeTitle,
+				season: metadata.get(id)?.season,
+				episode: metadata.get(id)?.episode,
+				episodeMetadataKnown: metadata.get(id)?.episodeKnown ?? false,
 				url: url.href
 			};
 		});
+
+		return entries;
 	};
+
+	readQueue.partial = () => true;
+
+	return readQueue;
 }

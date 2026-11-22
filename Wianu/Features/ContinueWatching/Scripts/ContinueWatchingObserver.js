@@ -178,6 +178,13 @@ function observeContinueWatching(configuration, createReader) {
 				return;
 			}
 
+			const partial = readQueue.partial?.() === true;
+
+			if (!entries.length && partial) {
+				resetEmptyState();
+				return;
+			}
+
 			if (!entries.length) {
 				if (
 					document.readyState !== 'complete' ||
@@ -209,7 +216,9 @@ function observeContinueWatching(configuration, createReader) {
 			diagnose(
 				entries.length + ' readable titles from ' + result.length + ' cards'
 			);
-			const snapshot = JSON.stringify(entries);
+			const snapshot = JSON.stringify(
+				partial ? { entries, partial: true } : entries
+			);
 
 			if (snapshot === previousSnapshot) {
 				return;

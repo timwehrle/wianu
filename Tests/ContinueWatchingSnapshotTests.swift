@@ -6,7 +6,7 @@ extension WebKitIntegrationTests {
     @Suite(.serialized)
     @MainActor
     struct ContinueWatchingSnapshotTests {
-        @Test(arguments: ["netflix", "disneyPlus", "primeVideo", "appleTV"])
+        @Test(arguments: ["disneyPlus", "primeVideo", "appleTV"])
         func `Loading home pages preserve saved entries until loading finishes`(service: String) async throws {
             let path = try homePath(for: service)
             let fixture = try makeHomeFixture(
@@ -26,7 +26,7 @@ extension WebKitIntegrationTests {
             try await fixture.waitUntil { fixture.continueWatchingQueue.entries.isEmpty }
         }
 
-        @Test(arguments: ["netflix", "disneyPlus", "primeVideo", "appleTV"])
+        @Test(arguments: ["disneyPlus", "primeVideo", "appleTV"])
         func `A loaded home page without a Continue Watching section clears saved entries`(
             service: String
         ) async throws {
@@ -41,7 +41,7 @@ extension WebKitIntegrationTests {
             #expect(!fixture.continueWatchingQueue.responseError)
         }
 
-        @Test(arguments: ["netflix", "disneyPlus", "primeVideo", "appleTV"])
+        @Test(arguments: ["disneyPlus", "primeVideo", "appleTV"])
         func `A section placeholder preserves entries until the section disappears`(service: String) async throws {
             let path = try homePath(for: service)
             let placeholder = try #require([
@@ -62,7 +62,7 @@ extension WebKitIntegrationTests {
             try await fixture.waitUntil { fixture.continueWatchingQueue.entries.isEmpty }
         }
 
-        @Test(arguments: ["netflix", "disneyPlus", "primeVideo", "appleTV"])
+        @Test(arguments: ["disneyPlus", "primeVideo", "appleTV"])
         func `Navigating away cancels the pending empty section check`(service: String) async throws {
             let path = try homePath(for: service)
             let fixture = try makeHomeFixture(service: service, path: path)
