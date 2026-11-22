@@ -160,11 +160,11 @@ struct BrowserSessionRetentionTests {
 
         func open(_ site: SavedSite, intent: AppModel.NavigationRequest.Intent = .restoreSite) throws {
             let url = try #require(site.url)
-            sessions.open(.init(url: url, siteID: site.id, intent: intent), site: site)
+            sessions.open(.init(url: url, site: site, intent: intent))
         }
 
         try open(sites[0])
-        let first = sessions.active
+        let first = try #require(sessions.active)
         let originalRequest = first.router.request?.id
         try open(sites[1])
         let second = sessions.active
@@ -184,10 +184,10 @@ struct BrowserSessionRetentionTests {
         let site = SavedSite(name: "Site", urlString: "https://site.invalid")
         let home = try #require(site.url)
         let destination = try #require(URL(string: "https://site.invalid/movie"))
-        sessions.open(.init(url: home, siteID: site.id, intent: .restoreSite), site: site)
-        let session = sessions.active
+        sessions.open(.init(url: home, site: site, intent: .restoreSite))
+        let session = try #require(sessions.active)
         let originalRequest = session.router.request?.id
-        sessions.open(.init(url: destination, siteID: site.id, intent: .navigate), site: site)
+        sessions.open(.init(url: destination, site: site, intent: .navigate))
         #expect(sessions.active === session)
         #expect(session.router.request?.id != originalRequest)
         sessions.cancelNavigation()
@@ -201,7 +201,7 @@ struct BrowserSessionRetentionTests {
 
         func open(_ site: SavedSite) throws {
             let url = try #require(site.url)
-            sessions.open(.init(url: url, siteID: site.id, intent: .restoreSite), site: site)
+            sessions.open(.init(url: url, site: site, intent: .restoreSite))
         }
 
         try open(first)
@@ -219,10 +219,11 @@ struct BrowserSessionRetentionTests {
         let sessions = BrowserSessions(continueWatchingQueues: [])
         let site = SavedSite(name: "Site", urlString: "https://site.invalid")
         let url = try #require(site.url)
-        sessions.open(.init(url: url, siteID: site.id, intent: .restoreSite), site: site)
-        let original = sessions.active
+        #expect(sessions.active == nil)
+        sessions.open(.init(url: url, site: site, intent: .restoreSite))
+        #expect(sessions.active != nil)
         sessions.removeChangedSites([])
-        #expect(sessions.active !== original)
+        #expect(sessions.active == nil)
         sessions.cancelNavigation()
     }
 }

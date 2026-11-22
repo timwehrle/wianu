@@ -20,8 +20,7 @@ struct BrowserView: View {
                     return
                 }
 
-                let site = model.siteStore.sites.first { $0.id == request.siteID }
-                sessions.open(request, site: site)
+                sessions.open(request)
             }
             .onDisappear {
                 sessions.cancelNavigation()
@@ -30,25 +29,27 @@ struct BrowserView: View {
                 sessions.removeChangedSites(sites)
             }
             .task(id: pageInteractionID) {
-                await session.setPageInteractionBlocked(
+                await session?.setPageInteractionBlocked(
                     model.isCommandPalettePresented || model.selection == .home
                 )
             }
-            .onChange(of: session.page.url) { _, url in
-                session.videoDiagnostics.clear()
+            .onChange(of: session?.page.url) { _, url in
+                session?.videoDiagnostics.clear()
                 model.activateSite(matching: url)
             }
             .focusedSceneValue(\.showVideoInformation) {
                 isVideoInformationPresented = true
             }
             .sheet(isPresented: $isVideoInformationPresented) {
-                VideoInformationView(diagnostics: session.videoDiagnostics)
+                if let session {
+                    VideoInformationView(diagnostics: session.videoDiagnostics)
+                }
             }
-            .task(id: session.page.isLoading) {
+            .task(id: session?.page.isLoading) {
                 await updateLoadingIndicator()
             }
             .toolbar {
-                if !model.isCommandPalettePresented, model.selection != .home {
+                if let session, !model.isCommandPalettePresented, model.selection != .home {
                     BrowserToolbar(
                         model: model,
                         session: session,
@@ -60,15 +61,15 @@ struct BrowserView: View {
                 "Navigation Blocked",
                 isPresented: blockedNavigationBinding
             ) {
-                Button("OK", action: session.router.clearBlockedNavigationMessage)
+                Button("OK") { session?.router.clearBlockedNavigationMessage() }
             } message: {
-                Text(session.router.blockedNavigationMessage ?? "")
+                Text(session?.router.blockedNavigationMessage ?? "")
             }
     }
 }
 
 private extension BrowserView {
-    var session: BrowserSession {
+    var session: BrowserSession? {
         sessions.active
     }
 
@@ -76,7 +77,7 @@ private extension BrowserView {
     var browserContent: some View {
         if model.selection == .home {
             HomeView(model: model)
-        } else if model.navigationRequest != nil {
+        } else if model.navigationRequest != nil, let session {
             BrowserPaneView(page: session.page)
         } else {
             ContentUnavailableView(
@@ -90,29 +91,29 @@ private extension BrowserView {
     var pageInteractionID: PageInteractionID {
         PageInteractionID(
             isBlocked: model.isCommandPalettePresented || model.selection == .home,
-            url: session.page.url
+            url: session?.page.url
         )
     }
 
     var blockedNavigationBinding: Binding<Bool> {
         Binding(
-            get: { session.router.blockedNavigationMessage != nil },
+            get: { session?.router.blockedNavigationMessage != nil },
             set: { presented in
                 if !presented {
-                    session.router.clearBlockedNavigationMessage()
+                    session?.router.clearBlockedNavigationMessage()
                 }
             }
         )
     }
 
     func updateLoadingIndicator() async {
-        guard session.page.isLoading else {
+        guard session?.page.isLoading == true else {
             showsLoadingIndicator = false
             return
         }
 
         try? await Task.sleep(for: .milliseconds(200))
-        guard !Task.isCancelled, session.page.isLoading else { return }
+        guard !Task.isCancelled, session?.page.isLoading == true else { return }
         showsLoadingIndicator = true
     }
 }
@@ -133,15 +134,11 @@ final class BrowserSessions {
 
     private let continueWatchingQueues: [ContinueWatchingController]
     private var entries: [Entry] = []
-    private var hasPlaceholderSession = true
-    private(set) var active: BrowserSession
+    private(set) var active: BrowserSession?
     private var memoryPressureSource: DispatchSourceMemoryPressure?
 
     init(continueWatchingQueues: [ContinueWatchingController]) {
         self.continueWatchingQueues = continueWatchingQueues
-        let session = BrowserSession(continueWatchingQueues: continueWatchingQueues)
-        active = session
-
         let source = DispatchSource.makeMemoryPressureSource(eventMask: [.warning, .critical], queue: .main)
         source.setEventHandler { [weak self] in
             MainActor.assumeIsolated { self?.discardInactive() }
@@ -150,7 +147,8 @@ final class BrowserSessions {
         memoryPressureSource = source
     }
 
-    func open(_ request: AppModel.NavigationRequest, site: SavedSite?) {
+    func open(_ request: AppModel.NavigationRequest) {
+        let site = request.site
         let existingIndex = entries.firstIndex { entry in
             guard let site else { return false }
             return entry.siteID == site.id && entry.siteURL == site.url
@@ -161,16 +159,14 @@ final class BrowserSessions {
         if let existingIndex {
             entry = entries.remove(at: existingIndex)
         } else {
-            let session = hasPlaceholderSession
-                ? active : BrowserSession(continueWatchingQueues: continueWatchingQueues)
+            let session = BrowserSession(continueWatchingQueues: continueWatchingQueues)
             entry = Entry(siteID: site?.id, siteURL: site?.url, session: session)
         }
 
         if active !== entry.session {
-            active.pausePlayback()
+            active?.pausePlayback()
         }
         entry.session.cancelPendingPause()
-        hasPlaceholderSession = false
         active = entry.session
         entries.append(entry)
         while entries.count > 3 {
@@ -183,7 +179,7 @@ final class BrowserSessions {
     }
 
     func pauseActive() {
-        active.pausePlayback()
+        active?.pausePlayback()
     }
 
     func cancelNavigation() {
@@ -204,9 +200,8 @@ final class BrowserSessions {
             return true
         }
         if activeWasRemoved {
-            active.pausePlayback()
-            active = BrowserSession(continueWatchingQueues: continueWatchingQueues)
-            hasPlaceholderSession = true
+            active?.pausePlayback()
+            active = nil
         }
     }
 

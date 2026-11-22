@@ -12,7 +12,7 @@ final class AppModel {
             case navigate
         }
 
-        let siteID: SavedSite.ID?
+        let site: SavedSite?
         let intent: Intent
     }
 
@@ -511,10 +511,10 @@ extension AppModel {
 
     private func navigate(to url: URL?, intent: NavigationRequest.Intent = .navigate) {
         navigationRequest = url.map { url in
-            let siteID = selectedSiteID ?? siteStore.sites.first {
+            let site = selectedSite ?? siteStore.sites.first {
                 normalizedHost(for: $0.url) == normalizedHost(for: url)
-            }?.id
-            return NavigationRequest(url: url, siteID: siteID, intent: intent)
+            }
+            return NavigationRequest(url: url, site: site, intent: intent)
         }
     }
 
