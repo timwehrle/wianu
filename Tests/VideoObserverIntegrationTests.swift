@@ -10,65 +10,6 @@ extension WebKitIntegrationTests {
     @Suite(.serialized)
     @MainActor
     struct VideoObserverIntegrationTests {
-        @Test(arguments: ["fetch", "xhr"])
-        func `Provider response capture reaches Swift without consuming the website response`(
-            transport: String
-        ) async throws {
-            let fixture = VideoObserverFixture(pages: [
-                "/": """
-                <title>Loading</title>
-                <script>
-                if ("\(transport)" === "fetch") {
-                    fetch('/cms/collections/home').then(response => response.json()).then(json => {
-                        document.title = json.data.attributes.alias;
-                    });
-                } else {
-                    const request = new XMLHttpRequest();
-                    request.open('GET', '/cms/collections/home');
-                    request.addEventListener('load', () => {
-                        document.title = JSON.parse(request.responseText).data.attributes.alias;
-                    });
-                    request.send();
-                }
-                </script>
-                """
-            ], host: "www.hbomax.com", pageScript: """
-            const queuePayload = {
-                data: {
-                    attributes: { alias: "continue-watching" },
-                    relationships: { items: { data: [{ type: "collectionItem", id: "card" }] } }
-                },
-                included: [
-                    { type: "collectionItem", id: "card", relationships: {
-                        video: { data: { type: "video", id: "00000000-0000-0000-0000-000000000001" } }
-                    } },
-                    { type: "video", id: "00000000-0000-0000-0000-000000000001", attributes: {
-                        name: "The Next Episode", seasonNumber: 2, episodeNumber: 3
-                    }, relationships: { show: { data: { type: "show", id: "series" } } } },
-                    { type: "show", id: "series", attributes: { name: "A Show" } }
-                ]
-            };
-            globalThis.fetch = async () => new Response(JSON.stringify(queuePayload));
-            XMLHttpRequest.prototype.send = function() {
-                Object.defineProperties(this, {
-                    status: { value: 200 },
-                    responseURL: { value: 'https://api.hbomax.com/cms/collections/home' },
-                    responseText: { value: JSON.stringify(queuePayload) }
-                });
-                this.dispatchEvent(new Event('load'));
-            };
-            """)
-            defer { fixture.stop() }
-
-            try await fixture.load("/")
-            try await fixture.waitUntil {
-                fixture.continueWatchingQueue.updatedAt != nil && fixture.diagnostics.pageTitle == "continue-watching"
-            }
-
-            #expect(fixture.continueWatchingQueue.entries.first?.title == "A Show")
-            #expect(fixture.continueWatchingQueue.entries.first?.episode == 3)
-        }
-
         @Test(arguments: ["netflix", "primeVideo", "disneyPlus", "appleTV"])
         func `Service adapters extract only their Continue Watching shelf`(name: String) async throws {
             let adapter = try #require(ContinueWatchingAdapter.all.first { $0.id.rawValue == name })

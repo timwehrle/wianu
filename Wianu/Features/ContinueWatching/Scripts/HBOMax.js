@@ -51,6 +51,8 @@
 			}
 
 			const show = related(video, 'show');
+			const duration = related(video, 'edit')?.attributes?.duration;
+			const position = attributes.viewingHistory?.position;
 			const videoTitle = attributes.name || attributes.originalName;
 			const title =
 				show?.attributes?.name || show?.attributes?.originalName || videoTitle;
@@ -71,7 +73,17 @@
 					: null,
 				episode: Number.isInteger(attributes.episodeNumber)
 					? attributes.episodeNumber
-					: null
+					: null,
+				progress:
+					typeof position === 'number' &&
+					Number.isFinite(position) &&
+					typeof duration === 'number' &&
+					Number.isFinite(duration) &&
+					duration > 0 &&
+					position >= 0 &&
+					position <= duration
+						? position / duration
+						: null
 			});
 		}
 
