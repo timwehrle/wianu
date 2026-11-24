@@ -84,6 +84,32 @@ struct ContinueWatchingControllerTests {
     }
 
     @Test
+    func `Any service can preserve incomplete episode metadata and update it later`() throws {
+        let controller = ContinueWatchingController(adapter: .disneyPlus)
+        let url = try #require(URL(string: "https://www.disneyplus.com/home"))
+        controller.receive(json: """
+        [{"id":"123","title":"A Show","url":"https://www.disneyplus.com/play/123",
+          "episodeMetadataKnown":true,"season":1,"episode":1,"episodeTitle":"First","progress":0.4}]
+        """, from: url)
+        controller.receive(json: """
+        [{"id":"123","title":"A Show","url":"https://www.disneyplus.com/play/123",
+          "episodeMetadataKnown":false}]
+        """, from: url)
+
+        #expect(controller.entries.first?.episode == 1)
+        #expect(controller.entries.first?.episodeTitle == "First")
+        #expect(controller.entries.first?.progress == 0.4)
+
+        controller.receive(json: """
+        [{"id":"123","title":"A Show","url":"https://www.disneyplus.com/play/123",
+          "episodeMetadataKnown":true,"season":1,"episode":2,"episodeTitle":"Second"}]
+        """, from: url)
+        #expect(controller.entries.first?.episode == 2)
+        #expect(controller.entries.first?.episodeTitle == "Second")
+        #expect(controller.entries.first?.progress == nil)
+    }
+
+    @Test
     func `Unreadable saved queues recover after a successful refresh`() throws {
         let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }

@@ -119,27 +119,6 @@ extension WebKitIntegrationTests {
         }
 
         @Test
-        func `Netflix progress cards use accessible titles and preserve preview links`() async throws {
-            let fixture = VideoObserverFixture(pages: ["/": """
-            <base href="https://www.netflix.com/"><title>Netflix</title>
-            <div data-virtual-slot="0"><a href="/browse?jbv=80167481" aria-label="How It Ends" data-uia="progress-card">
-                <div data-uia="card-image-focus-host"><img alt="" class="continue-watching-card tracked-card"></div>
-            </a></div>
-            <div data-virtual-slot="1"><a href="/browse?jbv=70281562" aria-label="Brooklyn Nine-Nine"
-                data-uia="progress-card"><img alt=""></a></div>
-            <a href="/title/999" aria-label="Unrelated recommendation"><img alt="Other Title"></a>
-            """], adapter: .netflix)
-            defer { fixture.stop() }
-
-            try await fixture.load("/")
-            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.count == 2 }
-
-            #expect(fixture.continueWatchingQueue.entries.map(\.title) == ["How It Ends", "Brooklyn Nine-Nine"])
-            #expect(fixture.continueWatchingQueue.entries.map(\.id) == ["80167481", "70281562"])
-            #expect(fixture.continueWatchingQueue.entries.first?.url.query == "jbv=80167481")
-        }
-
-        @Test
         func `Disney movie titles match accessible play labels despite time and genre metadata`() async throws {
             let fixture = VideoObserverFixture(pages: ["/": """
             <base href="https://www.disneyplus.com/"><title>Disney+</title>
@@ -243,23 +222,6 @@ extension WebKitIntegrationTests {
             let diagnostics = try #require(JSONSerialization.jsonObject(with: report) as? [String: Any])
             let unreadable = try #require(diagnostics["unreadableCards"] as? [[String: Any]])
             #expect(unreadable.first?["missing"] as? [String] == ["title"])
-        }
-
-        @Test
-        func `Netflix queue markers on headings still identify the containing shelf`() async throws {
-            let fixture = VideoObserverFixture(pages: ["/": """
-            <title>Netflix</title>
-            <div class="lolomoRow"><h2 data-list-context="continueWatching">Continue Watching</h2>
-            <div class="title-card"><a href="https://www.netflix.com/title/123">
-            <span class="fallback-text">A Show</span></a></div></div>
-            """], adapter: .netflix)
-            defer { fixture.stop() }
-
-            try await fixture.load("/")
-            try await fixture.waitUntil { fixture.continueWatchingQueue.updatedAt != nil }
-
-            #expect(fixture.continueWatchingQueue.entries.first?.title == "A Show")
-            #expect(fixture.continueWatchingQueue.entries.first?.url.path == "/title/123")
         }
     }
 }

@@ -22,6 +22,11 @@ private struct ContinueWatchingDiagnostics: Decodable {
     let diagnostics: String
 }
 
+private struct ContinueWatchingPartialPayload: Decodable {
+    let entries: [ContinueWatchingPayloadItem]
+    let partial: Bool
+}
+
 private struct ContinueWatchingPayloadItem: Decodable {
     let id: String
     let title: String
@@ -30,6 +35,8 @@ private struct ContinueWatchingPayloadItem: Decodable {
     let episode: Int?
     let storeOffer: Bool?
     let progress: Double?
+    // False means the reader could not determine the current episode; nil keeps legacy snapshot behavior.
+    let episodeMetadataKnown: Bool?
     let url: URL?
 }
 
@@ -162,13 +169,21 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
     }
 
     private func decodeEntries(from data: Data) -> [ContinueWatchingEntry]? {
-        guard let decoded = try? JSONDecoder().decode([ContinueWatchingPayloadItem].self, from: data),
-              decoded.count <= 100,
+        let decoder = JSONDecoder()
+        let partialPayload = try? decoder.decode(ContinueWatchingPartialPayload.self, from: data)
+        let partial = partialPayload?.partial == true
+        let decoded = partial ? partialPayload?.entries : try? decoder.decode(
+            [ContinueWatchingPayloadItem].self,
+            from: data
+        )
+
+        guard let decoded, decoded.count <= 100,
               decoded.allSatisfy({ !$0.title.isEmpty && $0.title.count <= 500 })
         else {
             return nil
         }
 
+        let previousEntries = Dictionary(entries.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         var seen: Set<String> = []
         var received: [ContinueWatchingEntry] = []
 
@@ -179,19 +194,31 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
 
             guard seen.insert(item.id).inserted else { continue }
 
+            let previous = previousEntries[item.id]
+            let preserveEpisode = item.episodeMetadataKnown == false
+            let preserveProgress = id == .netflix || item.episodeMetadataKnown != nil
+            let changedEpisode = item.episodeMetadataKnown == true
+                && (item.season != previous?.season || item.episode != previous?.episode)
+
             received.append(ContinueWatchingEntry(
                 id: item.id,
                 title: item.title,
-                episodeTitle: item.episodeTitle,
-                season: item.season,
-                episode: item.episode,
+                episodeTitle: preserveEpisode ? previous?.episodeTitle : item.episodeTitle,
+                season: preserveEpisode ? previous?.season : item.season,
+                episode: preserveEpisode ? previous?.episode : item.episode,
                 storeOffer: item.storeOffer,
-                progress: item.progress.flatMap { (0 ... 1).contains($0) ? $0 : nil },
+                progress: item.progress.flatMap { (0 ... 1).contains($0) ? $0 : nil }
+                    ?? (preserveProgress && !changedEpisode ? previous?.progress : nil),
                 url: destination
             ))
         }
 
-        return received
+        guard partial else { return received }
+
+        let updates = Dictionary(received.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let existingIDs = Set(entries.map(\.id))
+        let additions = received.filter { !existingIDs.contains($0.id) }.prefix(max(0, 100 - entries.count))
+        return entries.map { updates[$0.id] ?? $0 } + additions
     }
 
     private func saveSnapshot(_ snapshot: ContinueWatchingSnapshot?) {

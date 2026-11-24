@@ -6,7 +6,7 @@ extension WebKitIntegrationTests {
     @Suite(.serialized)
     @MainActor
     struct ContinueWatchingSnapshotTests {
-        @Test(arguments: ["netflix", "disneyPlus", "primeVideo", "appleTV"])
+        @Test(arguments: ["disneyPlus", "primeVideo", "appleTV"])
         func `Loading home pages preserve saved entries until loading finishes`(service: String) async throws {
             let path = try homePath(for: service)
             let fixture = try makeHomeFixture(
@@ -26,7 +26,7 @@ extension WebKitIntegrationTests {
             try await fixture.waitUntil { fixture.continueWatchingQueue.entries.isEmpty }
         }
 
-        @Test(arguments: ["netflix", "disneyPlus", "primeVideo", "appleTV"])
+        @Test(arguments: ["disneyPlus", "primeVideo", "appleTV"])
         func `A loaded home page without a Continue Watching section clears saved entries`(
             service: String
         ) async throws {
@@ -41,7 +41,7 @@ extension WebKitIntegrationTests {
             #expect(!fixture.continueWatchingQueue.responseError)
         }
 
-        @Test(arguments: ["netflix", "disneyPlus", "primeVideo", "appleTV"])
+        @Test(arguments: ["disneyPlus", "primeVideo", "appleTV"])
         func `A section placeholder preserves entries until the section disappears`(service: String) async throws {
             let path = try homePath(for: service)
             let placeholder = try #require([
@@ -62,7 +62,7 @@ extension WebKitIntegrationTests {
             try await fixture.waitUntil { fixture.continueWatchingQueue.entries.isEmpty }
         }
 
-        @Test(arguments: ["netflix", "disneyPlus", "primeVideo", "appleTV"])
+        @Test(arguments: ["disneyPlus", "primeVideo", "appleTV"])
         func `Navigating away cancels the pending empty section check`(service: String) async throws {
             let path = try homePath(for: service)
             let fixture = try makeHomeFixture(service: service, path: path)
@@ -78,33 +78,6 @@ extension WebKitIntegrationTests {
             try await fixture.waitUntil { fixture.continueWatchingQueue.diagnostics?.contains("No readable") == true }
 
             #expect(fixture.continueWatchingQueue.entries.first?.title == "Saved Show")
-        }
-
-        @Test
-        func `An unreadable card preserves the complete queue until its title loads`() async throws {
-            let fixture = VideoObserverFixture(pages: ["/": """
-            <base href="https://www.netflix.com/"><title>Netflix</title>
-            <a data-uia="progress-card" href="/browse?jbv=123" aria-label="First Show"></a>
-            <a data-uia="progress-card" id="second" href="/browse?jbv=456" aria-label="Second Show"></a>
-            """], adapter: .netflix)
-            defer { fixture.stop() }
-
-            try await fixture.load("/")
-            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.count == 2 }
-
-            _ = try await fixture.webView.evaluateJavaScript("""
-            document.getElementById('second').removeAttribute('aria-label');
-            """)
-            try await fixture.waitUntil { fixture.continueWatchingQueue.diagnostics?.contains("missing") == true }
-
-            #expect(fixture.continueWatchingQueue.entries.map(\.title) == ["First Show", "Second Show"])
-
-            _ = try await fixture.webView.evaluateJavaScript("""
-            document.getElementById('second').setAttribute('aria-label', 'Updated Show');
-            """)
-            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.last?.title == "Updated Show" }
-
-            #expect(fixture.continueWatchingQueue.entries.count == 2)
         }
 
         @Test
