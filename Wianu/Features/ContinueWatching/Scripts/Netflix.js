@@ -1,6 +1,7 @@
 /* exported createContinueWatchingReader */
 function createContinueWatchingReader(schedule) {
 	const metadata = new Map();
+	let requestSequence = 0;
 	const pageKey = () => {
 		const url = new URL(location.href);
 
@@ -47,7 +48,7 @@ function createContinueWatchingReader(schedule) {
 		}
 	};
 
-	const capture = (json, requestPage, request) => {
+	const capture = (json, requestPage, request, sequence) => {
 		if (
 			requestPage !== location.href ||
 			!Array.isArray(json?.data?.unifiedEntities)
@@ -68,6 +69,11 @@ function createContinueWatchingReader(schedule) {
 			}
 
 			const previous = metadata.get(id) || {};
+
+			if (previous.sequence > sequence) {
+				continue;
+			}
+
 			const title =
 				typeof entity.title === 'string' && entity.title.trim()
 					? entity.title.trim().slice(0, 500)
@@ -120,6 +126,7 @@ function createContinueWatchingReader(schedule) {
 						: previous.episode;
 
 			metadata.set(id, {
+				sequence,
 				title,
 				progress,
 				episodeTitle,
@@ -153,6 +160,7 @@ function createContinueWatchingReader(schedule) {
 			} catch (_) {}
 		}
 
+		const sequence = body ? ++requestSequence : null;
 		const pending = originalFetch.apply(this, args);
 
 		if (!body) {
@@ -168,7 +176,7 @@ function createContinueWatchingReader(schedule) {
 						response
 							.clone()
 							.json()
-							.then((json) => capture(json, requestPage, request))
+							.then((json) => capture(json, requestPage, request, sequence))
 							.catch(() => {});
 					}
 				} catch (_) {}
@@ -197,6 +205,7 @@ function createContinueWatchingReader(schedule) {
 
 		if (request) {
 			const requestPage = location.href;
+			const sequence = ++requestSequence;
 
 			this.addEventListener(
 				'load',
@@ -211,7 +220,7 @@ function createContinueWatchingReader(schedule) {
 								? this.response
 								: JSON.parse(this.responseText);
 
-						capture(json, requestPage, request);
+						capture(json, requestPage, request, sequence);
 					} catch (_) {}
 				},
 				{ once: true }

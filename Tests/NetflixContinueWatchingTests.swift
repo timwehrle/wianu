@@ -316,6 +316,62 @@ extension WebKitIntegrationTests {
     }
 }
 
+extension WebKitIntegrationTests {
+    @Suite(.serialized)
+    @MainActor
+    struct NetflixResponseOrderingTests {
+        @Test(arguments: ["fetch", "xhr"])
+        func `Netflix ignores older responses for the same title`(transport: String) async throws {
+            let fixture = VideoObserverFixture(pages: ["/browse": """
+            <base href="https://www.netflix.com/">
+            <a data-uia="progress-card" href="/title/123" aria-label="A Show"></a>
+            <a data-uia="progress-card" href="/title/456" aria-label="Other"></a>
+            <script>
+            const body = ids => JSON.stringify({operationName: 'MiniModalQuery', variables: {unifiedEntityIds: ids}});
+            for (const ids of [['Video:123', 'Video:456'], ['Video:123']]) {
+                if ('\(transport)' === 'fetch') {
+                    fetch('https://www.netflix.com/graphql', {method: 'POST', body: body(ids)});
+                } else {
+                    const request = new XMLHttpRequest();
+                    request.open('POST', 'https://www.netflix.com/graphql');
+                    request.send(body(ids));
+                }
+            }
+            </script>
+            """], pageScript: """
+            globalThis.requests = [];
+            globalThis.fetch = () => new Promise(resolve => requests.push(payload => resolve(new Response(payload))));
+            XMLHttpRequest.prototype.send = function() {
+                requests.push(payload => {
+                    Object.defineProperties(this, {
+                        status: {value: 200}, responseURL: {value: 'https://www.netflix.com/graphql'},
+                        responseText: {value: payload}
+                    });
+                    this.dispatchEvent(new Event('load'));
+                });
+            };
+            globalThis.respond = (index, episode, position) => requests[index](JSON.stringify({
+                data: {unifiedEntities: [{__typename: 'Show', videoId: 123, title: 'A Show',
+                    currentEpisode: {videoId: episode, title: 'Episode ' + episode, number: episode,
+                        parentSeason: {number: 1}, bookmark: {position}, runtimeSec: 100}},
+                    ...(index === 0 ? [{videoId: 456, title: 'Other updated'}] : [])
+                ]}
+            }));
+            """, adapter: .netflix)
+            defer { fixture.stop() }
+
+            try await fixture.load("/browse")
+            _ = try await fixture.webView.evaluateJavaScript("respond(1, 2, 60)")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.first?.episode == 2 }
+
+            _ = try await fixture.webView.evaluateJavaScript("respond(0, 1, 20)")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.last?.title == "Other updated" }
+            #expect(fixture.continueWatchingQueue.entries.first?.episode == 2)
+            #expect(fixture.continueWatchingQueue.entries.first?.progress == 0.6)
+        }
+    }
+}
+
 @MainActor
 struct NetflixContinueWatchingPersistenceTests {
     @Test
