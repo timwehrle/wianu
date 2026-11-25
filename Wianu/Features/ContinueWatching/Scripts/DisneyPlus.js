@@ -72,6 +72,8 @@ function createContinueWatchingReader(schedule) {
 		const locale = location.pathname.match(
 			/^\/([a-z]{2}(?:-[a-z]{2})?)(?:\/|$)/i
 		)?.[1];
+		const percentage =
+			item.personalization?.userState?.progress?.progressPercentage;
 
 		return {
 			id,
@@ -82,6 +84,13 @@ function createContinueWatchingReader(schedule) {
 					: null,
 			season: episodeNumber(item.visuals.seasonNumber),
 			episode: episodeNumber(item.visuals.episodeNumber),
+			progress:
+				typeof percentage === 'number' &&
+				Number.isFinite(percentage) &&
+				percentage >= 0 &&
+				percentage <= 100
+					? percentage / 100
+					: null,
 			url: new URL(
 				`${locale ? '/' + locale : ''}/play/${id}`,
 				`https://${location.host}`

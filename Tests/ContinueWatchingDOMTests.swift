@@ -237,12 +237,14 @@ extension WebKitIntegrationTests {
           {"type":"view","id":"ddbf02a4-a0c2-48f1-9e1a-5055fe864dec",
            "actions":[{"type":"browse","deeplinkId":"entity-film"},
                       {"type":"playback","deeplinkId":"ddbf02a4-a0c2-48f1-9e1a-5055fe864dec"}],
-           "visuals":{"title":"Im Rausch der Sterne","badges":{"slot2":{"brief":"Neu"}}}},
+           "visuals":{"title":"Im Rausch der Sterne","badges":{"slot2":{"brief":"Neu"}}},
+           "personalization":{"userState":{"progress":{"progressPercentage":3}}}},
           {"type":"view","id":"ae249b50-fc62-4fad-8ad4-8a34f4d03a65",
            "actions":[{"type":"browse","deeplinkId":"entity-05eb6a8e-90ed-4947-8c0b-e6536cbddd5f"},
                       {"type":"playback","deeplinkId":"ae249b50-fc62-4fad-8ad4-8a34f4d03a65"}],
            "visuals":{"title":"The Bear: King of the Kitchen","episodeTitle":"Entschuldigungen",
-                      "seasonNumber":"3","episodeNumber":"9"}}
+                      "seasonNumber":"3","episodeNumber":"9"},
+           "personalization":{"userState":{"progress":{"progressPercentage":45}}}}
         ],"pagination":{"hasMore":false,"hasPrev":false,"currentOffset":0,"totalCount":2}}}}
         """
 
@@ -294,7 +296,27 @@ extension WebKitIntegrationTests {
             #expect(entries.last?.episodeTitle == "Entschuldigungen")
             #expect(entries.last?.season == 3)
             #expect(entries.last?.episode == 9)
+            #expect(entries.first?.progress == 0.03)
+            #expect(entries.last?.progress == 0.45)
             #expect(fixture.continueWatchingQueue.diagnostics?.contains("\"source\": \"response\"") == true)
+        }
+
+        @Test(arguments: ["null", "-1", "101", "\"45\""])
+        func `Disney ignores missing or invalid progress`(percentage: String) async throws {
+            let fixture = VideoObserverFixture(pages: ["/de-de/home": """
+            <script>fetch('\(Self.endpoint)');</script>
+            """], host: "www.disneyplus.com", pageScript: """
+            const payload = \(Self.payload);
+            payload.data.set.items[0].personalization.userState.progress.progressPercentage = \(percentage);
+            globalThis.fetch = async () => new Response(JSON.stringify(payload));
+            """, adapter: .disneyPlus)
+            defer { fixture.stop() }
+
+            try await fixture.load("/de-de/home")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.count == 2 }
+
+            #expect(fixture.continueWatchingQueue.entries.first?.progress == nil)
+            #expect(fixture.continueWatchingQueue.entries.last?.progress == 0.45)
         }
 
         @Test(arguments: ["partial", "offset", "count", "title", "set", "host", "style", "status", "json"])
