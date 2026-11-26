@@ -12,8 +12,67 @@
 	globalThis.__wianuContinueWatchingInstalled = true;
 
 	let previousSnapshot;
+	let profileID;
+	let profileRequest = 0;
+	let profilePending = false;
+	const handler = globalThis.webkit?.messageHandlers?.continueWatching_hboMax;
 
-	const report = (json) => {
+	const requestKind = (value) => {
+		try {
+			const url = new URL(value, location.href);
+
+			if (
+				url.protocol !== 'https:' ||
+				!(
+					url.hostname === 'hbo.com' ||
+					url.hostname.endsWith('.hbo.com') ||
+					url.hostname === 'hbomax.com' ||
+					url.hostname.endsWith('.hbomax.com')
+				)
+			) {
+				return null;
+			}
+
+			if (url.pathname === '/users/me') {
+				return 'profile';
+			}
+
+			if (url.pathname.includes('/cms/collections/')) {
+				return 'collection';
+			}
+		} catch (_) {}
+
+		return null;
+	};
+
+	const reportProfile = (json, request) => {
+		const id = json?.data?.attributes?.selectedProfileId;
+
+		if (request !== profileRequest) {
+			return;
+		}
+
+		profilePending = false;
+
+		if (
+			typeof id !== 'string' ||
+			!id.trim() ||
+			id.length > 150 ||
+			id === profileID
+		) {
+			return;
+		}
+
+		profileID = id;
+		previousSnapshot = undefined;
+		handler?.postMessage(JSON.stringify({ profileID: id }));
+	};
+
+	const report = (json, requestProfile) => {
+		if (profilePending || requestProfile !== profileID) {
+			return;
+		}
+
 		const alias = json?.data?.attributes?.alias;
 
 		if (typeof alias !== 'string' || !alias.includes('continue-watching')) {
@@ -90,52 +149,113 @@
 			});
 		}
 
-		const snapshot = JSON.stringify(entries);
+		const snapshot = JSON.stringify(
+			profileID ? { profileID, entries, partial: false } : entries
+		);
 
 		if (snapshot === previousSnapshot) {
 			return;
 		}
 
 		previousSnapshot = snapshot;
-		globalThis.webkit?.messageHandlers?.continueWatching_hboMax?.postMessage(
-			snapshot
-		);
+		handler?.postMessage(snapshot);
 	};
 
-	const isCollection = (url) =>
-		typeof url === 'string' && url.includes('/cms/collections/');
 	const originalFetch = globalThis.fetch;
 
 	globalThis.fetch = async function (...args) {
-		const response = await originalFetch.apply(this, args);
+		const kind = requestKind(args[0]?.url || args[0]);
+		const request = kind === 'profile' ? ++profileRequest : profileID;
 
-		if (response.ok && isCollection(response.url || args[0]?.url || args[0])) {
+		if (kind === 'profile') {
+			profilePending = true;
+		}
+
+		let response;
+
+		try {
+			response = await originalFetch.apply(this, args);
+		} catch (error) {
+			if (kind === 'profile' && request === profileRequest) {
+				profilePending = false;
+			}
+
+			throw error;
+		}
+
+		if (
+			response.ok &&
+			kind &&
+			(!response.url || requestKind(response.url) === kind)
+		) {
 			response
 				.clone()
 				.json()
-				.then(report)
-				.catch(() => {});
+				.then((json) =>
+					kind === 'profile'
+						? reportProfile(json, request)
+						: report(json, request)
+				)
+				.catch(() => {
+					if (kind === 'profile' && request === profileRequest) {
+						profilePending = false;
+					}
+				});
+		} else if (kind === 'profile' && request === profileRequest) {
+			profilePending = false;
 		}
 
 		return response;
 	};
 
 	const originalSend = XMLHttpRequest.prototype.send;
+	const originalOpen = XMLHttpRequest.prototype.open;
+
+	XMLHttpRequest.prototype.open = function (method, url, ...args) {
+		this.__wianuRequestKind = requestKind(url);
+
+		return originalOpen.call(this, method, url, ...args);
+	};
 
 	XMLHttpRequest.prototype.send = function (...args) {
+		const kind = this.__wianuRequestKind;
+		const request = kind === 'profile' ? ++profileRequest : profileID;
+
+		if (kind === 'profile') {
+			profilePending = true;
+		}
+
+		this.addEventListener(
+			'loadend',
+			() => {
+				if (kind === 'profile' && request === profileRequest) {
+					profilePending = false;
+				}
+			},
+			{ once: true }
+		);
 		this.addEventListener(
 			'load',
 			() => {
-				if (this.status !== 200 || !isCollection(this.responseURL)) {
+				if (
+					this.status !== 200 ||
+					!kind ||
+					requestKind(this.responseURL) !== kind
+				) {
 					return;
 				}
 
 				try {
-					report(
+					const json =
 						this.responseType === 'json'
 							? this.response
-							: JSON.parse(this.responseText)
-					);
+							: JSON.parse(this.responseText);
+
+					if (kind === 'profile') {
+						reportProfile(json, request);
+					} else {
+						report(json, request);
+					}
 				} catch (_) {}
 			},
 			{ once: true }

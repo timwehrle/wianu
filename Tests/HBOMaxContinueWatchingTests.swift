@@ -6,6 +6,46 @@ extension WebKitIntegrationTests {
     @Suite(.serialized)
     @MainActor
     struct HBOMaxContinueWatchingTests {
+        @Test
+        func `HBO tracks selected profile and clears the previous queue`() async throws {
+            let fixture = VideoObserverFixture(
+                pages: ["/": "<title>HBO Max</title>"], host: "www.hbomax.com",
+                pageScript: """
+                globalThis.selectedProfile = 'profile-one';
+                globalThis.fetch = async (url) => new Response(JSON.stringify(
+                    url.includes('/users/me')
+                        ? { data: { attributes: { selectedProfileId: selectedProfile } } }
+                        : { data: { attributes: { alias: 'continue-watching' },
+                            relationships: { items: { data: [] } } } }
+                ));
+                """, adapter: .hboMax
+            )
+            defer { fixture.stop() }
+
+            try await fixture.load("/")
+            _ = try await fixture.webView.evaluateJavaScript("fetch('https://www.hbomax.com/users/me'); void 0;")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.profileID == "profile-one" }
+
+            let source = try #require(URL(string: "https://www.hbomax.com/"))
+            fixture.continueWatchingQueue.receive(json: """
+            {"profileID":"profile-one","partial":false,"entries":[
+              {"id":"00000000-0000-0000-0000-000000000001","title":"First"}]}
+            """, from: source)
+            #expect(fixture.continueWatchingQueue.entries.count == 1)
+
+            _ = try await fixture.webView
+                .evaluateJavaScript(
+                    "selectedProfile = 'profile-two'; fetch('https://www.hbomax.com/users/me'); void 0;"
+                )
+            try await fixture.waitUntil { fixture.continueWatchingQueue.profileID == "profile-two" }
+            #expect(fixture.continueWatchingQueue.entries.isEmpty)
+
+            _ = try await fixture.webView
+                .evaluateJavaScript("fetch('https://www.hbomax.com/cms/collections/home'); void 0;")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.updatedAt != nil }
+            #expect(fixture.continueWatchingQueue.profileID == "profile-two")
+        }
+
         @Test(arguments: ["null", "0", "-1", "500"])
         func `HBO leaves progress unknown when duration is missing or invalid`(duration: String) async throws {
             let fixture = VideoObserverFixture(
@@ -32,7 +72,8 @@ extension WebKitIntegrationTests {
             defer { fixture.stop() }
 
             try await fixture.load("/")
-            _ = try await fixture.webView.evaluateJavaScript("fetch('/cms/collections/home'); void 0;")
+            _ = try await fixture.webView
+                .evaluateJavaScript("fetch('https://www.hbomax.com/cms/collections/home'); void 0;")
             try await fixture.waitUntil { fixture.continueWatchingQueue.updatedAt != nil }
 
             #expect(fixture.continueWatchingQueue.entries.first?.progress == nil)
@@ -122,12 +163,12 @@ extension WebKitIntegrationTests {
                 <title>Loading</title>
                 <script>
                 if ("\(transport)" === "fetch") {
-                    fetch('/cms/collections/home').then(response => response.json()).then(json => {
+                    fetch('https://www.hbomax.com/cms/collections/home').then(response => response.json()).then(json => {
                         document.title = json.data.attributes.alias;
                     });
                 } else {
                     const request = new XMLHttpRequest();
-                    request.open('GET', '/cms/collections/home');
+                    request.open('GET', 'https://www.hbomax.com/cms/collections/home');
                     request.addEventListener('load', () => {
                         document.title = JSON.parse(request.responseText).data.attributes.alias;
                     });
