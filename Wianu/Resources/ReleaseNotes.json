@@ -1,5 +1,20 @@
 [
 	{
+		"version": "1.9.2",
+		"changes": [
+			{
+				"title": "Better Continue Watching",
+				"description": "Continue Watching is more reliable across supported streaming services and updates when you switch profiles.",
+				"symbol": "play.circle"
+			},
+			{
+				"title": "Faster Site Switching",
+				"description": "Switch between your streaming sites more quickly and return to where you left off.",
+				"symbol": "arrow.left.arrow.right"
+			}
+		]
+	},
+	{
 		"version": "1.9.1",
 		"changes": [
 			{

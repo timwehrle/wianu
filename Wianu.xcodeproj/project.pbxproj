@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F1A000013040000000000003 /* HBOMaxContinueWatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A000023040000000000003 /* HBOMaxContinueWatchingTests.swift */; };
-		ACAA00013040000000000001 /* NetflixContinueWatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACAA00023040000000000002 /* NetflixContinueWatchingTests.swift */; };
 		21392BB5A368A104286329C5 /* TMDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4864F4CC291E958A50456E1F /* TMDBClient.swift */; };
 		2A8A8308E06AA024385EF725 /* TMDBResponses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2779DA82DAB320184F2669D1 /* TMDBResponses.swift */; };
 		3B696CC64A0307E645BFBE56 /* LetterboxdImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3AB648782105E118BE086F8 /* LetterboxdImportView.swift */; };
@@ -40,6 +38,7 @@
 		AC7800000000000000000003 /* ReleaseNotes.json in Resources */ = {isa = PBXBuildFile; fileRef = AC7700000000000000000003 /* ReleaseNotes.json */; };
 		AC7800000000000000000004 /* ReleaseNotesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7700000000000000000004 /* ReleaseNotesTests.swift */; };
 		AC7800000000000000000005 /* ReleaseNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7700000000000000000005 /* ReleaseNote.swift */; };
+		ACAA00013040000000000001 /* NetflixContinueWatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACAA00023040000000000002 /* NetflixContinueWatchingTests.swift */; };
 		AF9800000000000000000003 /* SupportPromptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF9900000000000000000003 /* SupportPromptTests.swift */; };
 		B3144AD4AE04689FBCA59B6C /* LetterboxdImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 297D70DC28BF39EC09DA4C62 /* LetterboxdImportTests.swift */; };
 		B6E977AF17CF1F94670B47F5 /* MediaIdentificationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC6560216855488BDE8FDC70 /* MediaIdentificationModel.swift */; };
@@ -47,6 +46,7 @@
 		D10EF48E3015F2800070703E /* WianuLogo.icon in Resources */ = {isa = PBXBuildFile; fileRef = D10EF48D3015F2800070703E /* WianuLogo.icon */; };
 		D11E823430177C800092ECC8 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = D11E823330177C800092ECC8 /* Sparkle */; };
 		D13E65ED3018F6B400E58017 /* UpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13E65EB3018F6B400E58017 /* UpdateService.swift */; };
+		D15E00013040000000000001 /* DisneyContinueWatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15E00023040000000000002 /* DisneyContinueWatchingTests.swift */; };
 		D1802E5330A8A46E0078DAA1 /* SupportPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1802E5130A8A46E0078DAA1 /* SupportPromptView.swift */; };
 		D1802E5430A8A46E0078DAA1 /* SupportPromptModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1802E5030A8A46E0078DAA1 /* SupportPromptModel.swift */; };
 		D1A100013060000000000001 /* AnalyticsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A100023060000000000002 /* AnalyticsClient.swift */; };
@@ -100,8 +100,6 @@
 		E2AB00013040000000000001 /* ContinueWatchingAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AB00023040000000000002 /* ContinueWatchingAdapter.swift */; };
 		E2AC00013040000000000001 /* ContinueWatchingScripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AC00023040000000000002 /* ContinueWatchingScripts.swift */; };
 		E2AE00013040000000000001 /* ContinueWatchingDOMTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AE00023040000000000002 /* ContinueWatchingDOMTests.swift */; };
-		D15E00013040000000000001 /* DisneyContinueWatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15E00023040000000000002 /* DisneyContinueWatchingTests.swift */; };
-		F1A000013040000000000001 /* PrimeContinueWatchingDOMTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A000023040000000000002 /* PrimeContinueWatchingDOMTests.swift */; };
 		E2B000013040000000000001 /* AppleContinueWatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B000023040000000000002 /* AppleContinueWatchingTests.swift */; };
 		E2B100013040000000000001 /* BundledJavaScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B100023040000000000002 /* BundledJavaScript.swift */; };
 		E2B300013040000000000001 /* PageInteraction.js in Resources */ = {isa = PBXBuildFile; fileRef = E2B300023040000000000002 /* PageInteraction.js */; };
@@ -112,6 +110,8 @@
 		E697DF6F2C49D3896EDD34F6 /* MediaIdentificationQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D4A20E1E2F736F889213ABE /* MediaIdentificationQuery.swift */; };
 		E8246EA4A72F4AED8556DF41 /* VideoObserver.js in Resources */ = {isa = PBXBuildFile; fileRef = 39C8403A43C84AA3853F6A74 /* VideoObserver.js */; };
 		EE632D160867851E435ED914 /* LetterboxdImportModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B4353EB434BACE445011DA /* LetterboxdImportModel.swift */; };
+		F1A000013040000000000001 /* PrimeContinueWatchingDOMTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A000023040000000000002 /* PrimeContinueWatchingDOMTests.swift */; };
+		F1A000013040000000000003 /* HBOMaxContinueWatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A000023040000000000003 /* HBOMaxContinueWatchingTests.swift */; };
 		F45210013070000000000001 /* BrowserSessions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F45210023070000000000002 /* BrowserSessions.swift */; };
 		F5927CBD90A6F2FAC3C7C7DA /* LetterboxdMatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97A346E0C79A80327AC8AB99 /* LetterboxdMatcherTests.swift */; };
 /* End PBXBuildFile section */
@@ -127,8 +127,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		F1A000023040000000000003 /* HBOMaxContinueWatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HBOMaxContinueWatchingTests.swift; sourceTree = "<group>"; };
-		ACAA00023040000000000002 /* NetflixContinueWatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetflixContinueWatchingTests.swift; sourceTree = "<group>"; };
 		1EFF6F7118F05B89732A32C3 /* LetterboxdTestSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdTestSession.swift; sourceTree = "<group>"; };
 		2779DA82DAB320184F2669D1 /* TMDBResponses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBResponses.swift; sourceTree = "<group>"; };
 		297D70DC28BF39EC09DA4C62 /* LetterboxdImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdImportTests.swift; sourceTree = "<group>"; };
@@ -162,6 +160,7 @@
 		AC7700000000000000000003 /* ReleaseNotes.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ReleaseNotes.json; sourceTree = "<group>"; };
 		AC7700000000000000000004 /* ReleaseNotesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseNotesTests.swift; sourceTree = "<group>"; };
 		AC7700000000000000000005 /* ReleaseNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseNote.swift; sourceTree = "<group>"; };
+		ACAA00023040000000000002 /* NetflixContinueWatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetflixContinueWatchingTests.swift; sourceTree = "<group>"; };
 		AEBC4A22E3A2D121C56B76B7 /* MediaIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaIdentity.swift; sourceTree = "<group>"; };
 		AF9900000000000000000003 /* SupportPromptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportPromptTests.swift; sourceTree = "<group>"; };
 		CB3602DB02F2AD0B93EB0FC1 /* MediaIdentificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaIdentificationService.swift; sourceTree = "<group>"; };
@@ -177,6 +176,7 @@
 		D13E65F03018FDFC00E58017 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		D14338A33013E5B800BA847C /* Wianu.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wianu.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D145FFF8301BB60300983295 /* .swiftformat */ = {isa = PBXFileReference; lastKnownFileType = text; path = .swiftformat; sourceTree = "<group>"; };
+		D15E00023040000000000002 /* DisneyContinueWatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisneyContinueWatchingTests.swift; sourceTree = "<group>"; };
 		D17633AB30A0F89100CDB46C /* dmg-background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dmg-background.png"; sourceTree = "<group>"; };
 		D17633AC30A0F89100CDB46C /* dmg-layout.applescript */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.applescript; path = "dmg-layout.applescript"; sourceTree = "<group>"; };
 		D1802E5030A8A46E0078DAA1 /* SupportPromptModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportPromptModel.swift; sourceTree = "<group>"; };
@@ -241,13 +241,13 @@
 		E2AB00023040000000000002 /* ContinueWatchingAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingAdapter.swift; sourceTree = "<group>"; };
 		E2AC00023040000000000002 /* ContinueWatchingScripts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingScripts.swift; sourceTree = "<group>"; };
 		E2AE00023040000000000002 /* ContinueWatchingDOMTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingDOMTests.swift; sourceTree = "<group>"; };
-		D15E00023040000000000002 /* DisneyContinueWatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisneyContinueWatchingTests.swift; sourceTree = "<group>"; };
-		F1A000023040000000000002 /* PrimeContinueWatchingDOMTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimeContinueWatchingDOMTests.swift; sourceTree = "<group>"; };
 		E2B000023040000000000002 /* AppleContinueWatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleContinueWatchingTests.swift; sourceTree = "<group>"; };
 		E2B100023040000000000002 /* BundledJavaScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledJavaScript.swift; sourceTree = "<group>"; };
 		E2B300023040000000000002 /* PageInteraction.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = PageInteraction.js; sourceTree = "<group>"; };
 		E2B400023040000000000002 /* ContinueWatchingSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinueWatchingSnapshotTests.swift; sourceTree = "<group>"; };
 		E3C000023040000000000002 /* SiteStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteStoreTests.swift; sourceTree = "<group>"; };
+		F1A000023040000000000002 /* PrimeContinueWatchingDOMTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimeContinueWatchingDOMTests.swift; sourceTree = "<group>"; };
+		F1A000023040000000000003 /* HBOMaxContinueWatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HBOMaxContinueWatchingTests.swift; sourceTree = "<group>"; };
 		F22FFC23CF024EE97DC8594E /* MediaMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaMatcher.swift; sourceTree = "<group>"; };
 		F39C616C5A98BDB046546184 /* LetterboxdMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LetterboxdMatcher.swift; sourceTree = "<group>"; };
 		F45210023070000000000002 /* BrowserSessions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserSessions.swift; sourceTree = "<group>"; };
@@ -996,7 +996,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 25;
+				CURRENT_PROJECT_VERSION = 26;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 9C2C8XK2UW;
 				ENABLE_APP_SANDBOX = YES;
@@ -1022,7 +1022,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.9.1;
+				MARKETING_VERSION = 1.9.2;
 				PRODUCT_BUNDLE_IDENTIFIER = timwehrle.Wianu;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -1047,7 +1047,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 25;
+				CURRENT_PROJECT_VERSION = 26;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 9C2C8XK2UW;
 				ENABLE_APP_SANDBOX = YES;
@@ -1073,7 +1073,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.9.1;
+				MARKETING_VERSION = 1.9.2;
 				PRODUCT_BUNDLE_IDENTIFIER = timwehrle.Wianu;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
