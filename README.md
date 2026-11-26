@@ -86,8 +86,9 @@ Your sites, Continue Watching lists, and watchlist stay on your Mac.
 Sign-in and playback happen in the embedded browser.
 Movie and TV metadata comes from Wianu's backend.
 
-Wianu sends anonymous usage events to self-hosted Umami.
-Turn analytics off in **Settings → General**.
+Wianu sends usage events to self-hosted Umami by default. Turn analytics off in
+**Settings → General**. See the [privacy policy](https://wianu.com/privacy-policy#app-analytics)
+for details about the data collected.
 
 ## Feature requests
 

@@ -8,16 +8,16 @@
 	<title>Privacy Policy - Wianu</title>
 	<meta
 		name="description"
-		content="How the Wianu website processes personal data, and how to exercise your privacy rights."
+		content="How the Wianu website, API, and app analytics process data, and how to exercise your privacy rights."
 	/>
 </svelte:head>
 
 <LegalPage title="Privacy policy">
-	<p class="updated">Last updated: 15 October 2026</p>
+	<p class="updated">Last updated: 26 November 2026</p>
 	<section>
 		<h2>Scope and controller</h2>
 		<p>
-			This policy covers the Wianu website and its API. The controller
+			This policy covers the Wianu website, its API, and app usage analytics. The controller
 			responsible for processing personal data is:
 		</p>
 		<address>
@@ -30,9 +30,9 @@
 			</ul>
 		</address>
 		<p>
-			This website notice also applies when the Wianu app contacts our API. It
-			does not cover the app's local storage, embedded browser, update service,
-			or native usage analytics. The website's analytics choice does not change
+			This notice also applies when the Wianu app contacts our API. It
+			does not cover the app's local storage, embedded browser, or update service.
+			The website's analytics choice does not change
 			the app's analytics setting. Streaming services accessed through the app
 			provide their own privacy notices.
 		</p>
@@ -146,6 +146,31 @@
 			</p></noscript
 		>
 	</section>
+	<section id="app-analytics">
+		<h2>App usage analytics</h2>
+		<p>
+			Wianu uses self-hosted Umami analytics to understand how the app is used
+			and improve it. App analytics is on by default. You can turn it off at any
+			time in Settings → General under “Share Usage Analytics”. This setting is
+			independent of your website analytics choice.
+		</p>
+		<p>
+			The app sends feature and screen usage, service and provider choices,
+			onboarding progress, and app, build, and macOS versions. It sends a random
+			identifier stored on your Mac so events can be associated with the same
+			installation. Titles, search terms, playback history, and streaming URLs
+			are not included in these analytics events. Other app features may send
+			data separately, as described elsewhere in this policy.
+		</p>
+		<p>
+			Analytics requests go to our self-hosted service on Hetzner infrastructure
+			in Germany. The server receives connection information including your IP
+			address; infrastructure logs may contain connection data. Umami does not
+			store the raw IP address in its analytics database. Analytics records are
+			retained until manually deleted. Turning analytics off stops further app
+			analytics collection; it does not delete records already collected.
+		</p>
+	</section>
 	<section>
 		<h2>Film images and metadata</h2>
 		<p>
@@ -229,7 +254,8 @@
 		color: var(--secondary-foreground);
 		font-size: var(--text-small);
 	}
-	#analytics-settings {
+	#analytics-settings,
+	#app-analytics {
 		scroll-margin-top: var(--page-top);
 	}
 	#analytics-settings :global(.privacy-action) {
