@@ -13,6 +13,7 @@ function createContinueWatchingReader(schedule, setProfileID) {
 	const isProfileURL = (value) => {
 		try {
 			const url = new URL(value, location.href);
+
 			return (
 				url.origin === 'https://disney.api.edge.bamgrid.com' &&
 				url.pathname === '/v1/public/graphql' &&
@@ -25,6 +26,7 @@ function createContinueWatchingReader(schedule, setProfileID) {
 
 	const captureProfile = (json, sequence) => {
 		const id = json?.data?.me?.account?.activeProfile?.id;
+
 		if (
 			sequence !== profileSequence ||
 			typeof id !== 'string' ||
@@ -34,11 +36,13 @@ function createContinueWatchingReader(schedule, setProfileID) {
 		) {
 			return;
 		}
+
 		if (profileID && profileID !== id) {
 			apiEntries = null;
 			requestSequence++;
 			awaitingProfileQueue = true;
 		}
+
 		profileID = id;
 		setProfileID(id);
 		schedule();
@@ -288,6 +292,7 @@ function createContinueWatchingReader(schedule, setProfileID) {
 		if (awaitingProfileQueue) {
 			return null;
 		}
+
 		if (apiPage !== location.href) {
 			apiEntries = null;
 		}
@@ -332,6 +337,7 @@ function createContinueWatchingReader(schedule, setProfileID) {
 			}
 
 			const text = meta.cloneNode(true);
+
 			text
 				.querySelectorAll('img,svg,[data-testid*="rating"],[class*="rating"]')
 				.forEach((node) => node.remove());

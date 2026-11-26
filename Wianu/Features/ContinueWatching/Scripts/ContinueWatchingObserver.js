@@ -37,6 +37,7 @@ function observeContinueWatching(configuration, createReader) {
 		) {
 			return;
 		}
+
 		profileID = value;
 		previousSnapshot = undefined;
 		messageHandler?.postMessage(JSON.stringify({ profileID }));
@@ -46,6 +47,7 @@ function observeContinueWatching(configuration, createReader) {
 		if (typeof value !== 'string' || !value || value.length > 150) {
 			return;
 		}
+
 		profileID = value;
 		const snapshot = JSON.stringify({ profileID: value, entries, partial });
 
@@ -178,6 +180,7 @@ function observeContinueWatching(configuration, createReader) {
 			if (result === null) {
 				resetEmptyState();
 				diagnose('No readable Continue Watching shelf found');
+
 				return;
 			}
 
@@ -199,10 +202,12 @@ function observeContinueWatching(configuration, createReader) {
 						return missing.length ? [{ index, missing }] : [];
 					})
 					.slice(0, 10);
+
 				diagnose(
 					'Shelf found, but titles or destinations are missing',
 					unreadableCards
 				);
+
 				return;
 			}
 
@@ -210,6 +215,7 @@ function observeContinueWatching(configuration, createReader) {
 
 			if (!entries.length && partial) {
 				resetEmptyState();
+
 				return;
 			}
 
@@ -220,6 +226,7 @@ function observeContinueWatching(configuration, createReader) {
 				) {
 					resetEmptyState();
 					diagnose('Waiting for the home page to finish loading');
+
 					return;
 				}
 
@@ -231,6 +238,7 @@ function observeContinueWatching(configuration, createReader) {
 						scan();
 					}, 2000);
 					diagnose('Waiting to confirm the missing Continue Watching section');
+
 					return;
 				}
 
@@ -266,6 +274,7 @@ function observeContinueWatching(configuration, createReader) {
 		if (emptyTimer !== undefined) {
 			resetEmptyState();
 		}
+
 		if (pending) {
 			return;
 		}

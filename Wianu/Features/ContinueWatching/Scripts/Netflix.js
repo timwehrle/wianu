@@ -13,10 +13,12 @@ function createContinueWatchingReader(
 		const id =
 			globalThis.netflix?.reactContext?.models?.memberContext?.data?.userInfo
 				?.userGuid;
+
 		return typeof id === 'string' && id.trim() && id.length <= 150 ? id : null;
 	};
 	const updateProfile = () => {
 		const id = currentProfile();
+
 		if (id && id !== profileID) {
 			metadata.clear();
 			hasBrowseQueue = false;
@@ -24,6 +26,7 @@ function createContinueWatchingReader(
 			profileSequence = requestSequence;
 			setProfileID(id);
 		}
+
 		return id;
 	};
 	const pageKey = () => {
@@ -108,6 +111,7 @@ function createContinueWatchingReader(
 		}
 
 		const sections = json?.data?.page?.sections?.edges;
+
 		if (!Array.isArray(sections)) {
 			return;
 		}
@@ -126,6 +130,7 @@ function createContinueWatchingReader(
 		}
 
 		const connection = shelves[0].entities;
+
 		if (!Array.isArray(connection.edges) || connection.edges.length > 100) {
 			return;
 		}
@@ -176,6 +181,7 @@ function createContinueWatchingReader(
 			connection.pageInfo?.hasNextPage !== false ||
 			!Number.isInteger(connection.totalCount) ||
 			connection.totalCount !== entries.length;
+
 		profileSequence = sequence;
 
 		if (id !== profileID) {
@@ -189,6 +195,7 @@ function createContinueWatchingReader(
 
 	const capture = (json, requestPage, request, sequence) => {
 		updateProfile();
+
 		if (
 			requestPage !== location.href ||
 			sequence < profileSequence ||
@@ -389,13 +396,16 @@ function createContinueWatchingReader(
 
 	const readQueue = () => {
 		updateProfile();
+
 		if (hasBrowseQueue) {
 			return null;
 		}
+
 		if (page !== pageKey()) {
 			metadata.clear();
 			page = pageKey();
 		}
+
 		const progressCards = Array.from(
 			document.querySelectorAll('a[data-uia="progress-card"]')
 		);

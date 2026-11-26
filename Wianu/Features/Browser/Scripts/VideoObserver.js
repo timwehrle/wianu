@@ -34,6 +34,7 @@
 		} else if (source) {
 			try {
 				const url = new URL(source, document.baseURI);
+
 				sourceDescription = url.host || url.protocol.replace(':', '');
 			} catch (_) {}
 		}

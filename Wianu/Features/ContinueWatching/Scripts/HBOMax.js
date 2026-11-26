@@ -4,6 +4,7 @@
 	if (!(host === 'hbomax.com' || host.endsWith('.hbomax.com'))) {
 		return;
 	}
+
 	if (globalThis.__wianuContinueWatchingInstalled) {
 		return;
 	}
@@ -18,11 +19,13 @@
 		if (typeof alias !== 'string' || !alias.includes('continue-watching')) {
 			return;
 		}
+
 		const items = json.data.relationships?.items?.data;
 
 		if (!Array.isArray(items)) {
 			return;
 		}
+
 		if (items.length && !Array.isArray(json.included)) {
 			return;
 		}

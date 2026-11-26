@@ -161,6 +161,7 @@ function createContinueWatchingReader(schedule) {
 			}
 
 			const { label: _, prefix, ...entry } = matches[0];
+
 			entries.push(entry);
 		}
 
@@ -180,6 +181,7 @@ function createContinueWatchingReader(schedule) {
 		}
 	};
 	const originalAppleFetch = globalThis.fetch;
+
 	globalThis.fetch = async function (...args) {
 		const response = await originalAppleFetch.apply(this, args);
 
@@ -198,6 +200,7 @@ function createContinueWatchingReader(schedule) {
 	};
 
 	const originalAppleSend = XMLHttpRequest.prototype.send;
+
 	XMLHttpRequest.prototype.send = function (...args) {
 		this.addEventListener(
 			'load',
@@ -245,6 +248,7 @@ function createContinueWatchingReader(schedule) {
 	if (!captureAppleInitialData()) {
 		appleDataObserver.observe(document, { childList: true, subtree: true });
 	}
+
 	document.addEventListener(
 		'DOMContentLoaded',
 		() => appleDataObserver.disconnect(),
