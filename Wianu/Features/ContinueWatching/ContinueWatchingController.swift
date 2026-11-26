@@ -174,7 +174,7 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
             return
         }
 
-        if id == .netflix || id == .disneyPlus || id == .primeVideo || id == .hboMax,
+        if id == .netflix || id == .disneyPlus || id == .primeVideo || id == .hboMax || id == .appleTV,
            profileID != nil, payload?.profileID == nil
         {
             return

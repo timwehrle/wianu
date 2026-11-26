@@ -1,9 +1,41 @@
 /* exported createContinueWatchingReader */
-function createContinueWatchingReader(schedule) {
-	const appleItems = new Map();
-	const normalizeAppleText = (value) =>
-		typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '';
+function createContinueWatchingReader(schedule, setProfileID) {
+	let profileID;
+	let queue = null;
+	const captureProfile = (json) => {
+		const id = json?.consumerIdList?.find(
+			(item) => item?.namespace === 'APPSTORE_ENGAGEMENT_STATIC'
+		)?.consumerId;
 
+		if (
+			typeof id !== 'string' ||
+			!id.trim() ||
+			id.length > 150 ||
+			id === profileID
+		) {
+			return;
+		}
+
+		if (profileID) {
+			queue = null;
+		}
+
+		profileID = id;
+		setProfileID(id);
+		schedule();
+	};
+	const isProfileURL = (value) => {
+		try {
+			const url = new URL(value, location.href);
+
+			return (
+				url.origin === 'https://amp-account.tv.apple.com' &&
+				url.pathname === '/account/v3/data'
+			);
+		} catch (_) {
+			return false;
+		}
+	};
 	const appleDestination = (value) => {
 		try {
 			const url = new URL(value, location.href);
@@ -11,162 +43,94 @@ function createContinueWatchingReader(schedule) {
 				/\/(?:movie|episode|show)\/[^/]+\/(umc\.cmc\.[A-Za-z0-9]+)$/
 			)?.[1];
 
-			if (url.origin !== 'https://tv.apple.com' || !id) {
-				return null;
-			}
-
-			return { id, url: url.href };
+			return url.origin === 'https://tv.apple.com' && id
+				? { id, url: url.href }
+				: null;
 		} catch (_) {
 			return null;
 		}
 	};
 
-	const appleQueueItem = (value) => {
-		if (!['Episode', 'Movie', 'Show'].includes(value.type)) {
-			return null;
-		}
-
-		const destination = value.url || value.segue?.url;
-
-		if (typeof destination !== 'string') {
-			return null;
-		}
-
-		const target = appleDestination(destination);
-
-		if (!target || target.id !== value.id) {
-			return null;
-		}
-
-		const playable = value.playable || Object.values(value.playables || {})[0];
-		const metadata = playable?.canonicalMetadata;
-		const isLockup = value.$kind === 'ContinueWatchingLockup';
-		const title = normalizeAppleText(
-			isLockup
-				? value.title
-				: value.showTitle ||
-						metadata?.showTitle ||
-						metadata?.movieTitle ||
-						value.title
-		);
-
-		if (!title) {
-			return null;
-		}
-
-		const episodeTitle =
-			value.type === 'Episode' && !isLockup
-				? normalizeAppleText(value.title)
-				: '';
-
-		return {
-			...target,
-			title: title.slice(0, 500),
-			episodeTitle: episodeTitle.slice(0, 500) || null,
-			season: value.seasonNumber || metadata?.seasonNumber || null,
-			episode: value.episodeNumber || metadata?.episodeNumber || null,
-			label: isLockup ? normalizeAppleText(value.ariaLabel) : '',
-			prefix: isLockup ? '' : [title, episodeTitle].filter(Boolean).join(', ')
-		};
-	};
-
 	const captureAppleData = (json) => {
-		const pending = [{ value: json, depth: 0 }];
+		const pending = [json];
 		let visited = 0;
 
 		while (pending.length && visited++ < 20000) {
-			const { value, depth } = pending.pop();
+			const value = pending.pop();
 
-			if (!value || typeof value !== 'object' || depth > 20) {
+			if (!value || typeof value !== 'object') {
 				continue;
 			}
 
-			const item = appleQueueItem(value);
+			if (
+				typeof value.id === 'string' &&
+				/^(?:uts\.col\.)?(?:ChannelUpNext|upnext)/i.test(value.id) &&
+				Array.isArray(value.items)
+			) {
+				const entries = [];
 
-			if (item) {
-				appleItems.delete(item.id);
-				appleItems.set(item.id, item);
+				for (const item of value.items) {
+					if (item?.$kind !== 'ContinueWatchingLockup') {
+						return;
+					}
 
-				if (appleItems.size > 500) {
-					appleItems.delete(appleItems.keys().next().value);
+					const target = appleDestination(
+						item.segue?.url || item.contextAction?.url
+					);
+					const playable =
+						item.playAction?.contentDescriptor?.items?.[0]?.playable;
+					const metadata = playable?.canonicalMetadata;
+
+					if (
+						!target ||
+						target.id !== item.id ||
+						typeof item.title !== 'string' ||
+						!item.title.trim()
+					) {
+						return;
+					}
+
+					const progress = item.progress;
+
+					entries.push({
+						...target,
+						title: item.title.trim().slice(0, 500),
+						episodeTitle:
+							item.type === 'Episode' &&
+							typeof metadata?.episodeTitle === 'string'
+								? metadata.episodeTitle.slice(0, 500)
+								: null,
+						season: Number.isInteger(metadata?.seasonNumber)
+							? metadata.seasonNumber
+							: null,
+						episode: Number.isInteger(metadata?.episodeNumber)
+							? metadata.episodeNumber
+							: null,
+						progress:
+							typeof progress === 'number' &&
+							Number.isFinite(progress) &&
+							progress >= 0 &&
+							progress <= 100
+								? progress / 100
+								: null
+					});
 				}
+
+				queue = entries.slice(0, 100);
+				schedule();
+
+				return;
 			}
 
 			for (const child of Object.values(value)) {
 				if (child && typeof child === 'object') {
-					pending.push({ value: child, depth: depth + 1 });
+					pending.push(child);
 				}
 			}
 		}
-
-		schedule();
 	};
 
-	const readAppleQueue = () => {
-		const cards = Array.from(
-			document.querySelectorAll('[data-testid="continue-watching-lockup"]')
-		);
-
-		if (!cards.length) {
-			const isHome = /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/?)?$/i.test(
-				location.pathname
-			);
-			const signedIn = document.querySelector('[data-testid="account-menu"]');
-			const hasRecommendations = document.querySelector(
-				'a[data-testid="lockup"][href]'
-			);
-			const shelf = document.querySelector(
-				'[data-testid="continue-watching-lockup-container"]'
-			);
-
-			return isHome && signedIn && hasRecommendations && !shelf ? [] : null;
-		}
-
-		const entries = [];
-
-		for (const card of cards.slice(0, 100)) {
-			const label = normalizeAppleText(
-				card.querySelector('.visually-hidden')?.textContent ||
-					card.getAttribute('aria-label') ||
-					card.querySelector('img[alt]')?.alt
-			);
-
-			if (!label) {
-				return null;
-			}
-
-			if (card.matches('a[href]')) {
-				const target = appleDestination(card.href);
-
-				if (!target) {
-					return null;
-				}
-
-				entries.push({ ...target, title: label.slice(0, 500) });
-				continue;
-			}
-
-			const items = Array.from(appleItems.values());
-			const exact = items.filter((item) => item.label === label);
-			const matches = exact.length
-				? exact
-				: items.filter(
-						(item) =>
-							item.prefix &&
-							(item.prefix === label || label.startsWith(item.prefix + ', '))
-					);
-
-			if (matches.length !== 1) {
-				return null;
-			}
-
-			const { label: _, prefix, ...entry } = matches[0];
-
-			entries.push(entry);
-		}
-
-		return entries;
-	};
+	const readAppleQueue = () => queue;
 
 	const isAppleDataURL = (value) => {
 		try {
@@ -184,11 +148,17 @@ function createContinueWatchingReader(schedule) {
 
 	globalThis.fetch = async function (...args) {
 		const response = await originalAppleFetch.apply(this, args);
+		const url = response.url || args[0]?.url || args[0];
 
-		if (
-			response.ok &&
-			isAppleDataURL(response.url || args[0]?.url || args[0])
-		) {
+		if (response.ok && isProfileURL(url)) {
+			response
+				.clone()
+				.json()
+				.then(captureProfile)
+				.catch(() => {});
+		}
+
+		if (response.ok && isAppleDataURL(url)) {
 			response
 				.clone()
 				.json()
@@ -205,16 +175,24 @@ function createContinueWatchingReader(schedule) {
 		this.addEventListener(
 			'load',
 			() => {
-				if (this.status !== 200 || !isAppleDataURL(this.responseURL)) {
+				if (
+					this.status !== 200 ||
+					(!isAppleDataURL(this.responseURL) && !isProfileURL(this.responseURL))
+				) {
 					return;
 				}
 
 				try {
-					captureAppleData(
+					const json =
 						this.responseType === 'json'
 							? this.response
-							: JSON.parse(this.responseText)
-					);
+							: JSON.parse(this.responseText);
+
+					if (isProfileURL(this.responseURL)) {
+						captureProfile(json);
+					} else {
+						captureAppleData(json);
+					}
 				} catch (_) {}
 			},
 			{ once: true }
@@ -254,6 +232,8 @@ function createContinueWatchingReader(schedule) {
 		() => appleDataObserver.disconnect(),
 		{ once: true }
 	);
+
+	readAppleQueue.profileID = () => profileID;
 
 	return readAppleQueue;
 }
