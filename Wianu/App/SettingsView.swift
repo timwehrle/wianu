@@ -23,7 +23,7 @@ private struct GeneralSettingsView: View {
         Form {
             Section {
                 Toggle(
-                    "Share Usage Analytics",
+                    "Share usage analytics",
                     isOn: Binding(
                         get: { analyticsEnabled },
                         set: { enabled in
@@ -34,11 +34,16 @@ private struct GeneralSettingsView: View {
                 )
 
                 Text(
-                    "Help improve Wianu by sharing feature usage and service choices. "
+                    "On by default. Share feature usage and service choices with Wianu's "
+                        + "self-hosted analytics to help improve the app. "
                         + "Titles, searches, playback history and streaming URLs stay private."
                 )
                 .font(.callout)
                 .foregroundStyle(.secondary)
+
+                if let privacyURL = URL(string: "https://wianu.com/privacy-policy#app-analytics") {
+                    Link("Privacy Policy", destination: privacyURL)
+                }
             }
         }
         .formStyle(.grouped)
