@@ -17,8 +17,8 @@
 	<section>
 		<h2>Scope and controller</h2>
 		<p>
-			This policy covers the Wianu website, its API, and app usage analytics. The controller
-			responsible for processing personal data is:
+			This policy covers the Wianu website, its API, and app usage analytics.
+			The controller responsible for processing personal data is:
 		</p>
 		<address>
 			<ul>
@@ -30,11 +30,11 @@
 			</ul>
 		</address>
 		<p>
-			This notice also applies when the Wianu app contacts our API. It
-			does not cover the app's local storage, embedded browser, or update service.
-			The website's analytics choice does not change
-			the app's analytics setting. Streaming services accessed through the app
-			provide their own privacy notices.
+			This notice also applies when the Wianu app contacts our API. It does not
+			cover the app's local storage, embedded browser, or update service. The
+			website's analytics choice does not change the app's analytics setting.
+			Streaming services accessed through the app provide their own privacy
+			notices.
 		</p>
 	</section>
 	<section>
