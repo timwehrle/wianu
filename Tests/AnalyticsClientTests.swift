@@ -161,6 +161,7 @@ struct AnalyticsClientTests {
             websiteID: "website-id", userDefaults: defaults, appVersion: "1", build: "1"
         )
 
+        let initiallyEnabled = client.isEnabled
         client.pageview(.home)
         client.pageview(.home)
         client.pageview(.search)
@@ -172,7 +173,15 @@ struct AnalyticsClientTests {
 
         let deadline = ContinuousClock.now + .seconds(5)
         while await session.completedRequests < 4 {
-            try #require(ContinuousClock.now < deadline)
+            if ContinuousClock.now >= deadline {
+                let completed = await session.completedRequests
+                let requests = await session.capturedRequests()
+                Issue.record("""
+                Expected 4 completed analytics requests; captured \(requests.count), completed \(completed), \
+                enabled initially: \(initiallyEnabled), enabled now: \(client.isEnabled).
+                """)
+                return
+            }
             try await Task.sleep(for: .milliseconds(10))
         }
 
