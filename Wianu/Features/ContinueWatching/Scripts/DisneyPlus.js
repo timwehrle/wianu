@@ -1,11 +1,48 @@
 /* exported createContinueWatchingReader */
-function createContinueWatchingReader(schedule) {
+function createContinueWatchingReader(schedule, setProfileID) {
 	const episodePattern = /\bS\s*(\d+)\s*:\s*[EF]\s*(\d+)\b/i;
 	const knownSetID = '76aed686-1837-49bd-b4f5-5d2a27c0c8d4';
 
 	let apiEntries = null;
 	let apiPage;
 	let requestSequence = 0;
+	let profileSequence = 0;
+	let profileID;
+	let awaitingProfileQueue = false;
+
+	const isProfileURL = (value) => {
+		try {
+			const url = new URL(value, location.href);
+			return (
+				url.origin === 'https://disney.api.edge.bamgrid.com' &&
+				url.pathname === '/v1/public/graphql' &&
+				url.searchParams.get('op') === 'me'
+			);
+		} catch (_) {
+			return false;
+		}
+	};
+
+	const captureProfile = (json, sequence) => {
+		const id = json?.data?.me?.account?.activeProfile?.id;
+		if (
+			sequence !== profileSequence ||
+			typeof id !== 'string' ||
+			!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
+				id
+			)
+		) {
+			return;
+		}
+		if (profileID && profileID !== id) {
+			apiEntries = null;
+			requestSequence++;
+			awaitingProfileQueue = true;
+		}
+		profileID = id;
+		setProfileID(id);
+		schedule();
+	};
 
 	const queueSetID = (value) => {
 		try {
@@ -151,6 +188,7 @@ function createContinueWatchingReader(schedule) {
 
 		apiEntries = entries;
 		apiPage = request.page;
+		awaitingProfileQueue = false;
 
 		schedule();
 	};
@@ -158,24 +196,33 @@ function createContinueWatchingReader(schedule) {
 	const originalFetch = globalThis.fetch;
 
 	globalThis.fetch = function (...args) {
-		const setID = queueSetID(args[0]?.url ?? args[0]);
+		const url = args[0]?.url ?? args[0];
+		const setID = queueSetID(url);
 		const request = setID ? beginRequest(setID) : null;
+		const profileRequest = isProfileURL(url) ? ++profileSequence : null;
 		const pending = originalFetch.apply(this, args);
 
-		if (!request) {
+		if (!request && !profileRequest) {
 			return pending;
 		}
 
 		return pending.then((response) => {
 			if (
 				response.ok &&
-				(!response.url || queueSetID(response.url) === request.setID)
+				(!response.url ||
+					(request
+						? queueSetID(response.url) === request.setID
+						: isProfileURL(response.url)))
 			) {
 				try {
 					response
 						.clone()
 						.json()
-						.then((json) => capture(json, request))
+						.then((json) =>
+							request
+								? capture(json, request)
+								: captureProfile(json, profileRequest)
+						)
 						.catch(() => {});
 				} catch (_) {}
 			}
@@ -198,16 +245,21 @@ function createContinueWatchingReader(schedule) {
 
 	XMLHttpRequest.prototype.send = function (...args) {
 		const setID = queueSetID(requestURLs.get(this));
+		const profileRequest = isProfileURL(requestURLs.get(this))
+			? ++profileSequence
+			: null;
 
-		if (setID) {
-			const request = beginRequest(setID);
+		if (setID || profileRequest) {
+			const request = setID ? beginRequest(setID) : null;
 
 			this.addEventListener(
 				'load',
 				() => {
 					if (
 						this.status !== 200 ||
-						queueSetID(this.responseURL) !== request.setID
+						(request
+							? queueSetID(this.responseURL) !== request.setID
+							: !isProfileURL(this.responseURL))
 					) {
 						return;
 					}
@@ -218,7 +270,11 @@ function createContinueWatchingReader(schedule) {
 								? this.response
 								: JSON.parse(this.responseText);
 
-						capture(json, request);
+						if (request) {
+							capture(json, request);
+						} else {
+							captureProfile(json, profileRequest);
+						}
 					} catch (_) {}
 				},
 				{ once: true }
@@ -229,6 +285,9 @@ function createContinueWatchingReader(schedule) {
 	};
 
 	const readQueue = () => {
+		if (awaitingProfileQueue) {
+			return null;
+		}
 		if (apiPage !== location.href) {
 			apiEntries = null;
 		}
@@ -327,6 +386,7 @@ function createContinueWatchingReader(schedule) {
 
 	readQueue.source = () =>
 		apiEntries !== null && apiPage === location.href ? 'response' : 'page';
+	readQueue.profileID = () => profileID;
 
 	return readQueue;
 }
