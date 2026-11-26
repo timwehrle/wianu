@@ -5,6 +5,74 @@ import Testing
 extension WebKitIntegrationTests {
     @Suite(.serialized)
     @MainActor
+    struct NetflixProfileTests {
+        @Test
+        func `Netflix reads the active profile for each DOM queue`() async throws {
+            let fixture = VideoObserverFixture(pages: ["/browse": """
+            <a data-uia="progress-card" href="https://www.netflix.com/title/123" aria-label="First"></a>
+            """], pageScript: """
+            globalThis.netflix = {reactContext: {models: {memberContext: {data: {userInfo: {userGuid: 'a'}}}}}};
+            """, adapter: .netflix)
+            defer { fixture.stop() }
+
+            try await fixture.load("/browse")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.first?.title == "First" }
+            #expect(fixture.continueWatchingQueue.profileID == "a")
+
+            try await fixture.webView.evaluateJavaScript("""
+            netflix.reactContext.models.memberContext.data.userInfo.userGuid = 'b';
+            document.querySelector('a').setAttribute('aria-label', 'Second');
+            void 0;
+            """)
+            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.first?.title == "Second" }
+            #expect(fixture.continueWatchingQueue.profileID == "b")
+            #expect(fixture.continueWatchingQueue.entries.count == 1)
+        }
+
+        @Test(arguments: ["fetch", "xhr", "get"])
+        func `Netflix captures the current profile from browse responses`(transport: String) async throws {
+            let fixture = VideoObserverFixture(pages: ["/browse": """
+            <script>
+            const body = JSON.stringify({operationName: 'GetBrowsePage'});
+            if ('\(transport)' === 'get') {
+                fetch('https://www.netflix.com/graphql?operationName=GetBrowsePage');
+            } else if ('\(transport)' === 'fetch') {
+                fetch('https://www.netflix.com/graphql', {method: 'POST', body});
+            } else {
+                const request = new XMLHttpRequest();
+                request.open('POST', 'https://www.netflix.com/graphql');
+                request.send(body);
+            }
+            </script>
+            """], pageScript: """
+            const payload = {data: {currentProfile: {guid: 'profile-a'}, page: {sections: {edges: [
+                {node: {entities: {totalCount: 1, pageInfo: {hasNextPage: false}, edges: [
+                    {node: {__typename: 'PinotContinueWatchingEntityTreatment', displayString: 'A Film',
+                     unifiedEntity: {__typename: 'Movie', videoId: 123, runtimeSec: 200,
+                       bookmark: {position: {parsedValue: 50}}}}}
+                ]}}}
+            ]}}}};
+            globalThis.fetch = async () => new Response(JSON.stringify(payload));
+            XMLHttpRequest.prototype.send = function() {
+                Object.defineProperties(this, {
+                    status: {value: 200}, responseURL: {value: 'https://www.netflix.com/graphql'},
+                    responseText: {value: JSON.stringify(payload)}
+                });
+                this.dispatchEvent(new Event('load'));
+            };
+            """, adapter: .netflix)
+            defer { fixture.stop() }
+
+            try await fixture.load("/browse")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.count == 1 }
+            #expect(fixture.continueWatchingQueue.profileID == "profile-a")
+            #expect(fixture.continueWatchingQueue.entries.first?.title == "A Film")
+            #expect(fixture.continueWatchingQueue.entries.first?.progress == 0.25)
+        }
+    }
+
+    @Suite(.serialized)
+    @MainActor
     struct NetflixContinueWatchingTests {
         @Test
         func `Netflix progress cards use accessible titles and preserve preview links`() async throws {

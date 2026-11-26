@@ -1,7 +1,31 @@
 /* exported createContinueWatchingReader */
-function createContinueWatchingReader(schedule) {
+function createContinueWatchingReader(
+	schedule,
+	setProfileID,
+	publishProfileQueue
+) {
 	const metadata = new Map();
 	let requestSequence = 0;
+	let profileSequence = 0;
+	let profileID;
+	let hasBrowseQueue = false;
+	const currentProfile = () => {
+		const id =
+			globalThis.netflix?.reactContext?.models?.memberContext?.data?.userInfo
+				?.userGuid;
+		return typeof id === 'string' && id.trim() && id.length <= 150 ? id : null;
+	};
+	const updateProfile = () => {
+		const id = currentProfile();
+		if (id && id !== profileID) {
+			metadata.clear();
+			hasBrowseQueue = false;
+			profileID = id;
+			profileSequence = requestSequence;
+			setProfileID(id);
+		}
+		return id;
+	};
 	const pageKey = () => {
 		const url = new URL(location.href);
 
@@ -48,9 +72,126 @@ function createContinueWatchingReader(schedule) {
 		}
 	};
 
-	const capture = (json, requestPage, request, sequence) => {
+	const isBrowseRequest = (body) => {
+		try {
+			return JSON.parse(body)?.operationName === 'GetBrowsePage';
+		} catch (_) {
+			return false;
+		}
+	};
+
+	const browseURL = (value) => {
+		try {
+			return (
+				isGraphQL(value) &&
+				new URL(value, location.href).searchParams.get('operationName') ===
+					'GetBrowsePage'
+			);
+		} catch (_) {
+			return false;
+		}
+	};
+
+	const captureBrowse = (json, requestPage, sequence) => {
+		const id = json?.data?.currentProfile?.guid;
+		const activeProfile = updateProfile();
+
 		if (
 			requestPage !== location.href ||
+			(activeProfile && id !== activeProfile) ||
+			sequence < profileSequence ||
+			typeof id !== 'string' ||
+			!id ||
+			id.length > 150
+		) {
+			return;
+		}
+
+		const sections = json?.data?.page?.sections?.edges;
+		if (!Array.isArray(sections)) {
+			return;
+		}
+
+		const shelves = sections
+			.map((edge) => edge?.node)
+			.filter((section) =>
+				section?.entities?.edges?.some(
+					(edge) =>
+						edge?.node?.__typename === 'PinotContinueWatchingEntityTreatment'
+				)
+			);
+
+		if (shelves.length !== 1) {
+			return;
+		}
+
+		const connection = shelves[0].entities;
+		if (!Array.isArray(connection.edges) || connection.edges.length > 100) {
+			return;
+		}
+
+		const entries = connection.edges.map((edge) => {
+			const node = edge?.node;
+			const entity = node?.unifiedEntity;
+			const videoID = String(entity?.videoId ?? '');
+			const title = node?.displayString;
+
+			if (
+				node?.__typename !== 'PinotContinueWatchingEntityTreatment' ||
+				!/^\d{1,20}$/.test(videoID) ||
+				typeof title !== 'string' ||
+				!title.trim()
+			) {
+				return null;
+			}
+
+			const playable =
+				entity.__typename === 'Show' ? entity.currentEpisode : entity;
+			const bookmark = playable?.bookmark?.position;
+			const position =
+				typeof bookmark === 'number' ? bookmark : bookmark?.parsedValue;
+			const runtime = playable?.runtimeSec;
+
+			return {
+				id: videoID,
+				title: title.trim().slice(0, 500),
+				url: 'https://www.netflix.com/title/' + videoID,
+				progress:
+					Number.isFinite(position) &&
+					Number.isFinite(runtime) &&
+					runtime > 0 &&
+					position >= 0 &&
+					position <= runtime
+						? position / runtime
+						: null,
+				episodeMetadataKnown: false
+			};
+		});
+
+		if (entries.some((entry) => !entry)) {
+			return;
+		}
+
+		const partial =
+			connection.pageInfo?.hasNextPage !== false ||
+			!Number.isInteger(connection.totalCount) ||
+			connection.totalCount !== entries.length;
+		profileSequence = sequence;
+
+		if (id !== profileID) {
+			metadata.clear();
+		}
+
+		profileID = id;
+		hasBrowseQueue = true;
+		publishProfileQueue(id, entries, partial);
+	};
+
+	const capture = (json, requestPage, request, sequence) => {
+		updateProfile();
+		if (
+			requestPage !== location.href ||
+			sequence < profileSequence ||
 			!Array.isArray(json?.data?.unifiedEntities)
 		) {
 			return;
@@ -154,6 +295,8 @@ function createContinueWatchingReader(schedule) {
 						typeof args[1].body === 'string'
 							? Promise.resolve(args[1].body)
 							: null;
+				} else if (browseURL(args[0]?.url ?? args[0])) {
+					body = Promise.resolve('{"operationName":"GetBrowsePage"}');
 				} else if (args[0] instanceof Request) {
 					body = args[0].clone().text();
 				}
@@ -170,13 +313,18 @@ function createContinueWatchingReader(schedule) {
 		return pending.then(async (response) => {
 			if (response.ok && (!response.url || isGraphQL(response.url))) {
 				try {
-					const request = requestedIDs(await body);
+					const requestBody = await body;
+					const request = requestedIDs(requestBody);
 
-					if (request) {
+					if (request || isBrowseRequest(requestBody)) {
 						response
 							.clone()
 							.json()
-							.then((json) => capture(json, requestPage, request, sequence))
+							.then((json) =>
+								request
+									? capture(json, requestPage, request, sequence)
+									: captureBrowse(json, requestPage, sequence)
+							)
 							.catch(() => {});
 					}
 				} catch (_) {}
@@ -198,12 +346,17 @@ function createContinueWatchingReader(schedule) {
 	const originalSend = XMLHttpRequest.prototype.send;
 
 	XMLHttpRequest.prototype.send = function (...args) {
+		const browse =
+			browseURL(requestURLs.get(this)) ||
+			(isGraphQL(requestURLs.get(this)) &&
+				typeof args[0] === 'string' &&
+				isBrowseRequest(args[0]));
 		const request =
 			isGraphQL(requestURLs.get(this)) && typeof args[0] === 'string'
 				? requestedIDs(args[0])
 				: null;
 
-		if (request) {
+		if (request || browse) {
 			const requestPage = location.href;
 			const sequence = ++requestSequence;
 
@@ -220,7 +373,11 @@ function createContinueWatchingReader(schedule) {
 								? this.response
 								: JSON.parse(this.responseText);
 
-						capture(json, requestPage, request, sequence);
+						if (request) {
+							capture(json, requestPage, request, sequence);
+						} else {
+							captureBrowse(json, requestPage, sequence);
+						}
 					} catch (_) {}
 				},
 				{ once: true }
@@ -231,6 +388,10 @@ function createContinueWatchingReader(schedule) {
 	};
 
 	const readQueue = () => {
+		updateProfile();
+		if (hasBrowseQueue) {
+			return null;
+		}
 		if (page !== pageKey()) {
 			metadata.clear();
 			page = pageKey();
@@ -281,6 +442,7 @@ function createContinueWatchingReader(schedule) {
 	};
 
 	readQueue.partial = () => true;
+	readQueue.profileID = currentProfile;
 
 	return readQueue;
 }
