@@ -3,6 +3,7 @@ import Testing
 @testable import Wianu
 
 actor AnalyticsFixtureSession: AnalyticsSession {
+    private let completionEvents = AsyncStream<Int>.makeStream()
     private(set) var requests: [URLRequest] = []
     private(set) var completedRequests = 0
     private(set) var maximumConcurrentRequests = 0
@@ -41,6 +42,7 @@ actor AnalyticsFixtureSession: AnalyticsSession {
         defer {
             activeRequests -= 1
             completedRequests += 1
+            completionEvents.continuation.yield(completedRequests)
         }
 
         try await Task.sleep(for: delay)
@@ -56,6 +58,29 @@ actor AnalyticsFixtureSession: AnalyticsSession {
 
     func capturedRequests() -> [URLRequest] {
         requests
+    }
+
+    func completionStream() -> AsyncStream<Int> {
+        completionEvents.stream
+    }
+}
+
+func waitForTestEvent<T: Sendable>(
+    in stream: AsyncStream<T>, timeout: Duration, matching predicate: @escaping @Sendable (T) -> Bool
+) async throws -> Bool {
+    try await withThrowingTaskGroup(of: Bool.self) { group in
+        group.addTask {
+            for await value in stream where predicate(value) {
+                return true
+            }
+            return false
+        }
+        group.addTask {
+            try await Task.sleep(for: timeout)
+            return false
+        }
+        defer { group.cancelAll() }
+        return try await group.next() ?? false
     }
 }
 
