@@ -39,8 +39,12 @@ extension WebKitIntegrationTests {
             case .appleTV:
                 host = "tv.apple.com"
                 markup = """
-                <a data-testid="continue-watching-lockup" aria-label="A Show"
-                href="https://tv.apple.com/episode/name/umc.cmc.123">Play</a>
+                <script id="serialized-server-data" type="application/json">
+                {"data":{"shelves":[{"id":"uts.col.ChannelUpNext.tvs.sbd.4000","items":[{
+                  "$kind":"ContinueWatchingLockup","id":"umc.cmc.123","title":"A Show",
+                  "segue":{"url":"https://tv.apple.com/episode/name/umc.cmc.123"}
+                }]}]}}
+                </script>
                 """
             case .hboMax:
                 Issue.record("HBO uses response capture rather than the DOM adapter")

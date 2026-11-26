@@ -70,5 +70,23 @@ extension WebKitIntegrationTests {
             try await fixture.waitUntil { fixture.continueWatchingQueue.diagnostics != nil }
             #expect(fixture.continueWatchingQueue.entries.first?.title == "Saved")
         }
+
+        @Test
+        func `Apple clears the saved queue for a confirmed empty shelf`() async throws {
+            let fixture = VideoObserverFixture(pages: ["/": """
+            <script id="serialized-server-data" type="application/json">
+            {"data":{"shelves":[{"id":"uts.col.ChannelUpNext.tvs.sbd.4000","items":[]}]}}
+            </script>
+            """], host: "tv.apple.com", adapter: .appleTV)
+            defer { fixture.stop() }
+
+            let source = try #require(URL(string: "https://tv.apple.com/"))
+            fixture.continueWatchingQueue.receive(json: """
+            [{"id":"umc.cmc.saved","title":"Saved","url":"https://tv.apple.com/us/show/saved/umc.cmc.saved"}]
+            """, from: source)
+            try await fixture.load("/")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.isEmpty }
+            #expect(fixture.continueWatchingQueue.updatedAt != nil)
+        }
     }
 }
