@@ -84,13 +84,9 @@ struct LetterboxdSearchTests {
         let task = Task { try await TMDBClient(session: session).searchMovies(query: "Enemy", year: 2013) }
         defer { task.cancel() }
 
-        let deadline = ContinuousClock.now + .seconds(5)
-
-        while await session.requests.isEmpty {
-            try #require(ContinuousClock.now < deadline, "The first request did not start")
-
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        let requests = await session.requestStream()
+        let started = try await waitForTestEvent(in: requests, timeout: .seconds(5)) { $0 >= 1 }
+        try #require(started, "The first request did not start")
 
         task.cancel()
 

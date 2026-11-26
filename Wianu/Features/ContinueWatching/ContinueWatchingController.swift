@@ -16,6 +16,11 @@ struct ContinueWatchingEntry: Identifiable, Equatable, Codable {
 struct ContinueWatchingSnapshot: Codable {
     let entries: [ContinueWatchingEntry]
     let updatedAt: Date
+    var profileID: String?
+}
+
+private struct ContinueWatchingProfile: Decodable {
+    let profileID: String
 }
 
 private struct ContinueWatchingDiagnostics: Decodable {
@@ -25,6 +30,7 @@ private struct ContinueWatchingDiagnostics: Decodable {
 private struct ContinueWatchingPartialPayload: Decodable {
     let entries: [ContinueWatchingPayloadItem]
     let partial: Bool
+    let profileID: String?
 }
 
 private struct ContinueWatchingPayloadItem: Decodable {
@@ -54,6 +60,7 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
     private(set) var refreshID: UUID?
     private(set) var diagnostics: String?
     private(set) var storageError = false
+    private(set) var profileID: String?
 
     private var handlerName: String {
         "continueWatching_" + id.rawValue
@@ -78,6 +85,7 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
             if let snapshot = try fileStore?.load(defaultValue: nil) {
                 entries = snapshot.entries
                 updatedAt = snapshot.updatedAt
+                profileID = snapshot.profileID
             }
         } catch {
             storageError = true
@@ -127,6 +135,7 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
         entries = []
         diagnostics = nil
         updatedAt = nil
+        profileID = nil
         responseError = false
         endRefresh()
 
@@ -150,10 +159,43 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
             return
         }
 
-        guard let received = decodeEntries(from: data) else {
+        let payload = try? JSONDecoder().decode(ContinueWatchingPartialPayload.self, from: data)
+        let object = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+        if object?["entries"] == nil,
+           let profile = try? JSONDecoder().decode(ContinueWatchingProfile.self, from: data)
+        {
+            guard !profile.profileID.isEmpty, profile.profileID.count <= 150 else { return }
+            if profileID != profile.profileID {
+                entries = []
+                updatedAt = nil
+                profileID = profile.profileID
+                saveSnapshot(nil)
+            }
+            return
+        }
+
+        if id == .netflix || id == .disneyPlus || id == .primeVideo || id == .hboMax || id == .appleTV,
+           profileID != nil, payload?.profileID == nil
+        {
+            return
+        }
+
+        if let profileID = payload?.profileID,
+           profileID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || profileID.count > 150
+        {
             responseError = true
             endRefresh()
             return
+        }
+        let profileChanged = payload?.profileID != nil && payload?.profileID != profileID
+        guard let received = decodeEntries(from: data, profileChanged: profileChanged) else {
+            responseError = true
+            endRefresh()
+            return
+        }
+
+        if let profile = payload?.profileID {
+            profileID = profile
         }
 
         if entries != received {
@@ -165,17 +207,17 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
         responseError = false
         endRefresh()
 
-        saveSnapshot(ContinueWatchingSnapshot(entries: received, updatedAt: receivedAt))
+        saveSnapshot(ContinueWatchingSnapshot(entries: received, updatedAt: receivedAt, profileID: profileID))
     }
 
-    private func decodeEntries(from data: Data) -> [ContinueWatchingEntry]? {
+    private func decodeEntries(from data: Data, profileChanged: Bool) -> [ContinueWatchingEntry]? {
         let decoder = JSONDecoder()
         let partialPayload = try? decoder.decode(ContinueWatchingPartialPayload.self, from: data)
         let partial = partialPayload?.partial == true
-        let decoded = partial ? partialPayload?.entries : try? decoder.decode(
+        let decoded = partialPayload?.entries ?? (try? decoder.decode(
             [ContinueWatchingPayloadItem].self,
             from: data
-        )
+        ))
 
         guard let decoded, decoded.count <= 100,
               decoded.allSatisfy({ !$0.title.isEmpty && $0.title.count <= 500 })
@@ -183,7 +225,8 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
             return nil
         }
 
-        let previousEntries = Dictionary(entries.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let priorEntries = profileChanged ? [] : entries
+        let previousEntries = Dictionary(priorEntries.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         var seen: Set<String> = []
         var received: [ContinueWatchingEntry] = []
 
@@ -216,9 +259,9 @@ final class ContinueWatchingController: NSObject, WKScriptMessageHandler, Identi
         guard partial else { return received }
 
         let updates = Dictionary(received.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        let existingIDs = Set(entries.map(\.id))
-        let additions = received.filter { !existingIDs.contains($0.id) }.prefix(max(0, 100 - entries.count))
-        return entries.map { updates[$0.id] ?? $0 } + additions
+        let existingIDs = Set(priorEntries.map(\.id))
+        let additions = received.filter { !existingIDs.contains($0.id) }.prefix(max(0, 100 - priorEntries.count))
+        return priorEntries.map { updates[$0.id] ?? $0 } + additions
     }
 
     private func saveSnapshot(_ snapshot: ContinueWatchingSnapshot?) {

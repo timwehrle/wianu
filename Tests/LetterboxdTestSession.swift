@@ -2,6 +2,7 @@ import Foundation
 @testable import Wianu
 
 actor LetterboxdTestSession: TMDBSession {
+    private let requestEvents = AsyncStream<Int>.makeStream()
     private let pages: [Data]
     private let fallback: [Data]
     private let statuses: [Int]
@@ -18,6 +19,7 @@ actor LetterboxdTestSession: TMDBSession {
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         let status = statuses[min(requests.count, statuses.count - 1)]
         requests.append(request)
+        requestEvents.continuation.yield(requests.count)
 
         guard let url = request.url,
               let response = HTTPURLResponse(
@@ -36,6 +38,10 @@ actor LetterboxdTestSession: TMDBSession {
         guard responses.indices.contains(page - 1) else { throw URLError(.badServerResponse) }
 
         return (responses[page - 1], response)
+    }
+
+    func requestStream() -> AsyncStream<Int> {
+        requestEvents.stream
     }
 }
 

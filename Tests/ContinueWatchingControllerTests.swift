@@ -5,6 +5,80 @@ import Testing
 @MainActor
 struct ContinueWatchingControllerTests {
     @Test
+    func `Prime ignores unidentified queues after identifying a profile`() throws {
+        let controller = ContinueWatchingController(adapter: .primeVideo)
+        let url = try #require(URL(string: "https://www.primevideo.com/"))
+        controller.receive(json: #"{"profileID":"profile-a"}"#, from: url)
+        controller.receive(
+            json: #"[{"id":"OLD","title":"Old","url":"https://www.primevideo.com/detail/OLD"}]"#,
+            from: url
+        )
+
+        #expect(controller.profileID == "profile-a")
+        #expect(controller.entries.isEmpty)
+    }
+
+    @Test
+    func `Profiled partial queues do not merge entries from another profile`() throws {
+        let controller = ContinueWatchingController(adapter: .netflix)
+        let url = try #require(URL(string: "https://www.netflix.com/browse"))
+        controller.receive(json: """
+        {"profileID":"a","partial":false,"entries":[
+          {"id":"123","title":"First","url":"https://www.netflix.com/title/123","progress":0.5}]}
+        """, from: url)
+        controller.receive(json: """
+        {"profileID":"b","partial":true,"entries":[
+          {"id":"123","title":"Second","url":"https://www.netflix.com/title/123"}]}
+        """, from: url)
+        #expect(controller.profileID == "b")
+        #expect(controller.entries.first?.title == "Second")
+        #expect(controller.entries.first?.progress == nil)
+
+        controller.receive(
+            json: #"[{"id":"456","title":"Unidentified","url":"https://www.netflix.com/title/456"}]"#,
+            from: url
+        )
+        #expect(controller.entries.map(\.id) == ["123"])
+
+        controller.receive(json: #"{"profileID":"c","partial":false,"entries":[{"id":"bad"}]}"#, from: url)
+        #expect(controller.profileID == "b")
+        #expect(controller.entries.first?.title == "Second")
+    }
+
+    @Test
+    func `Profile changes discard previous entries and persist the new identity`() throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = JSONFileStore<ContinueWatchingSnapshot?>(
+            fileName: "netflix.json", folderName: "queues", baseDirectory: directory
+        )
+        let url = try #require(URL(string: "https://www.netflix.com/browse"))
+        let controller = ContinueWatchingController(adapter: .netflix, fileStore: store)
+        controller.receive(json: #"{"profileID":"profile-a"}"#, from: url)
+        controller.receive(
+            json: """
+            {"profileID":"profile-a","partial":false,"entries":[
+              {"id":"123","title":"First","url":"https://www.netflix.com/watch/123","progress":0.5}]}
+            """,
+            from: url
+        )
+
+        let restored = ContinueWatchingController(adapter: .netflix, fileStore: store)
+        #expect(restored.profileID == "profile-a")
+        restored.receive(json: #"{"profileID":"profile-a"}"#, from: url)
+        #expect(restored.entries.count == 1)
+        restored.receive(json: #"{"profileID":"profile-b"}"#, from: url)
+        #expect(restored.entries.isEmpty)
+        #expect(restored.updatedAt == nil)
+        restored.receive(
+            json: #"{"profileID":"profile-b","partial":false,"entries":[{"id":"123","title":"Second","url":"https://www.netflix.com/watch/123"}]}"#,
+            from: url
+        )
+        #expect(restored.entries.first?.progress == nil)
+        #expect(ContinueWatchingController(adapter: .netflix, fileStore: store).profileID == "profile-b")
+    }
+
+    @Test
     func `Refresh times out without a sidebar view`() async throws {
         let controller = ContinueWatchingController(adapter: .netflix, refreshTimeout: .zero)
         controller.beginRefresh()

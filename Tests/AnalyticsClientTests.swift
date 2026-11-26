@@ -170,11 +170,9 @@ struct AnalyticsClientTests {
         ])
         client.pageview(.home)
 
-        let deadline = ContinuousClock.now + .seconds(5)
-        while await session.completedRequests < 4 {
-            try #require(ContinuousClock.now < deadline)
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        let completions = await session.completionStream()
+        let completed = try await waitForTestEvent(in: completions, timeout: .seconds(5)) { $0 >= 4 }
+        try #require(completed, "Expected 4 completed analytics requests")
 
         let payloads = try await session.capturedRequests().map { request in
             let body = try #require(request.httpBody)
@@ -198,13 +196,9 @@ struct AnalyticsClientTests {
     private func waitForRequest(
         in session: AnalyticsFixtureSession
     ) async throws {
-        let deadline = ContinuousClock.now + .seconds(5)
-
-        while await session.capturedRequests().isEmpty {
-            try #require(ContinuousClock.now < deadline, "Expected an analytics request")
-
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        let requests = await session.requestStream()
+        let started = try await waitForTestEvent(in: requests, timeout: .seconds(5)) { $0 >= 1 }
+        try #require(started, "Expected an analytics request")
     }
 }
 

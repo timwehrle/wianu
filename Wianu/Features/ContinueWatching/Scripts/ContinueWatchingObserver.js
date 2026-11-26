@@ -26,6 +26,36 @@ function observeContinueWatching(configuration, createReader) {
 	let pending = false;
 	let emptyPage;
 	let emptyTimer;
+	let profileID;
+
+	const setProfileID = (value) => {
+		if (
+			typeof value !== 'string' ||
+			!value ||
+			value.length > 150 ||
+			value === profileID
+		) {
+			return;
+		}
+
+		profileID = value;
+		previousSnapshot = undefined;
+		messageHandler?.postMessage(JSON.stringify({ profileID }));
+	};
+
+	const publishProfileQueue = (value, entries, partial) => {
+		if (typeof value !== 'string' || !value || value.length > 150) {
+			return;
+		}
+
+		profileID = value;
+		const snapshot = JSON.stringify({ profileID: value, entries, partial });
+
+		if (snapshot !== previousSnapshot) {
+			previousSnapshot = snapshot;
+			messageHandler?.postMessage(snapshot);
+		}
+	};
 
 	const resetEmptyState = () => {
 		clearTimeout(emptyTimer);
@@ -150,6 +180,7 @@ function observeContinueWatching(configuration, createReader) {
 			if (result === null) {
 				resetEmptyState();
 				diagnose('No readable Continue Watching shelf found');
+
 				return;
 			}
 
@@ -171,10 +202,12 @@ function observeContinueWatching(configuration, createReader) {
 						return missing.length ? [{ index, missing }] : [];
 					})
 					.slice(0, 10);
+
 				diagnose(
 					'Shelf found, but titles or destinations are missing',
 					unreadableCards
 				);
+
 				return;
 			}
 
@@ -182,6 +215,7 @@ function observeContinueWatching(configuration, createReader) {
 
 			if (!entries.length && partial) {
 				resetEmptyState();
+
 				return;
 			}
 
@@ -192,6 +226,7 @@ function observeContinueWatching(configuration, createReader) {
 				) {
 					resetEmptyState();
 					diagnose('Waiting for the home page to finish loading');
+
 					return;
 				}
 
@@ -203,6 +238,7 @@ function observeContinueWatching(configuration, createReader) {
 						scan();
 					}, 2000);
 					diagnose('Waiting to confirm the missing Continue Watching section');
+
 					return;
 				}
 
@@ -216,8 +252,13 @@ function observeContinueWatching(configuration, createReader) {
 			diagnose(
 				entries.length + ' readable titles from ' + result.length + ' cards'
 			);
+			const currentProfile = readQueue.profileID?.();
 			const snapshot = JSON.stringify(
-				partial ? { entries, partial: true } : entries
+				currentProfile
+					? { profileID: currentProfile, entries, partial }
+					: partial
+						? { entries, partial: true }
+						: entries
 			);
 
 			if (snapshot === previousSnapshot) {
@@ -233,6 +274,7 @@ function observeContinueWatching(configuration, createReader) {
 		if (emptyTimer !== undefined) {
 			resetEmptyState();
 		}
+
 		if (pending) {
 			return;
 		}
@@ -240,7 +282,7 @@ function observeContinueWatching(configuration, createReader) {
 		pending = true;
 		setTimeout(scan, 500);
 	};
-	const readQueue = createReader(schedule);
+	const readQueue = createReader(schedule, setProfileID, publishProfileQueue);
 
 	const start = () => {
 		scan();

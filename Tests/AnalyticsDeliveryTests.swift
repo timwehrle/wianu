@@ -3,6 +3,8 @@ import Testing
 @testable import Wianu
 
 actor AnalyticsFixtureSession: AnalyticsSession {
+    private let requestEvents = AsyncStream<Int>.makeStream()
+    private let completionEvents = AsyncStream<Int>.makeStream()
     private(set) var requests: [URLRequest] = []
     private(set) var completedRequests = 0
     private(set) var maximumConcurrentRequests = 0
@@ -35,12 +37,14 @@ actor AnalyticsFixtureSession: AnalyticsSession {
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         let index = requests.count
         requests.append(request)
+        requestEvents.continuation.yield(requests.count)
         activeRequests += 1
         maximumConcurrentRequests = max(maximumConcurrentRequests, activeRequests)
 
         defer {
             activeRequests -= 1
             completedRequests += 1
+            completionEvents.continuation.yield(completedRequests)
         }
 
         try await Task.sleep(for: delay)
@@ -56,6 +60,33 @@ actor AnalyticsFixtureSession: AnalyticsSession {
 
     func capturedRequests() -> [URLRequest] {
         requests
+    }
+
+    func completionStream() -> AsyncStream<Int> {
+        completionEvents.stream
+    }
+
+    func requestStream() -> AsyncStream<Int> {
+        requestEvents.stream
+    }
+}
+
+func waitForTestEvent<T: Sendable>(
+    in stream: AsyncStream<T>, timeout: Duration, matching predicate: @escaping @Sendable (T) -> Bool
+) async throws -> Bool {
+    try await withThrowingTaskGroup(of: Bool.self) { group in
+        group.addTask {
+            for await value in stream where predicate(value) {
+                return true
+            }
+            return false
+        }
+        group.addTask {
+            try await Task.sleep(for: timeout)
+            return false
+        }
+        defer { group.cancelAll() }
+        return try await group.next() ?? false
     }
 }
 
@@ -347,24 +378,20 @@ struct AnalyticsDeliveryTests {
     }
 
     private func waitForCompletion(_ count: Int, in session: AnalyticsFixtureSession) async throws {
-        let deadline = ContinuousClock.now + .seconds(20)
-
-        while await session.completedRequests < count {
-            try #require(ContinuousClock.now < deadline, "Expected \(count) completed analytics requests")
-
-            try await Task.sleep(for: .milliseconds(10))
+        if await session.completedRequests >= count {
+            return
         }
+
+        let completions = await session.completionStream()
+        let completed = try await waitForTestEvent(in: completions, timeout: .seconds(20)) { $0 >= count }
+        try #require(completed, "Expected \(count) completed analytics requests")
     }
 
     private func waitForRequest(
         in session: AnalyticsFixtureSession
     ) async throws {
-        let deadline = ContinuousClock.now + .seconds(20)
-
-        while await session.capturedRequests().isEmpty {
-            try #require(ContinuousClock.now < deadline, "Expected an analytics request")
-
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        let requests = await session.requestStream()
+        let started = try await waitForTestEvent(in: requests, timeout: .seconds(20)) { $0 >= 1 }
+        try #require(started, "Expected an analytics request")
     }
 }
