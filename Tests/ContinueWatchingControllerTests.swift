@@ -5,6 +5,20 @@ import Testing
 @MainActor
 struct ContinueWatchingControllerTests {
     @Test
+    func `Prime ignores unidentified queues after identifying a profile`() throws {
+        let controller = ContinueWatchingController(adapter: .primeVideo)
+        let url = try #require(URL(string: "https://www.primevideo.com/"))
+        controller.receive(json: #"{"profileID":"profile-a"}"#, from: url)
+        controller.receive(
+            json: #"[{"id":"OLD","title":"Old","url":"https://www.primevideo.com/detail/OLD"}]"#,
+            from: url
+        )
+
+        #expect(controller.profileID == "profile-a")
+        #expect(controller.entries.isEmpty)
+    }
+
+    @Test
     func `Profiled partial queues do not merge entries from another profile`() throws {
         let controller = ContinueWatchingController(adapter: .netflix)
         let url = try #require(URL(string: "https://www.netflix.com/browse"))

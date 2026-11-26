@@ -1,9 +1,29 @@
 /* exported createContinueWatchingReader */
-function createContinueWatchingReader(_schedule) {
+function createContinueWatchingReader(_schedule, setProfileID) {
 	const initialPage = location.href;
 	let hydrationRead = false;
 	let hydrationEntries = null;
 	let navigatedAway = false;
+	let profileID;
+	let previousEntries;
+	let previousHydration;
+	let awaitingNewQueue = false;
+
+	const currentProfile = () => {
+		try {
+			const script = document.querySelector(
+				'#dv-web-global-store-data[type="application/json"]'
+			);
+			const id = JSON.parse(script?.textContent || 'null')?.Profile
+				?.currentProfileID;
+
+			return typeof id === 'string' && id.trim() && id.length <= 150
+				? id
+				: null;
+		} catch (_) {
+			return null;
+		}
+	};
 
 	const readHydration = (script) => {
 		try {
@@ -109,7 +129,7 @@ function createContinueWatchingReader(_schedule) {
 			: null;
 	};
 
-	return () => {
+	const readEntries = () => {
 		if (location.href !== initialPage) {
 			navigatedAway = true;
 		}
@@ -214,4 +234,49 @@ function createContinueWatchingReader(_schedule) {
 			};
 		});
 	};
+
+	const readQueue = () => {
+		const current = currentProfile();
+		const hydration = document.querySelector(
+			'#dv-web-page-hydration-data[type="application/json"]'
+		)?.textContent;
+
+		if (current && current !== profileID) {
+			if (profileID) {
+				awaitingNewQueue = true;
+			}
+
+			profileID = current;
+			setProfileID(current);
+		}
+
+		if (hydrationRead && hydration !== previousHydration) {
+			hydrationRead = false;
+			hydrationEntries = null;
+		}
+
+		const entries = readEntries();
+		const signature = entries === null ? null : JSON.stringify(entries);
+		const hydrationChanged = hydration !== previousHydration;
+
+		if (
+			awaitingNewQueue &&
+			(!signature || (signature === previousEntries && !hydrationChanged))
+		) {
+			return null;
+		}
+
+		if (signature !== null) {
+			awaitingNewQueue = false;
+			previousEntries = signature;
+		}
+
+		previousHydration = hydration;
+
+		return entries;
+	};
+
+	readQueue.profileID = () => profileID;
+
+	return readQueue;
 }

@@ -7,6 +7,44 @@ extension WebKitIntegrationTests {
     @MainActor
     struct PrimeContinueWatchingDOMTests {
         @Test
+        func `Prime updates the profile without reusing the previous hydration queue`() async throws {
+            let fixture = VideoObserverFixture(pages: ["/": """
+            <base href="https://www.primevideo.com/">
+            <script id="dv-web-global-store-data" type="application/json">
+            {"Profile":{"currentProfileID":"amzn1.actor.person.oid.first"}}
+            </script>
+            <script id="dv-web-page-hydration-data" type="application/json">
+            {"isContinueWatching":true,"estimatedTotal":1,"entities":[
+                {"displayTitle":"First","link":{"url":"/detail/FIRST"}}
+            ]}
+            </script>
+            """], host: "www.primevideo.com", adapter: .primeVideo)
+            defer { fixture.stop() }
+
+            try await fixture.load("/")
+            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.first?.title == "First" }
+            #expect(fixture.continueWatchingQueue.profileID == "amzn1.actor.person.oid.first")
+
+            try await fixture.webView.evaluateJavaScript("""
+            document.getElementById('dv-web-global-store-data').textContent =
+                JSON.stringify({Profile: {currentProfileID: 'amzn1.actor.person.oid.second'}});
+            void 0;
+            """)
+            try await fixture.waitUntil { fixture.continueWatchingQueue.profileID == "amzn1.actor.person.oid.second" }
+            #expect(fixture.continueWatchingQueue.entries.isEmpty)
+
+            try await fixture.webView.evaluateJavaScript("""
+            document.getElementById('dv-web-page-hydration-data').textContent = JSON.stringify({
+                isContinueWatching: true, estimatedTotal: 1,
+                entities: [{displayTitle: 'Second', link: {url: '/detail/SECOND'}}]
+            });
+            void 0;
+            """)
+            try await fixture.waitUntil { fixture.continueWatchingQueue.entries.first?.title == "Second" }
+            #expect(fixture.continueWatchingQueue.profileID == "amzn1.actor.person.oid.second")
+        }
+
+        @Test
         func `Prime hydration includes shows without a progress bar`() async throws {
             let fixture = VideoObserverFixture(pages: ["/": """
             <base href="https://www.primevideo.com/"><title>Prime Video</title>
