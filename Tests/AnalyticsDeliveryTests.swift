@@ -3,6 +3,7 @@ import Testing
 @testable import Wianu
 
 actor AnalyticsFixtureSession: AnalyticsSession {
+    private let requestEvents = AsyncStream<Int>.makeStream()
     private let completionEvents = AsyncStream<Int>.makeStream()
     private(set) var requests: [URLRequest] = []
     private(set) var completedRequests = 0
@@ -36,6 +37,7 @@ actor AnalyticsFixtureSession: AnalyticsSession {
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         let index = requests.count
         requests.append(request)
+        requestEvents.continuation.yield(requests.count)
         activeRequests += 1
         maximumConcurrentRequests = max(maximumConcurrentRequests, activeRequests)
 
@@ -62,6 +64,10 @@ actor AnalyticsFixtureSession: AnalyticsSession {
 
     func completionStream() -> AsyncStream<Int> {
         completionEvents.stream
+    }
+
+    func requestStream() -> AsyncStream<Int> {
+        requestEvents.stream
     }
 }
 
@@ -372,24 +378,20 @@ struct AnalyticsDeliveryTests {
     }
 
     private func waitForCompletion(_ count: Int, in session: AnalyticsFixtureSession) async throws {
-        let deadline = ContinuousClock.now + .seconds(20)
-
-        while await session.completedRequests < count {
-            try #require(ContinuousClock.now < deadline, "Expected \(count) completed analytics requests")
-
-            try await Task.sleep(for: .milliseconds(10))
+        if await session.completedRequests >= count {
+            return
         }
+
+        let completions = await session.completionStream()
+        let completed = try await waitForTestEvent(in: completions, timeout: .seconds(20)) { $0 >= count }
+        try #require(completed, "Expected \(count) completed analytics requests")
     }
 
     private func waitForRequest(
         in session: AnalyticsFixtureSession
     ) async throws {
-        let deadline = ContinuousClock.now + .seconds(20)
-
-        while await session.capturedRequests().isEmpty {
-            try #require(ContinuousClock.now < deadline, "Expected an analytics request")
-
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        let requests = await session.requestStream()
+        let started = try await waitForTestEvent(in: requests, timeout: .seconds(20)) { $0 >= 1 }
+        try #require(started, "Expected an analytics request")
     }
 }
