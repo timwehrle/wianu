@@ -73,8 +73,7 @@ make check
 ```
 
 This checks formatting, lint, and tests.
-Use `make js-format` to format JavaScript.
-Use `make js-check` to check it.
+Use `make format` to format Swift and JavaScript, or `make lint` to check them.
 
 The app tools and `Website` share one pnpm workspace and lockfile.
 Start the website with `pnpm --filter website dev`.
