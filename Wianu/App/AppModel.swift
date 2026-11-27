@@ -210,6 +210,24 @@ extension AppModel {
         ]) { _, value in value })
     }
 
+    func supportPromptShown() {
+        analytics.track(.supportPromptShown)
+    }
+
+    func supportPromptClicked() {
+        analytics.track(.supportPromptClicked)
+    }
+
+    func supportPromptDismissed(permanently: Bool) {
+        analytics.track(permanently ? .supportPromptDontAskAgain : .supportPromptDismissed)
+    }
+
+    func dismissSupportPromptIfPresented(_ prompt: SupportPromptModel, in windowID: UUID) {
+        guard prompt.presentingWindowID == windowID else { return }
+        supportPromptDismissed(permanently: false)
+        prompt.dismiss(in: windowID)
+    }
+
     func settingsOpened() {
         guard !isSettingsOpen else { return }
 

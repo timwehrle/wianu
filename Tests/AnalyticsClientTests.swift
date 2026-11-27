@@ -9,6 +9,10 @@ struct AnalyticsClientTests {
         .siteOpened,
         .homeOpened,
         .weeklyPickOpened,
+        .supportPromptShown,
+        .supportPromptClicked,
+        .supportPromptDismissed,
+        .supportPromptDontAskAgain,
         .continueWatchingOpened,
         .providerSelected,
         .providerSelectionFailed,
@@ -110,6 +114,10 @@ struct AnalyticsClientTests {
         AnalyticsEvent.siteOpened,
         .homeOpened,
         .weeklyPickOpened,
+        .supportPromptShown,
+        .supportPromptClicked,
+        .supportPromptDismissed,
+        .supportPromptDontAskAgain,
         .continueWatchingOpened,
         .providerSelected,
         .onboardingStarted,
@@ -203,7 +211,7 @@ struct AnalyticsClientTests {
 }
 
 @MainActor
-private final class RecordingAnalyticsTracker: AnalyticsTracking {
+final class RecordingAnalyticsTracker: AnalyticsTracking {
     func setEnabled(_ enabled: Bool) {}
 
     private(set) var events: [AnalyticsEvent] = []
@@ -564,7 +572,7 @@ struct AnalyticsAppFixture {
     let suiteName: String
     let defaults: UserDefaults
     let site: SavedSite
-    fileprivate let tracker: RecordingAnalyticsTracker
+    let tracker: RecordingAnalyticsTracker
     let model: AppModel
 
     init(hasSites: Bool = true, hasSavedSelection: Bool = false) throws {

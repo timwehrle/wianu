@@ -37,7 +37,7 @@ struct ContentView: View {
             get: { supportPrompt.presentingWindowID == windowID },
             set: {
                 if !$0 {
-                    supportPrompt.dismiss(in: windowID)
+                    model.dismissSupportPromptIfPresented(supportPrompt, in: windowID)
                 }
             }
         )
@@ -79,12 +79,16 @@ struct ContentView: View {
         }
         .onDisappear {
             releaseNotes.dismiss(in: windowID)
-            supportPrompt.dismiss(in: windowID)
+            model.dismissSupportPromptIfPresented(supportPrompt, in: windowID)
         }
         .onChange(of: scenePhase) { _, _ in presentSupportPromptIfNeeded() }
         .onChange(of: model.selection) { _, _ in presentSupportPromptIfNeeded() }
         .sheet(isPresented: showingSupportPrompt) {
-            SupportPromptView { permanently in
+            SupportPromptView(
+                onShown: model.supportPromptShown,
+                onSupport: model.supportPromptClicked,
+                onChoice: model.supportPromptDismissed
+            ) { permanently in
                 supportPrompt.dismiss(in: windowID, permanently: permanently)
             }
         }
