@@ -37,10 +37,7 @@ struct ContentView: View {
             get: { supportPrompt.presentingWindowID == windowID },
             set: {
                 if !$0 {
-                    if supportPrompt.presentingWindowID == windowID {
-                        model.supportPromptDismissed(permanently: false)
-                    }
-                    supportPrompt.dismiss(in: windowID)
+                    model.dismissSupportPromptIfPresented(supportPrompt, in: windowID)
                 }
             }
         )
@@ -82,7 +79,7 @@ struct ContentView: View {
         }
         .onDisappear {
             releaseNotes.dismiss(in: windowID)
-            supportPrompt.dismiss(in: windowID)
+            model.dismissSupportPromptIfPresented(supportPrompt, in: windowID)
         }
         .onChange(of: scenePhase) { _, _ in presentSupportPromptIfNeeded() }
         .onChange(of: model.selection) { _, _ in presentSupportPromptIfNeeded() }

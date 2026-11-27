@@ -22,6 +22,30 @@ struct SupportPromptTests {
         return model
     }
 
+    @Test func `closing the presenting window records one support prompt dismissal`() throws {
+        let fixture = try AnalyticsAppFixture()
+        defer { fixture.cleanup() }
+
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        let day: TimeInterval = 24 * 60 * 60
+        for _ in 0 ..< 2 {
+            SupportPromptModel(defaults: fixture.defaults, now: start).recordSession()
+        }
+        let prompt = SupportPromptModel(defaults: fixture.defaults, now: start)
+        prompt.recordSession()
+        let window = UUID()
+        prompt.presentIfNeeded(in: window, now: start + 7 * day)
+        #expect(prompt.presentingWindowID == window)
+
+        fixture.model.dismissSupportPromptIfPresented(prompt, in: UUID())
+        #expect(prompt.presentingWindowID == window)
+        fixture.model.dismissSupportPromptIfPresented(prompt, in: window)
+        fixture.model.dismissSupportPromptIfPresented(prompt, in: window)
+
+        #expect(prompt.presentingWindowID == nil)
+        #expect(fixture.tracker.events == [.appLaunched, .supportPromptDismissed])
+    }
+
     @Test
     func `requires seven days and three separate sessions`() throws {
         try withDefaults { defaults in

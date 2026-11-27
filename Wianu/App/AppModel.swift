@@ -222,6 +222,12 @@ extension AppModel {
         analytics.track(permanently ? .supportPromptDontAskAgain : .supportPromptDismissed)
     }
 
+    func dismissSupportPromptIfPresented(_ prompt: SupportPromptModel, in windowID: UUID) {
+        guard prompt.presentingWindowID == windowID else { return }
+        supportPromptDismissed(permanently: false)
+        prompt.dismiss(in: windowID)
+    }
+
     func settingsOpened() {
         guard !isSettingsOpen else { return }
 
