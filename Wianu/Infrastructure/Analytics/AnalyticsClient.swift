@@ -22,6 +22,10 @@ enum AnalyticsEvent: String, Sendable {
     case siteDeleted = "site-deleted"
     case settingsOpened = "settings-opened"
     case updateCheckStarted = "update-check-started"
+    case supportPromptShown = "support-prompt-shown"
+    case supportPromptClicked = "support-prompt-clicked"
+    case supportPromptDismissed = "support-prompt-dismissed"
+    case supportPromptDontAskAgain = "support-prompt-dont-ask-again"
 }
 
 enum AnalyticsPage: String, Sendable {
